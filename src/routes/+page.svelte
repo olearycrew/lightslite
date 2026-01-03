@@ -1,23 +1,83 @@
 <script lang="ts">
-	// LightsLite - Landing page
+	/**
+	 * LightsLite - Landing page
+	 *
+	 * Shows hero section with links to sign in or go to app.
+	 * If user is authenticated, shows link to app directly.
+	 */
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
+
+	let isAuthenticated = $derived(!!data.session);
 </script>
 
-<div class="flex min-h-screen flex-col items-center justify-center">
-	<div class="panel p-8 text-center">
-		<h1 class="mb-4 text-3xl font-bold text-text-primary">LightsLite</h1>
-		<p class="mb-6 text-text-secondary">Browser-based 2D CAD Application</p>
-
-		<div class="flex gap-4">
-			<button class="toolbar-btn w-auto px-4">
-				<span>New Project</span>
-			</button>
-			<button class="toolbar-btn w-auto px-4 bg-accent text-text-primary hover:bg-accent-hover">
-				<span>Open Project</span>
-			</button>
+<div class="flex min-h-screen flex-col items-center justify-center bg-bg-primary">
+	<div class="w-full max-w-2xl px-4 text-center">
+		<!-- Hero Section -->
+		<div class="mb-8">
+			<h1 class="mb-4 text-4xl font-bold text-text-primary">LightsLite</h1>
+			<p class="text-xl text-text-secondary">Browser-based 2D CAD for Lighting Design</p>
 		</div>
 
-		<div class="mt-8 text-xs text-text-muted">
-			<p>Tailwind CSS v4.x configured and ready</p>
+		<!-- Feature highlights -->
+		<div class="panel mb-8 p-6">
+			<div class="grid grid-cols-1 gap-4 text-left md:grid-cols-3">
+				<div class="rounded-lg bg-bg-secondary p-4">
+					<h3 class="mb-2 font-medium text-text-primary">Quick & Simple</h3>
+					<p class="text-sm text-text-secondary">
+						Create lighting plots in your browser without complex software
+					</p>
+				</div>
+				<div class="rounded-lg bg-bg-secondary p-4">
+					<h3 class="mb-2 font-medium text-text-primary">Cloud Storage</h3>
+					<p class="text-sm text-text-secondary">
+						Your projects are saved automatically and accessible anywhere
+					</p>
+				</div>
+				<div class="rounded-lg bg-bg-secondary p-4">
+					<h3 class="mb-2 font-medium text-text-primary">Export Ready</h3>
+					<p class="text-sm text-text-secondary">Export to PDF, SVG, or share with collaborators</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- CTA Buttons -->
+		<div class="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+			{#if isAuthenticated}
+				<a
+					href="/app"
+					class="inline-flex items-center rounded bg-accent px-6 py-3 font-medium text-text-primary hover:bg-accent-hover transition-colors"
+				>
+					<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+						/>
+					</svg>
+					Go to Projects
+				</a>
+			{:else}
+				<a
+					href="/auth/sign-in"
+					class="inline-flex items-center rounded bg-accent px-6 py-3 font-medium text-text-primary hover:bg-accent-hover transition-colors"
+				>
+					Sign In
+				</a>
+				<a
+					href="/auth/sign-up"
+					class="inline-flex items-center rounded border border-border px-6 py-3 font-medium text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors"
+				>
+					Create Account
+				</a>
+			{/if}
+		</div>
+
+		<!-- Footer info -->
+		<div class="mt-12 text-xs text-text-muted">
+			<p>Open source lighting design tool</p>
 		</div>
 	</div>
 </div>
