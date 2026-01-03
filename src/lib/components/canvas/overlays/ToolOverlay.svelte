@@ -479,7 +479,7 @@
 			/>
 			<!-- Render detail paths -->
 			{#if instrumentSymbol.detailPaths}
-				{#each instrumentSymbol.detailPaths as detailPath}
+				{#each instrumentSymbol.detailPaths as detailPath, i (i)}
 					<path
 						class="ghost-instrument-detail"
 						d={detailPath}

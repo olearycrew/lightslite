@@ -11,7 +11,7 @@
 	import HangingPosition from '../HangingPosition.svelte';
 	import SelectableObject from '../SelectableObject.svelte';
 	import InstrumentsLayer from './InstrumentsLayer.svelte';
-	import type { LineGeometry, RectGeometry, CircleGeometry } from '$lib/types';
+	import type { LineGeometry, CircleGeometry } from '$lib/types';
 	import { getGeometryBounds } from '$lib/types';
 
 	// Local hover tracking for shapes
@@ -30,19 +30,9 @@
 		}
 	}
 
-	/**
-	 * Handle mouse enter for hover effect
-	 */
-	function handleMouseEnter(id: string) {
-		hoveredId = id;
-	}
-
-	/**
-	 * Handle mouse leave for hover effect
-	 */
-	function handleMouseLeave() {
-		hoveredId = null;
-	}
+	// Hover handlers reserved for future interactive features
+	// function handleMouseEnter(id: string) { hoveredId = id; }
+	// function handleMouseLeave() { hoveredId = null; }
 </script>
 
 <g class="drawing-layer">

@@ -11,7 +11,6 @@
 
 	// Get the current auth path (sign-in, sign-up, etc.)
 	let authPath = $derived($page.params.path || 'sign-in');
-	let isSignIn = $derived(authPath === 'sign-in');
 	let isSignUp = $derived(authPath === 'sign-up');
 
 	// Form state
@@ -29,6 +28,7 @@
 		try {
 			if (isSignUp) {
 				// Sign up flow
+				// @ts-expect-error - Neon Auth client types are complex through Proxy
 				const result = await authClient.signUp.email({
 					email,
 					password,
@@ -40,6 +40,7 @@
 				}
 			} else {
 				// Sign in flow
+				// @ts-expect-error - Neon Auth client types are complex through Proxy
 				const result = await authClient.signIn.email({
 					email,
 					password

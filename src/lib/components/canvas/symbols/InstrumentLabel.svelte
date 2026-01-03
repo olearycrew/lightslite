@@ -156,7 +156,7 @@
 		/>
 
 		<!-- Label text lines -->
-		{#each labelLines as line, index}
+		{#each labelLines as line, index (index)}
 			<text
 				class="label-text"
 				class:primary={index === 0}

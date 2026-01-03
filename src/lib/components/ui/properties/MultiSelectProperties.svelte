@@ -5,9 +5,9 @@
 	 * Properties panel for editing multiple selected items.
 	 * Shows common properties and batch operations.
 	 */
-	import { project } from '$lib/stores/project.svelte';
+	import { project, type InstrumentObject, type ShapeObject } from '$lib/stores/project.svelte';
 	import { selection } from '$lib/stores/selection.svelte';
-	import { FormField, TextInput, ColorInput, CollapsibleSection } from '../forms';
+	import { FormField, ColorInput, CollapsibleSection } from '../forms';
 
 	// Get selected objects with their types
 	const selectedObjects = $derived(
@@ -40,7 +40,7 @@
 	const commonColor = $derived(() => {
 		if (!allInstruments) return null;
 		const colors = selectedObjects.map((obj) =>
-			obj?.objectType === 'instrument' ? (obj as any).color : null
+			obj?.objectType === 'instrument' ? (obj as InstrumentObject).color : null
 		);
 		const first = colors[0];
 		return colors.every((c) => c === first) ? first : null;
@@ -50,7 +50,7 @@
 	const commonStroke = $derived(() => {
 		if (!allShapes) return null;
 		const strokes = selectedObjects.map((obj) =>
-			obj?.objectType === 'shape' ? (obj as any).stroke : null
+			obj?.objectType === 'shape' ? (obj as ShapeObject).stroke : null
 		);
 		const first = strokes[0];
 		return strokes.every((s) => s === first) ? first : null;

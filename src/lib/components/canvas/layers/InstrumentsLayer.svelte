@@ -6,13 +6,13 @@
 	 * Groups instruments by hanging position for organization.
 	 * Handles selection, hover states, and drag operations.
 	 */
+	import { SvelteMap } from 'svelte/reactivity';
 	import { project } from '$lib/stores/project.svelte';
 	import { selection } from '$lib/stores/selection.svelte';
-	import { viewport } from '$lib/stores/viewport.svelte';
 	import SelectableObject from '../SelectableObject.svelte';
 	import { InstrumentSymbol, InstrumentLabel } from '../symbols';
 	import { getSymbol, getSymbolBounds } from '$lib/symbols';
-	import type { InstrumentType, DEFAULT_LABEL_CONFIG } from '$lib/types/instrument';
+	import type { InstrumentType } from '$lib/types/instrument';
 
 	// Local hover tracking
 	let hoveredId = $state<string | null>(null);
@@ -78,7 +78,7 @@
 
 	// Group instruments by hanging position for rendering
 	const instrumentsByPosition = $derived.by(() => {
-		const grouped = new Map<string | null, typeof project.instruments>();
+		const grouped = new SvelteMap<string | null, typeof project.instruments>();
 
 		for (const instrument of project.instruments) {
 			const key = instrument.hangingPositionId;

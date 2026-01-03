@@ -24,7 +24,8 @@
 	const strokeWidth = $derived(4 / viewport.zoom);
 	const endCapRadius = $derived(6 / viewport.zoom);
 	const fontSize = $derived(11 / viewport.zoom);
-	const labelPadding = $derived(4 / viewport.zoom);
+	// Label padding reserved for future use
+	// const labelPadding = $derived(4 / viewport.zoom);
 
 	// Highlight stroke width
 	const highlightStrokeWidth = $derived(8 / viewport.zoom);
@@ -45,11 +46,11 @@
 	const midX = $derived((position.x1 + position.x2) / 2 + (position.labelOffsetX ?? 0));
 	const midY = $derived((position.y1 + position.y2) / 2 + (position.labelOffsetY ?? -20));
 
-	// Calculate length in display units
-	const lengthPixels = $derived(
-		Math.sqrt(Math.pow(position.x2 - position.x1, 2) + Math.pow(position.y2 - position.y1, 2))
-	);
-	const lengthUnits = $derived(lengthPixels / grid.pixelsPerUnit);
+	// Calculate length in display units (reserved for future dimension display)
+	// const lengthPixels = $derived(
+	// 	Math.sqrt(Math.pow(position.x2 - position.x1, 2) + Math.pow(position.y2 - position.y1, 2))
+	// );
+	// const lengthUnits = $derived(lengthPixels / grid.pixelsPerUnit);
 	const unitLabel = $derived(grid.unit === 'feet' ? "'" : 'm');
 
 	// Trim height display
@@ -57,15 +58,15 @@
 		position.trimHeight !== undefined ? ` @ ${position.trimHeight}${unitLabel}` : ''
 	);
 
-	// Calculate the angle for boom orientation
-	const angle = $derived(
-		Math.atan2(position.y2 - position.y1, position.x2 - position.x1) * (180 / Math.PI)
-	);
+	// Calculate the angle for boom orientation (reserved for future rotation)
+	// const angle = $derived(
+	// 	Math.atan2(position.y2 - position.y1, position.x2 - position.x1) * (180 / Math.PI)
+	// );
 
-	// For booms: calculate base circle position
-	const isVertical = $derived(
-		position.positionType === 'boom' || position.positionType === 'ladder'
-	);
+	// For booms: calculate base circle position (reserved for future use)
+	// const isVertical = $derived(
+	// 	position.positionType === 'boom' || position.positionType === 'ladder'
+	// );
 </script>
 
 <g

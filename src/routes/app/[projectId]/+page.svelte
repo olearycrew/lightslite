@@ -73,7 +73,7 @@
 	);
 
 	// Current tool name for status bar
-	const currentToolName = $derived(tool.toolName);
+	const currentToolName = $derived(tool.TOOL_NAMES[tool.activeTool]);
 </script>
 
 <div class="editor-layout">

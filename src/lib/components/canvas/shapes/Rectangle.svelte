@@ -36,11 +36,12 @@
 	const scaledStrokeWidth = $derived(strokeWidth / viewport.zoom);
 
 	// Calculate transform origin for rotation (center of rectangle)
-	const transformOrigin = $derived(
-		geometry.rotation
-			? `${geometry.x + geometry.width / 2}px ${geometry.y + geometry.height / 2}px`
-			: undefined
-	);
+	// Reserved for CSS transform-origin if needed in the future
+	// const transformOrigin = $derived(
+	// 	geometry.rotation
+	// 		? `${geometry.x + geometry.width / 2}px ${geometry.y + geometry.height / 2}px`
+	// 		: undefined
+	// );
 
 	// Transform string for rotation
 	const transformStr = $derived(

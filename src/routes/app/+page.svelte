@@ -5,9 +5,6 @@
 	 * Shows all user's projects with options to create new ones.
 	 * Placeholder UI - will be connected to API later.
 	 */
-	import type { PageData } from './$types';
-
-	let { data }: { data: PageData } = $props();
 
 	// Placeholder projects for UI demonstration
 	let projects = $state<Array<{ id: string; name: string; updatedAt: string }>>([]);
@@ -117,7 +114,7 @@
 		<!-- Project Cards -->
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each projects as project (project.id)}
-				<a href="/app/{project.id}" class="panel group p-4 transition-all hover:border-accent">
+				<a href={`/app/${project.id}`} class="panel group p-4 transition-all hover:border-accent">
 					<div class="mb-3 flex items-start justify-between">
 						<div class="h-10 w-10 rounded bg-bg-secondary flex items-center justify-center">
 							<svg

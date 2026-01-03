@@ -39,7 +39,7 @@
 
 		// Single selection - get the selected object
 		const selectedId = selection.selectedIds[0];
-		const selectedType = selection.selectionType;
+		// selectionType available for future use
 		const obj = project.getObject(selectedId);
 
 		if (!obj) {

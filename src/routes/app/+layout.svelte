@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	/**
 	 * App Shell Layout
 	 *
@@ -11,7 +12,7 @@
 	import { authClient } from '$lib/auth/client';
 	import { goto } from '$app/navigation';
 
-	let { data, children }: { data: LayoutData; children: any } = $props();
+	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	let showUserMenu = $state(false);
 

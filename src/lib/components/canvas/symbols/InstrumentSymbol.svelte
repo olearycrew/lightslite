@@ -101,7 +101,7 @@
 
 	<!-- Detail paths (internal lines, patterns, etc.) -->
 	{#if symbol.detailPaths}
-		{#each symbol.detailPaths as detailPath}
+		{#each symbol.detailPaths as detailPath, i (i)}
 			<path
 				class="symbol-detail"
 				d={detailPath}
