@@ -5,3 +5,4 @@
  */
 
 export { default as SelectionOverlay } from './SelectionOverlay.svelte';
+export { default as ToolOverlay } from './ToolOverlay.svelte';

@@ -4,21 +4,28 @@
 	 *
 	 * Full-width/height SVG container with pan/zoom functionality.
 	 * Handles mouse and touch events for canvas navigation.
-	 * Includes selection handling and marquee selection support.
+	 * Includes selection handling, marquee selection, and drawing tool support.
 	 */
 	import { viewport, type Bounds } from '$lib/stores/viewport.svelte';
 	import { selection } from '$lib/stores/selection.svelte';
 	import { tool } from '$lib/stores/tool.svelte';
+	import { project } from '$lib/stores/project.svelte';
 	import Grid from './Grid.svelte';
-	import { SelectionOverlay } from './overlays';
+	import { SelectionOverlay, ToolOverlay } from './overlays';
+	import { DrawingLayer } from './layers';
 
 	interface Props {
 		/** Whether spacebar pan mode is active (controlled by parent) */
 		spacebarHeld?: boolean;
+		/** Whether to show the drawing layer */
+		showDrawingLayer?: boolean;
 	}
 
-	let { spacebarHeld = false, children }: Props & { children?: import('svelte').Snippet } =
-		$props();
+	let {
+		spacebarHeld = false,
+		showDrawingLayer = true,
+		children
+	}: Props & { children?: import('svelte').Snippet } = $props();
 
 	// Track viewport dimensions for Grid component
 	let viewportWidth = $state(0);
@@ -42,8 +49,21 @@
 	let lastTouchCenterX = $state(0);
 	let lastTouchCenterY = $state(0);
 
+	// Drawing state - managed by ToolOverlay but we need to track if drawing is active
+	let isDrawing = $state(false);
+
 	// SVG element reference
 	let svgElement: SVGSVGElement;
+
+	// ToolOverlay reference for delegating events
+	let toolOverlayRef:
+		| {
+				handleMouseDown: (e: MouseEvent) => boolean;
+				handleMouseMove: (e: MouseEvent) => boolean;
+				handleMouseUp: (e: MouseEvent) => boolean;
+				cancelDrawing: () => void;
+		  }
+		| undefined = $state();
 
 	// Zoom configuration
 	const ZOOM_SENSITIVITY = 0.001; // Mouse wheel sensitivity
@@ -89,8 +109,7 @@
 	}
 
 	/**
-	 * Handle mouse down - start pan if middle button or spacebar held,
-	 * otherwise start marquee selection on empty space
+	 * Handle mouse down - delegate to drawing tools first, then pan/marquee
 	 */
 	function handleMouseDown(event: MouseEvent) {
 		const coords = getRelativeCoords(event);
@@ -102,6 +121,14 @@
 			lastMouseX = coords.x;
 			lastMouseY = coords.y;
 			return;
+		}
+
+		// Try drawing tool first (if left click and drawing tool active)
+		if (event.button === 0 && (tool.isDrawingTool || tool.activeTool === 'add-electric')) {
+			if (toolOverlayRef?.handleMouseDown(event)) {
+				isDrawing = true;
+				return;
+			}
 		}
 
 		// Left click on empty space - start marquee selection (if select tool is active)
@@ -124,10 +151,16 @@
 	}
 
 	/**
-	 * Handle mouse move - pan if in pan mode, update marquee if in marquee mode
+	 * Handle mouse move - delegate to drawing tool or handle pan/marquee
 	 */
 	function handleMouseMove(event: MouseEvent) {
 		const coords = getRelativeCoords(event);
+
+		// If drawing, delegate to tool overlay
+		if (isDrawing) {
+			toolOverlayRef?.handleMouseMove(event);
+			return;
+		}
 
 		if (isPanning) {
 			const dx = coords.x - lastMouseX;
@@ -148,9 +181,16 @@
 	}
 
 	/**
-	 * Handle mouse up - stop panning or complete marquee selection
+	 * Handle mouse up - complete drawing, pan, or marquee
 	 */
-	function handleMouseUp() {
+	function handleMouseUp(event: MouseEvent) {
+		// If drawing, delegate to tool overlay
+		if (isDrawing) {
+			toolOverlayRef?.handleMouseUp(event);
+			isDrawing = false;
+			return;
+		}
+
 		if (isPanning) {
 			isPanning = false;
 			return;
@@ -172,7 +212,7 @@
 	 */
 	function handleMouseLeave() {
 		isPanning = false;
-		// Don't cancel marquee on leave - let mouse up handle it
+		// Don't cancel marquee or drawing on leave - let mouse up handle it
 	}
 
 	/**
@@ -304,23 +344,27 @@
 			return;
 		}
 
-		// Escape - clear selection
+		// Escape - clear selection and cancel drawing
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			selection.clearSelection();
 			// Cancel any active marquee
 			isMarqueeActive = false;
+			// Cancel any active drawing
+			if (isDrawing) {
+				toolOverlayRef?.cancelDrawing();
+				isDrawing = false;
+			}
 			return;
 		}
 
-		// Delete or Backspace - delete selected objects (signal only)
+		// Delete or Backspace - delete selected objects
 		if (event.key === 'Delete' || event.key === 'Backspace') {
 			if (selection.hasSelection) {
 				event.preventDefault();
-				// Note: Actual deletion should be handled by parent component
-				// that manages the objects. Dispatch a custom event or callback.
-				// For now, just clear selection as placeholder
-				// A delete handler would be passed as a prop in real usage
+				// Delete selected objects from project store
+				project.deleteObjects(selection.selectedIds);
+				selection.clearSelection();
 			}
 			return;
 		}
@@ -328,8 +372,7 @@
 		// Ctrl/Cmd + A - select all
 		if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
 			event.preventDefault();
-			// Note: selectAll needs a list of all items - this would need to come from parent
-			// For now, this is a placeholder for the integration point
+			// TODO: Implement select all when we have a list of all selectable items
 			return;
 		}
 	}
@@ -338,7 +381,7 @@
 	const cursorStyle = $derived.by(() => {
 		if (isPanning || isTouchPanning) return 'grabbing';
 		if (spacebarHeld || tool.isPanTool) return 'grab';
-		if (isMarqueeActive) return 'crosshair';
+		if (isMarqueeActive || isDrawing) return 'crosshair';
 		return tool.cursor;
 	});
 
@@ -397,10 +440,18 @@
 		<!-- Grid component - renders based on viewport bounds -->
 		<Grid {viewportWidth} {viewportHeight} />
 
-		<!-- Slot for child content -->
+		<!-- Drawing layer - renders all shapes from project store -->
+		{#if showDrawingLayer}
+			<DrawingLayer />
+		{/if}
+
+		<!-- Slot for additional child content -->
 		{#if children}
 			{@render children()}
 		{/if}
+
+		<!-- Tool overlay for drawing preview -->
+		<ToolOverlay bind:this={toolOverlayRef} {svgElement} />
 
 		<!-- Selection overlay (marquee, handles) -->
 		<SelectionOverlay

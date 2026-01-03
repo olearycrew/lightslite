@@ -1,0 +1,7 @@
+/**
+ * Canvas Layers
+ *
+ * Re-exports all layer components for the canvas.
+ */
+
+export { default as DrawingLayer } from './DrawingLayer.svelte';
