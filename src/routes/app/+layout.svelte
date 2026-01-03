@@ -27,7 +27,7 @@
 
 <div class="flex min-h-screen flex-col bg-bg-primary">
 	<!-- Header -->
-	<header class="border-b border-border bg-bg-secondary">
+	<header class="relative z-50 border-b border-border bg-bg-secondary">
 		<div class="flex h-14 items-center justify-between px-4">
 			<!-- Logo / Brand -->
 			<div class="flex items-center gap-4">
@@ -68,15 +68,15 @@
 
 					<!-- Dropdown -->
 					<div
-						class="absolute right-0 z-20 mt-2 w-48 rounded-lg border border-border bg-bg-secondary py-1 shadow-lg"
+						class="absolute right-0 z-20 mt-2 w-48 rounded-lg border border-border bg-panel py-1 shadow-lg"
 					>
-						<div class="border-b border-border px-4 py-2">
+						<div class="border-b border-border px-4 py-2 bg-panel">
 							<p class="text-sm font-medium text-text-primary">{data.user?.name}</p>
 							<p class="text-xs text-text-muted">{data.user?.email}</p>
 						</div>
 						<button
 							onclick={handleSignOut}
-							class="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-bg-primary hover:text-text-primary"
+							class="w-full px-4 py-2 text-left text-sm text-text-secondary hover:bg-panel-hover hover:text-text-primary bg-panel"
 						>
 							Sign out
 						</button>
