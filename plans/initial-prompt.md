@@ -49,80 +49,73 @@ State Structure (conceptual):
 
 ```typescript
 interface Instrument {
-  id: string;
-  type: InstrumentType; // Determines the drawn symbol
-  position: { x: number; y: number };
-  rotation: number; // 0-360 degrees
-  hangingPositionId: string | null; // Reference to parent hanging position
+	id: string;
+	type: InstrumentType; // Determines the drawn symbol
+	position: { x: number; y: number };
+	rotation: number; // 0-360 degrees
+	hangingPositionId: string | null; // Reference to parent hanging position
 
-  // Electrical/Control Data
-  channel: number | null;
-  dimmer: number | string | null; // Can be "1-4" for a range
-  circuit: string | null;
-  universe: number | null; // For DMX
-  address: number | null; // DMX address
+	// Electrical/Control Data
+	channel: number | null;
+	dimmer: number | string | null; // Can be "1-4" for a range
+	circuit: string | null;
+	universe: number | null; // For DMX
+	address: number | null; // DMX address
 
-  // Physical Properties
-  color: string | null; // Gel color, e.g., "R02" or "L201"
-  gobo: string | null;
-  template: string | null;
-  accessory: string | null; // Barn doors, top hats, etc.
+	// Physical Properties
+	color: string | null; // Gel color, e.g., "R02" or "L201"
+	gobo: string | null;
+	template: string | null;
+	accessory: string | null; // Barn doors, top hats, etc.
 
-  // Identification
-  unitNumber: number | null; // Position on the hanging position
-  purpose: string | null; // "Front wash", "Backlight", etc.
-  notes: string | null;
+	// Identification
+	unitNumber: number | null; // Position on the hanging position
+	purpose: string | null; // "Front wash", "Backlight", etc.
+	notes: string | null;
 
-  // Visual
-  labelDisplay: LabelConfig; // What labels to show on plot
+	// Visual
+	labelDisplay: LabelConfig; // What labels to show on plot
 }
 
 type InstrumentType =
-  | "ers-19"
-  | "ers-26"
-  | "ers-36"
-  | "ers-50" // Ellipsoidal (Source 4, etc.)
-  | "par-64"
-  | "par-56"
-  | "par-38"
-  | "fresnel-6"
-  | "fresnel-8"
-  | "cyc-light"
-  | "moving-spot"
-  | "moving-wash"
-  | "moving-beam"
-  | "led-par"
-  | "led-wash"
-  | "led-strip"
-  | "followspot"
-  | "practical"
-  | "custom";
+	| 'ers-19'
+	| 'ers-26'
+	| 'ers-36'
+	| 'ers-50' // Ellipsoidal (Source 4, etc.)
+	| 'par-64'
+	| 'par-56'
+	| 'par-38'
+	| 'fresnel-6'
+	| 'fresnel-8'
+	| 'cyc-light'
+	| 'moving-spot'
+	| 'moving-wash'
+	| 'moving-beam'
+	| 'led-par'
+	| 'led-wash'
+	| 'led-strip'
+	| 'followspot'
+	| 'practical'
+	| 'custom';
 ```
 
 ### Hanging Position
 
 ```typescript
 interface HangingPosition {
-  id: string;
-  type:
-    | "electric"
-    | "truss"
-    | "ladder"
-    | "boom"
-    | "box-boom"
-    | "ground-row"
-    | "custom";
-  name: string; // "1st Electric", "FOH Truss", "SL Ladder"
+	id: string;
+	type: 'electric' | 'truss' | 'ladder' | 'boom' | 'box-boom' | 'ground-row' | 'custom';
+	name: string; // "1st Electric", "FOH Truss", "SL Ladder"
 
-  // Geometry
-  geometry: LineGeometry | RectGeometry; // Electrics are lines, trusses might be rects
+	// Geometry
+	geometry: LineGeometry | RectGeometry; // Electrics are lines, trusses might be rects
 
-  // Properties
-  trimHeight: number | null; // Height from stage floor
-  loadCapacity: number | null; // Optional for planning
-  circuitCount: number | null;
+	// Properties
+	trimHeight: number | null; // Height from stage floor
+	loadCapacity: number | null; // Optional for planning
+	circuitCount: number | null;
 
-  notes: string | null;
+	notes: string | null;
 }
 ```
 
@@ -130,14 +123,14 @@ interface HangingPosition {
 
 ```typescript
 interface SetPiece {
-  id: string;
-  name: string;
-  type: "wall" | "platform" | "stair" | "furniture" | "prop" | "custom";
-  geometry: Shape; // Rectangle, circle, polygon, line
-  fill: string; // Color or pattern
-  stroke: string;
-  layer: string;
-  notes: string | null;
+	id: string;
+	name: string;
+	type: 'wall' | 'platform' | 'stair' | 'furniture' | 'prop' | 'custom';
+	geometry: Shape; // Rectangle, circle, polygon, line
+	fill: string; // Color or pattern
+	stroke: string;
+	layer: string;
+	notes: string | null;
 }
 ```
 
@@ -145,22 +138,22 @@ interface SetPiece {
 
 ```typescript
 interface Venue {
-  name: string;
+	name: string;
 
-  // Stage bounds
-  stageBounds: RectGeometry;
+	// Stage bounds
+	stageBounds: RectGeometry;
 
-  // Architectural elements
-  walls: Shape[];
-  prosceniumWidth: number | null;
-  prosceniumHeight: number | null;
-  plasterLine: number; // Y coordinate of plaster line (reference point)
-  centerLine: number; // X coordinate of center line
+	// Architectural elements
+	walls: Shape[];
+	prosceniumWidth: number | null;
+	prosceniumHeight: number | null;
+	plasterLine: number; // Y coordinate of plaster line (reference point)
+	centerLine: number; // X coordinate of center line
 
-  // Reference lines
-  showCenterLine: boolean;
-  showPlasterLine: boolean;
-  gridSpacing: number | null;
+	// Reference lines
+	showCenterLine: boolean;
+	showPlasterLine: boolean;
+	gridSpacing: number | null;
 }
 ```
 
@@ -237,26 +230,21 @@ This is a key differentiator—the metadata drives real production paperwork.
 ### Required Reports
 
 1. **Channel Hookup**
-
    - Sorted by channel number
    - Columns: Channel, Dimmer, Position, Unit #, Instrument Type, Color, Gobo, Purpose, Notes
 
 2. **Dimmer/Circuit Schedule**
-
    - Sorted by dimmer number
    - Shows what's patched to each dimmer
 
 3. **Instrument Schedule**
-
    - Sorted by hanging position, then unit number
    - Full details for each instrument
 
 4. **Position Summary**
-
    - Per-position breakdown of instruments
 
 5. **Color/Gobo Cut List**
-
    - Aggregated list of all colors and gobos needed
 
 6. **Channel/Dimmer Patch**
