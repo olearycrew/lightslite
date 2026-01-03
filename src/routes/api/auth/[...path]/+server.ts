@@ -8,6 +8,7 @@
  * Example: /api/auth/sign-in, /api/auth/session, etc.
  */
 import { NEON_AUTH_BASE_URL } from '$env/static/private';
+import { dev } from '$app/environment';
 import type { RequestHandler } from '@sveltejs/kit';
 
 /**
@@ -23,6 +24,38 @@ function buildAuthUrl(path: string, searchParams: URLSearchParams): string {
 		url.searchParams.append(key, value);
 	});
 	return url.toString();
+}
+
+/**
+ * Rewrite Set-Cookie headers for local development
+ *
+ * In development (HTTP), __Secure- prefixed cookies won't work because:
+ * 1. The __Secure- prefix requires HTTPS
+ * 2. The Secure attribute requires HTTPS
+ *
+ * This function rewrites cookies to work on http://localhost
+ */
+function rewriteCookieForDev(setCookieHeader: string): string {
+	if (!dev) {
+		return setCookieHeader;
+	}
+
+	let cookie = setCookieHeader;
+
+	// Remove __Secure- prefix (required for HTTP)
+	cookie = cookie.replace(/^__Secure-/i, '');
+
+	// Remove Secure attribute (required for HTTP)
+	cookie = cookie.replace(/;\s*Secure/gi, '');
+
+	// Remove Partitioned attribute (not needed for local dev)
+	cookie = cookie.replace(/;\s*Partitioned/gi, '');
+
+	// Change SameSite=None to SameSite=Lax for local dev
+	// (SameSite=None requires Secure which we just removed)
+	cookie = cookie.replace(/SameSite=None/gi, 'SameSite=Lax');
+
+	return cookie;
 }
 
 /**
@@ -61,6 +94,8 @@ async function proxyToNeonAuth(
 				Accept: request.headers.get('Accept') || 'application/json',
 				// Forward cookies for session management
 				Cookie: request.headers.get('Cookie') || '',
+				// Forward origin header - required by Neon Auth for security
+				Origin: request.headers.get('Origin') || new URL(request.url).origin,
 				// Forward authorization header if present
 				...(request.headers.get('Authorization')
 					? { Authorization: request.headers.get('Authorization')! }
@@ -74,8 +109,12 @@ async function proxyToNeonAuth(
 		// Create response with all headers from Neon Auth
 		const responseHeaders = new Headers();
 		response.headers.forEach((value, key) => {
-			// Forward all headers including Set-Cookie for session management
-			responseHeaders.append(key, value);
+			// Rewrite Set-Cookie headers for local development
+			if (key.toLowerCase() === 'set-cookie') {
+				responseHeaders.append(key, rewriteCookieForDev(value));
+			} else {
+				responseHeaders.append(key, value);
+			}
 		});
 
 		return new Response(response.body, {

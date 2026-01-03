@@ -4,19 +4,10 @@
  * This module provides server-side authentication utilities,
  * including session verification and token validation.
  */
-import { createAuthClient } from '@neondatabase/auth';
 import { NEON_AUTH_BASE_URL } from '$env/static/private';
 
 /**
- * Server-side auth client using the base URL
- *
- * This client makes direct requests to Neon Auth servers
- * for session verification and management.
- */
-export const serverAuth = createAuthClient(NEON_AUTH_BASE_URL);
-
-/**
- * Verify a session token from cookies
+ * Verify a session by making a request to Neon Auth with the session cookie
  *
  * @param token - The session token from the auth cookie
  * @returns The session data if valid, null otherwise
@@ -27,14 +18,21 @@ export async function verifySession(token: string | undefined) {
 	}
 
 	try {
-		const session = await serverAuth.getSession({
-			fetchOptions: {
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
+		// Call Neon Auth's get-session endpoint with the session cookie
+		const response = await fetch(`${NEON_AUTH_BASE_URL}/get-session`, {
+			method: 'GET',
+			headers: {
+				// Send the session token as a cookie (same format browser would send)
+				Cookie: `__Secure-neon-auth.session_token=${token}`
 			}
 		});
-		return session.data;
+
+		if (!response.ok) {
+			return null;
+		}
+
+		const data = await response.json();
+		return data;
 	} catch {
 		// Session verification failed - token may be expired or invalid
 		return null;
@@ -50,6 +48,8 @@ export async function verifySession(token: string | undefined) {
 export function getSessionToken(cookies: {
 	get: (name: string) => string | undefined;
 }): string | undefined {
-	// Neon Auth stores session in a cookie named 'better-auth.session_token'
-	return cookies.get('better-auth.session_token');
+	// Neon Auth stores session in a cookie - try both secure and non-secure variants
+	// In production (HTTPS), it uses __Secure-neon-auth.session_token
+	// In development (HTTP), we use neon-auth.session_token (rewritten by proxy)
+	return cookies.get('__Secure-neon-auth.session_token') || cookies.get('neon-auth.session_token');
 }
