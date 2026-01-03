@@ -1,0 +1,122 @@
+@import 'tailwindcss';
+
+/*
+ * LightsLite - Base Theme Configuration
+ * A CAD/technical application theme with precise, neutral styling
+ */
+
+/* Custom theme tokens using Tailwind CSS 4's native CSS variables */
+@theme {
+	/* Colors optimized for CAD applications */
+	--color-canvas: #1a1a1a;
+	--color-canvas-light: #2d2d2d;
+	--color-panel: #242424;
+	--color-panel-hover: #2a2a2a;
+	--color-border: #3d3d3d;
+	--color-border-focus: #525252;
+
+	/* Accent colors for UI elements */
+	--color-accent: #3b82f6;
+	--color-accent-hover: #2563eb;
+	--color-accent-muted: #1d4ed8;
+
+	/* Status colors */
+	--color-success: #22c55e;
+	--color-warning: #eab308;
+	--color-error: #ef4444;
+
+	/* Text colors */
+	--color-text-primary: #f5f5f5;
+	--color-text-secondary: #a3a3a3;
+	--color-text-muted: #737373;
+
+	/* Grid and guide colors for CAD */
+	--color-grid-major: #404040;
+	--color-grid-minor: #2a2a2a;
+	--color-guide: #f59e0b;
+	--color-selection: #3b82f6;
+
+	/* Spacing for precision UI */
+	--spacing-toolbar: 40px;
+	--spacing-panel: 260px;
+	--spacing-statusbar: 24px;
+
+	/* Typography */
+	--font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Base styles for CAD application */
+@layer base {
+	html,
+	body {
+		@apply bg-canvas text-text-primary antialiased;
+		font-feature-settings:
+			'tnum' 1,
+			'kern' 1;
+	}
+
+	/* Prevent text selection in UI elements for better drag behavior */
+	button,
+	[role='button'] {
+		@apply select-none;
+	}
+
+	/* Custom scrollbar styling for dark theme */
+	::-webkit-scrollbar {
+		@apply w-2 h-2;
+	}
+
+	::-webkit-scrollbar-track {
+		@apply bg-panel;
+	}
+
+	::-webkit-scrollbar-thumb {
+		@apply bg-border rounded-full;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		@apply bg-border-focus;
+	}
+}
+
+/* Component layer for reusable CAD UI patterns */
+@layer components {
+	/* Panel styling */
+	.panel {
+		@apply bg-panel border border-border rounded-sm;
+	}
+
+	/* Toolbar button base */
+	.toolbar-btn {
+		@apply flex items-center justify-center w-8 h-8 rounded-sm
+               text-text-secondary hover:text-text-primary hover:bg-panel-hover
+               transition-colors duration-150;
+	}
+
+	.toolbar-btn.active {
+		@apply bg-accent text-text-primary;
+	}
+
+	/* Input styling for precision values */
+	.input-precision {
+		@apply bg-canvas border border-border rounded-sm px-2 py-1
+               font-mono text-sm text-text-primary
+               focus:outline-none focus:border-accent;
+	}
+}
+
+/* Utility layer for CAD-specific utilities */
+@layer utilities {
+	/* Canvas cursor utilities */
+	.cursor-crosshair {
+		cursor: crosshair;
+	}
+
+	.cursor-grab {
+		cursor: grab;
+	}
+
+	.cursor-grabbing {
+		cursor: grabbing;
+	}
+}
