@@ -1,8 +1,17 @@
 # Agent Instructions
 
+## Testing the app
+
+Much of the app is behind a login, so to test use these credentials:
+
+- Username: `demo@olearycrew.com`
+- Password: `demodemo`
+
+## Issue Tracking
+
 This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
 
-## Quick Reference
+### Quick Reference
 
 ```bash
 bd ready              # Find available work

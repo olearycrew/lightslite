@@ -3,9 +3,11 @@
 	 * Project Editor Page
 	 *
 	 * The main CAD workspace for editing lighting plots.
-	 * Placeholder UI - will contain the Pixi.js canvas and toolbar.
+	 * Contains the SVG canvas viewport with pan/zoom functionality.
 	 */
 	import type { PageData } from './$types';
+	import { CanvasContainer } from '$lib/components/canvas';
+	import { viewport } from '$lib/stores';
 
 	let { data }: { data: PageData } = $props();
 
@@ -18,6 +20,59 @@
 		{ id: 'line', icon: 'line', label: 'Line' },
 		{ id: 'rect', icon: 'square', label: 'Rectangle' }
 	] as const;
+
+	// Mouse position tracking for status bar
+	let mouseX = $state(0);
+	let mouseY = $state(0);
+
+	function handleCanvasMouseMove(event: MouseEvent) {
+		// Convert to world coordinates for display
+		const world = viewport.screenToWorld(event.offsetX, event.offsetY);
+		mouseX = Math.round(world.x);
+		mouseY = Math.round(world.y);
+	}
+
+	/**
+	 * Handle zoom in button click
+	 */
+	function handleZoomIn() {
+		// Get viewport dimensions (approximate center)
+		const container = document.querySelector('.canvas-area');
+		if (container) {
+			const rect = container.getBoundingClientRect();
+			viewport.zoomBy(1.2, rect.width / 2, rect.height / 2);
+		}
+	}
+
+	/**
+	 * Handle zoom out button click
+	 */
+	function handleZoomOut() {
+		const container = document.querySelector('.canvas-area');
+		if (container) {
+			const rect = container.getBoundingClientRect();
+			viewport.zoomBy(0.8, rect.width / 2, rect.height / 2);
+		}
+	}
+
+	/**
+	 * Handle fit to content
+	 */
+	function handleFitContent() {
+		const container = document.querySelector('.canvas-area');
+		if (container) {
+			const rect = container.getBoundingClientRect();
+			// Fit to test rectangle bounds (placeholder)
+			viewport.fitToContent({ x: 0, y: 0, width: 200, height: 100 }, rect.width, rect.height);
+		}
+	}
+
+	/**
+	 * Handle reset view
+	 */
+	function handleResetView() {
+		viewport.resetView();
+	}
 </script>
 
 <div class="flex h-[calc(100vh-3.5rem)] flex-col">
@@ -79,15 +134,41 @@
 		<!-- Spacer -->
 		<div class="flex-1"></div>
 
+		<!-- View Controls -->
+		<div class="flex items-center gap-1">
+			<button onclick={handleFitContent} class="toolbar-btn" title="Fit to content (Ctrl+0)">
+				<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+					/>
+				</svg>
+			</button>
+			<button onclick={handleResetView} class="toolbar-btn" title="Reset view (100%)">
+				<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+					/>
+				</svg>
+			</button>
+		</div>
+
+		<div class="mx-2 h-6 w-px bg-border"></div>
+
 		<!-- Zoom Controls -->
 		<div class="flex items-center gap-2 text-sm text-text-secondary">
-			<button class="toolbar-btn" aria-label="Zoom out">
+			<button class="toolbar-btn" aria-label="Zoom out" onclick={handleZoomOut}>
 				<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
 				</svg>
 			</button>
-			<span class="w-12 text-center">100%</span>
-			<button class="toolbar-btn" aria-label="Zoom in">
+			<span class="w-12 text-center">{viewport.zoomPercent}%</span>
+			<button class="toolbar-btn" aria-label="Zoom in" onclick={handleZoomIn}>
 				<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
@@ -101,34 +182,9 @@
 	</div>
 
 	<!-- Canvas Area -->
-	<div class="relative flex-1 overflow-hidden bg-bg-primary">
-		<!-- Grid Background - Placeholder -->
-		<div
-			class="absolute inset-0"
-			style="background-image: radial-gradient(circle, var(--color-border) 1px, transparent 1px); background-size: 20px 20px;"
-		></div>
-
-		<!-- Canvas will be mounted here -->
-		<div class="absolute inset-0 flex items-center justify-center">
-			<div class="panel p-8 text-center">
-				<svg
-					class="mx-auto mb-4 h-16 w-16 text-text-muted"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="1.5"
-						d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-					/>
-				</svg>
-				<h3 class="mb-2 text-lg font-medium text-text-primary">Canvas Placeholder</h3>
-				<p class="text-sm text-text-secondary">The Pixi.js canvas will be rendered here.</p>
-				<p class="mt-2 text-xs text-text-muted">Select a tool from the toolbar to begin editing.</p>
-			</div>
-		</div>
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="canvas-area relative flex-1 overflow-hidden" onmousemove={handleCanvasMouseMove}>
+		<CanvasContainer />
 	</div>
 
 	<!-- Status Bar -->
@@ -138,10 +194,12 @@
 		<div class="flex items-center gap-4">
 			<span>Tool: {selectedTool}</span>
 			<span>|</span>
-			<span>Grid: 10px</span>
+			<span>Grid: 20px</span>
 		</div>
 		<div class="flex items-center gap-4">
-			<span>Cursor: 0, 0</span>
+			<span>Cursor: {mouseX}, {mouseY}</span>
+			<span>|</span>
+			<span>Zoom: {viewport.zoomPercent}%</span>
 			<span>|</span>
 			<span>Objects: 0</span>
 		</div>
