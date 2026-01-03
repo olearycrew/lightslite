@@ -10,6 +10,7 @@
 	import { Line, Rectangle, Circle } from '../shapes';
 	import HangingPosition from '../HangingPosition.svelte';
 	import SelectableObject from '../SelectableObject.svelte';
+	import InstrumentsLayer from './InstrumentsLayer.svelte';
 	import type { LineGeometry, RectGeometry, CircleGeometry } from '$lib/types';
 	import { getGeometryBounds } from '$lib/types';
 
@@ -170,10 +171,7 @@
 	</g>
 
 	<!-- Layer 4: Instruments (on top of hanging positions) -->
-	<g class="instruments-layer">
-		<!-- Instruments will be rendered here when implemented -->
-		<!-- They are positioned relative to their hanging position -->
-	</g>
+	<InstrumentsLayer />
 
 	<!-- Layer 5: Annotations (text, dimensions, notes) -->
 	<g class="annotations-layer">

@@ -9,13 +9,17 @@
 	import { tool } from '$lib/stores/tool.svelte';
 	import { grid } from '$lib/stores/grid.svelte';
 	import { project } from '$lib/stores/project.svelte';
+	import { getSymbol } from '$lib/symbols';
+	import type { InstrumentType } from '$lib/types/instrument';
 
 	interface Props {
 		/** SVG element reference for coordinate transformation */
 		svgElement?: SVGSVGElement;
+		/** Currently selected instrument type for add-instrument tool */
+		selectedInstrumentType?: InstrumentType;
 	}
 
-	let { svgElement }: Props = $props();
+	let { svgElement, selectedInstrumentType = 'ers-26' }: Props = $props();
 
 	// Drawing state
 	let isDrawing = $state(false);
@@ -23,6 +27,17 @@
 	let drawStartY = $state(0);
 	let drawCurrentX = $state(0);
 	let drawCurrentY = $state(0);
+
+	// Instrument placement state
+	let cursorX = $state(0);
+	let cursorY = $state(0);
+	let nearestHangingPosition = $state<{
+		id: string;
+		positionOnBar: number;
+		x: number;
+		y: number;
+		distance: number;
+	} | null>(null);
 
 	// Ghost shape preview dimensions (derived)
 	const ghostLine = $derived.by(() => {
@@ -102,6 +117,35 @@
 		};
 	});
 
+	// Ghost instrument preview position
+	const ghostInstrument = $derived.by(() => {
+		if (tool.activeTool !== 'add-instrument') return null;
+
+		// Snap to nearest hanging position if close enough
+		const snapDistance = 30 / viewport.zoom;
+
+		if (nearestHangingPosition && nearestHangingPosition.distance < snapDistance) {
+			return {
+				x: nearestHangingPosition.x,
+				y: nearestHangingPosition.y,
+				snappedToPosition: true,
+				hangingPositionId: nearestHangingPosition.id,
+				positionOnBar: nearestHangingPosition.positionOnBar
+			};
+		}
+
+		return {
+			x: cursorX,
+			y: cursorY,
+			snappedToPosition: false,
+			hangingPositionId: null,
+			positionOnBar: 0.5
+		};
+	});
+
+	// Get the symbol for the currently selected instrument type
+	const instrumentSymbol = $derived(getSymbol(selectedInstrumentType));
+
 	/**
 	 * Get world coordinates from a mouse event
 	 */
@@ -121,9 +165,65 @@
 	}
 
 	/**
-	 * Handle mouse down to start drawing
+	 * Find the nearest hanging position to a point
+	 */
+	function findNearestHangingPosition(
+		x: number,
+		y: number
+	): { id: string; positionOnBar: number; x: number; y: number; distance: number } | null {
+		let nearest: {
+			id: string;
+			positionOnBar: number;
+			x: number;
+			y: number;
+			distance: number;
+		} | null = null;
+
+		for (const hp of project.hangingPositions) {
+			// Calculate the closest point on the hanging position line segment
+			const dx = hp.x2 - hp.x1;
+			const dy = hp.y2 - hp.y1;
+			const lengthSq = dx * dx + dy * dy;
+
+			if (lengthSq === 0) continue;
+
+			// Project point onto line segment (clamped to 0-1)
+			const t = Math.max(0, Math.min(1, ((x - hp.x1) * dx + (y - hp.y1) * dy) / lengthSq));
+
+			// Calculate the closest point on the line
+			const closestX = hp.x1 + t * dx;
+			const closestY = hp.y1 + t * dy;
+
+			// Calculate distance
+			const distSq = (x - closestX) ** 2 + (y - closestY) ** 2;
+			const distance = Math.sqrt(distSq);
+
+			if (!nearest || distance < nearest.distance) {
+				nearest = {
+					id: hp.id,
+					positionOnBar: t,
+					x: closestX,
+					y: closestY,
+					distance
+				};
+			}
+		}
+
+		return nearest;
+	}
+
+	/**
+	 * Handle mouse down to start drawing or place instrument
 	 */
 	export function handleMouseDown(event: MouseEvent): boolean {
+		// Handle instrument placement
+		if (tool.activeTool === 'add-instrument') {
+			event.preventDefault();
+			event.stopPropagation();
+			placeInstrument();
+			return true;
+		}
+
 		// Only handle if a drawing tool is active
 		if (!tool.isDrawingTool && tool.activeTool !== 'add-electric') {
 			return false;
@@ -145,12 +245,21 @@
 	}
 
 	/**
-	 * Handle mouse move during drawing
+	 * Handle mouse move during drawing or instrument placement
 	 */
 	export function handleMouseMove(event: MouseEvent): boolean {
+		const coords = getWorldCoords(event);
+
+		// Always update cursor position for instrument placement preview
+		if (tool.activeTool === 'add-instrument') {
+			cursorX = coords.x;
+			cursorY = coords.y;
+			nearestHangingPosition = findNearestHangingPosition(coords.x, coords.y);
+			return true;
+		}
+
 		if (!isDrawing) return false;
 
-		const coords = getWorldCoords(event);
 		const snapped = snapCoords(coords.x, coords.y);
 
 		// Constrain to horizontal/vertical with shift key
@@ -170,6 +279,29 @@
 		}
 
 		return true;
+	}
+
+	/**
+	 * Place an instrument at the current cursor position
+	 */
+	function placeInstrument(): void {
+		if (!ghostInstrument) return;
+
+		// If snapped to a hanging position, place on that position
+		if (ghostInstrument.snappedToPosition && ghostInstrument.hangingPositionId) {
+			project.addInstrument(
+				ghostInstrument.hangingPositionId,
+				ghostInstrument.positionOnBar,
+				selectedInstrumentType,
+				{
+					rotation: 0 // Default rotation (pointing upstage)
+				}
+			);
+		} else {
+			// For now, instruments must be placed on a hanging position
+			// In the future, could support free-floating instruments
+			console.warn('Instruments must be placed on a hanging position');
+		}
 	}
 
 	/**
@@ -330,6 +462,55 @@
 		<circle class="ghost-point" cx={ghostElectric.x2} cy={ghostElectric.y2} r={6 / viewport.zoom} />
 	{/if}
 
+	<!-- Ghost instrument preview -->
+	{#if ghostInstrument}
+		<g
+			class="ghost-instrument"
+			class:snapped={ghostInstrument.snappedToPosition}
+			class:not-snapped={!ghostInstrument.snappedToPosition}
+			transform="translate({ghostInstrument.x}, {ghostInstrument.y})"
+		>
+			<!-- Render the symbol path -->
+			<path
+				class="ghost-instrument-body"
+				d={instrumentSymbol.path}
+				stroke-width={strokeWidth}
+				stroke-dasharray={ghostInstrument.snappedToPosition ? 'none' : dashArray}
+			/>
+			<!-- Render detail paths -->
+			{#if instrumentSymbol.detailPaths}
+				{#each instrumentSymbol.detailPaths as detailPath}
+					<path
+						class="ghost-instrument-detail"
+						d={detailPath}
+						fill="none"
+						stroke-width={strokeWidth * 0.75}
+					/>
+				{/each}
+			{/if}
+			<!-- Front indicator -->
+			{#if instrumentSymbol.showFrontIndicator && instrumentSymbol.frontIndicator}
+				<polygon
+					class="ghost-instrument-front"
+					points="0,-4 -3,2 3,2"
+					transform="translate(0, {instrumentSymbol.frontIndicator.y}) scale({1 / viewport.zoom})"
+				/>
+			{/if}
+		</g>
+		<!-- Snap indicator line to hanging position -->
+		{#if !ghostInstrument.snappedToPosition && nearestHangingPosition}
+			<line
+				class="snap-indicator"
+				x1={ghostInstrument.x}
+				y1={ghostInstrument.y}
+				x2={nearestHangingPosition.x}
+				y2={nearestHangingPosition.y}
+				stroke-width={strokeWidth / 2}
+				stroke-dasharray={dashArray}
+			/>
+		{/if}
+	{/if}
+
 	<!-- Dimension feedback -->
 	{#if dimensionText && dimensionPosition}
 		<g
@@ -393,5 +574,54 @@
 		fill: white;
 		font-family: system-ui, sans-serif;
 		pointer-events: none;
+	}
+
+	/* Ghost instrument styles */
+	.ghost-instrument {
+		pointer-events: none;
+	}
+
+	.ghost-instrument-body {
+		fill: rgba(66, 135, 245, 0.2);
+		stroke: #4287f5;
+	}
+
+	.ghost-instrument.snapped .ghost-instrument-body {
+		fill: rgba(76, 175, 80, 0.2);
+		stroke: #4caf50;
+	}
+
+	.ghost-instrument.not-snapped .ghost-instrument-body {
+		fill: rgba(255, 152, 0, 0.2);
+		stroke: #ff9800;
+	}
+
+	.ghost-instrument-detail {
+		stroke: #4287f5;
+	}
+
+	.ghost-instrument.snapped .ghost-instrument-detail {
+		stroke: #4caf50;
+	}
+
+	.ghost-instrument.not-snapped .ghost-instrument-detail {
+		stroke: #ff9800;
+	}
+
+	.ghost-instrument-front {
+		fill: #4287f5;
+	}
+
+	.ghost-instrument.snapped .ghost-instrument-front {
+		fill: #4caf50;
+	}
+
+	.ghost-instrument.not-snapped .ghost-instrument-front {
+		fill: #ff9800;
+	}
+
+	.snap-indicator {
+		stroke: rgba(0, 0, 0, 0.3);
+		fill: none;
 	}
 </style>

@@ -19,3 +19,13 @@ export {
 	getGeometryCenter,
 	translateGeometry
 } from './geometry';
+
+export type { InstrumentType, InstrumentCategory, LabelConfig, Instrument } from './instrument';
+
+export {
+	DEFAULT_LABEL_CONFIG,
+	createInstrument,
+	getInstrumentCategory,
+	INSTRUMENT_TYPE_NAMES,
+	INSTRUMENT_CATEGORY_NAMES
+} from './instrument';

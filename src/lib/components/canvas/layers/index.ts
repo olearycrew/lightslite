@@ -5,3 +5,4 @@
  */
 
 export { default as DrawingLayer } from './DrawingLayer.svelte';
+export { default as InstrumentsLayer } from './InstrumentsLayer.svelte';
