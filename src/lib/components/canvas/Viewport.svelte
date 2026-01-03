@@ -4,9 +4,13 @@
 	 *
 	 * Full-width/height SVG container with pan/zoom functionality.
 	 * Handles mouse and touch events for canvas navigation.
+	 * Includes selection handling and marquee selection support.
 	 */
-	import { viewport } from '$lib/stores/viewport.svelte';
+	import { viewport, type Bounds } from '$lib/stores/viewport.svelte';
+	import { selection } from '$lib/stores/selection.svelte';
+	import { tool } from '$lib/stores/tool.svelte';
 	import Grid from './Grid.svelte';
+	import { SelectionOverlay } from './overlays';
 
 	interface Props {
 		/** Whether spacebar pan mode is active (controlled by parent) */
@@ -25,6 +29,13 @@
 	let lastMouseX = $state(0);
 	let lastMouseY = $state(0);
 
+	// Marquee selection state
+	let isMarqueeActive = $state(false);
+	let marqueeStartX = $state(0);
+	let marqueeStartY = $state(0);
+	let marqueeEndX = $state(0);
+	let marqueeEndY = $state(0);
+
 	// Touch gesture state
 	let isTouchPanning = $state(false);
 	let lastTouchDistance = $state(0);
@@ -37,6 +48,17 @@
 	// Zoom configuration
 	const ZOOM_SENSITIVITY = 0.001; // Mouse wheel sensitivity
 	const ZOOM_FACTOR_STEP = 1.1; // Step factor per scroll "unit"
+
+	// Marquee bounds (derived from start/end points)
+	const marqueeBounds = $derived.by((): Bounds | null => {
+		if (!isMarqueeActive) return null;
+		return {
+			x: Math.min(marqueeStartX, marqueeEndX),
+			y: Math.min(marqueeStartY, marqueeEndY),
+			width: Math.abs(marqueeEndX - marqueeStartX),
+			height: Math.abs(marqueeEndY - marqueeStartY)
+		};
+	});
 
 	/**
 	 * Get coordinates relative to the SVG element
@@ -67,41 +89,82 @@
 	}
 
 	/**
-	 * Handle mouse down - start pan if middle button or spacebar held
+	 * Handle mouse down - start pan if middle button or spacebar held,
+	 * otherwise start marquee selection on empty space
 	 */
 	function handleMouseDown(event: MouseEvent) {
 		const coords = getRelativeCoords(event);
 
-		// Middle mouse button (button 1) or spacebar held
-		if (event.button === 1 || spacebarHeld) {
+		// Middle mouse button (button 1) or spacebar held - pan mode
+		if (event.button === 1 || spacebarHeld || tool.isPanTool) {
 			event.preventDefault();
 			isPanning = true;
 			lastMouseX = coords.x;
 			lastMouseY = coords.y;
+			return;
+		}
+
+		// Left click on empty space - start marquee selection (if select tool is active)
+		if (event.button === 0 && tool.isSelectTool) {
+			event.preventDefault();
+			const worldCoords = viewport.screenToWorld(coords.x, coords.y);
+
+			// If shift is not held, clear existing selection before starting marquee
+			if (!event.shiftKey) {
+				selection.clearSelection();
+			}
+
+			// Start marquee
+			isMarqueeActive = true;
+			marqueeStartX = worldCoords.x;
+			marqueeStartY = worldCoords.y;
+			marqueeEndX = worldCoords.x;
+			marqueeEndY = worldCoords.y;
 		}
 	}
 
 	/**
-	 * Handle mouse move - pan if in pan mode
+	 * Handle mouse move - pan if in pan mode, update marquee if in marquee mode
 	 */
 	function handleMouseMove(event: MouseEvent) {
-		if (!isPanning) return;
-
 		const coords = getRelativeCoords(event);
-		const dx = coords.x - lastMouseX;
-		const dy = coords.y - lastMouseY;
 
-		viewport.pan(dx, dy);
+		if (isPanning) {
+			const dx = coords.x - lastMouseX;
+			const dy = coords.y - lastMouseY;
 
-		lastMouseX = coords.x;
-		lastMouseY = coords.y;
+			viewport.pan(dx, dy);
+
+			lastMouseX = coords.x;
+			lastMouseY = coords.y;
+			return;
+		}
+
+		if (isMarqueeActive) {
+			const worldCoords = viewport.screenToWorld(coords.x, coords.y);
+			marqueeEndX = worldCoords.x;
+			marqueeEndY = worldCoords.y;
+		}
 	}
 
 	/**
-	 * Handle mouse up - stop panning
+	 * Handle mouse up - stop panning or complete marquee selection
 	 */
 	function handleMouseUp() {
-		isPanning = false;
+		if (isPanning) {
+			isPanning = false;
+			return;
+		}
+
+		if (isMarqueeActive) {
+			// Complete marquee selection
+			// Note: Actual object selection will be handled by a parent component
+			// that can query which objects intersect the marquee bounds
+			// For now, we emit the bounds via a custom event or callback
+
+			isMarqueeActive = false;
+			// marqueeSelectEnd callback would be called here with marqueeBounds
+		}
 	}
 
 	/**
@@ -109,6 +172,7 @@
 	 */
 	function handleMouseLeave() {
 		isPanning = false;
+		// Don't cancel marquee on leave - let mouse up handle it
 	}
 
 	/**
@@ -230,11 +294,52 @@
 		event.preventDefault();
 	}
 
+	/**
+	 * Handle keyboard events for shortcuts
+	 */
+	function handleKeyDown(event: KeyboardEvent) {
+		// Check if we're focused on an input element
+		const activeElement = document.activeElement;
+		if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
+			return;
+		}
+
+		// Escape - clear selection
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			selection.clearSelection();
+			// Cancel any active marquee
+			isMarqueeActive = false;
+			return;
+		}
+
+		// Delete or Backspace - delete selected objects (signal only)
+		if (event.key === 'Delete' || event.key === 'Backspace') {
+			if (selection.hasSelection) {
+				event.preventDefault();
+				// Note: Actual deletion should be handled by parent component
+				// that manages the objects. Dispatch a custom event or callback.
+				// For now, just clear selection as placeholder
+				// A delete handler would be passed as a prop in real usage
+			}
+			return;
+		}
+
+		// Ctrl/Cmd + A - select all
+		if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+			event.preventDefault();
+			// Note: selectAll needs a list of all items - this would need to come from parent
+			// For now, this is a placeholder for the integration point
+			return;
+		}
+	}
+
 	// Derived cursor style
 	const cursorStyle = $derived.by(() => {
 		if (isPanning || isTouchPanning) return 'grabbing';
-		if (spacebarHeld) return 'grab';
-		return 'default';
+		if (spacebarHeld || tool.isPanTool) return 'grab';
+		if (isMarqueeActive) return 'crosshair';
+		return tool.cursor;
 	});
 
 	// Update viewport dimensions when SVG is bound or resized
@@ -258,10 +363,16 @@
 			resizeObserver.disconnect();
 		};
 	});
+
+	// Setup keyboard event listener
+	$effect(() => {
+		window.addEventListener('keydown', handleKeyDown);
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
+	});
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <svg
 	bind:this={svgElement}
 	class="viewport-svg"
@@ -290,6 +401,16 @@
 		{#if children}
 			{@render children()}
 		{/if}
+
+		<!-- Selection overlay (marquee, handles) -->
+		<SelectionOverlay
+			{isMarqueeActive}
+			{marqueeBounds}
+			selectionBounds={null}
+			showResizeHandles={selection.isSingleSelection}
+			showRotationHandle={selection.isSingleSelection}
+			zoom={viewport.zoom}
+		/>
 	</g>
 </svg>
 

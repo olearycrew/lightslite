@@ -7,3 +7,5 @@
 export { default as Viewport } from './Viewport.svelte';
 export { default as CanvasContainer } from './CanvasContainer.svelte';
 export { default as Grid } from './Grid.svelte';
+export { default as SelectableObject } from './SelectableObject.svelte';
+export { SelectionOverlay } from './overlays';

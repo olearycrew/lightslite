@@ -6,3 +6,5 @@
 
 export { viewport, type ViewportState, type Bounds } from './viewport.svelte';
 export { grid, GRID_SPACING_PRESETS, type GridUnit, type GridState } from './grid.svelte';
+export { selection, type SelectionType, type SelectableItem } from './selection.svelte';
+export { tool, TOOL_NAMES, type ToolType } from './tool.svelte';
