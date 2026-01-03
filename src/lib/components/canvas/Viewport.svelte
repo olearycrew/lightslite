@@ -6,6 +6,7 @@
 	 * Handles mouse and touch events for canvas navigation.
 	 */
 	import { viewport } from '$lib/stores/viewport.svelte';
+	import Grid from './Grid.svelte';
 
 	interface Props {
 		/** Whether spacebar pan mode is active (controlled by parent) */
@@ -14,6 +15,10 @@
 
 	let { spacebarHeld = false, children }: Props & { children?: import('svelte').Snippet } =
 		$props();
+
+	// Track viewport dimensions for Grid component
+	let viewportWidth = $state(0);
+	let viewportHeight = $state(0);
 
 	// Local state for interaction tracking
 	let isPanning = $state(false);
@@ -231,9 +236,32 @@
 		if (spacebarHeld) return 'grab';
 		return 'default';
 	});
+
+	// Update viewport dimensions when SVG is bound or resized
+	$effect(() => {
+		if (!svgElement) return;
+
+		const updateDimensions = () => {
+			const rect = svgElement.getBoundingClientRect();
+			viewportWidth = rect.width;
+			viewportHeight = rect.height;
+		};
+
+		// Initial measurement
+		updateDimensions();
+
+		// Watch for resize
+		const resizeObserver = new ResizeObserver(updateDimensions);
+		resizeObserver.observe(svgElement);
+
+		return () => {
+			resizeObserver.disconnect();
+		};
+	});
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <svg
 	bind:this={svgElement}
 	class="viewport-svg"
@@ -255,45 +283,8 @@
 
 	<!-- Transform group - all content goes here -->
 	<g transform={viewport.transform}>
-		<!-- Grid pattern (subtle dots) -->
-		<defs>
-			<pattern id="grid-dots" width="20" height="20" patternUnits="userSpaceOnUse">
-				<circle cx="10" cy="10" r="0.5" fill="var(--color-border)" opacity="0.5" />
-			</pattern>
-			<pattern id="grid-lines" width="100" height="100" patternUnits="userSpaceOnUse">
-				<path
-					d="M 100 0 L 0 0 0 100"
-					fill="none"
-					stroke="var(--color-border)"
-					stroke-width="0.5"
-					opacity="0.3"
-				/>
-			</pattern>
-		</defs>
-
-		<!-- Grid background -->
-		<rect x="-10000" y="-10000" width="20000" height="20000" fill="url(#grid-dots)" />
-		<rect x="-10000" y="-10000" width="20000" height="20000" fill="url(#grid-lines)" />
-
-		<!-- Test rectangle to verify transforms -->
-		<rect
-			x="0"
-			y="0"
-			width="200"
-			height="100"
-			fill="var(--color-accent)"
-			opacity="0.3"
-			stroke="var(--color-accent)"
-			stroke-width="2"
-		/>
-		<text x="100" y="55" text-anchor="middle" fill="var(--color-text-primary)" font-size="14">
-			Test Rectangle (200×100)
-		</text>
-
-		<!-- Origin crosshair -->
-		<line x1="-20" y1="0" x2="20" y2="0" stroke="var(--color-error)" stroke-width="1" />
-		<line x1="0" y1="-20" x2="0" y2="20" stroke="var(--color-error)" stroke-width="1" />
-		<circle cx="0" cy="0" r="3" fill="var(--color-error)" />
+		<!-- Grid component - renders based on viewport bounds -->
+		<Grid {viewportWidth} {viewportHeight} />
 
 		<!-- Slot for child content -->
 		{#if children}
