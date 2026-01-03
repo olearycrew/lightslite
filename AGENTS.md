@@ -8,7 +8,7 @@ This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get sta
 bd ready              # Find available work
 bd show <id>          # View issue details
 bd update <id> --status in_progress  # Claim work
-bd close <id> --reasons "{close summary}"         # Complete work
+bd close <id> --reason "{close summary}"         # Complete work
 bd sync               # Sync with git
 ```
 

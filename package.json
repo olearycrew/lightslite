@@ -40,6 +40,7 @@
 		"vite": "^7.2.6"
 	},
 	"dependencies": {
+		"@neondatabase/auth": "0.1.0-beta.20",
 		"@neondatabase/serverless": "^1.0.2",
 		"drizzle-orm": "^0.45.1"
 	}
