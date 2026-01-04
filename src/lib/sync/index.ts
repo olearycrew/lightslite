@@ -55,7 +55,7 @@ export {
 	// Singleton helpers
 	getSyncManager,
 	disposeSyncManager
-} from './manager';
+} from './manager.svelte';
 
 // ConflictManager for version conflict handling
 export {
@@ -69,4 +69,4 @@ export {
 	// Singleton helpers
 	getConflictManager,
 	clearConflictManager
-} from './conflict';
+} from './conflict.svelte';

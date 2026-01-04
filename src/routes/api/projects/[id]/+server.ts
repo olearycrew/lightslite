@@ -31,6 +31,14 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			return json({ error: 'Project not found' }, { status: 404 });
 		}
 
+		console.log('[API] GET project', {
+			projectId: project.id,
+			projectName: project.name,
+			hasLayers: !!project.layers,
+			layersKeys: project.layers ? Object.keys(project.layers as object) : [],
+			version: project.version
+		});
+
 		return json({ project });
 	} catch (error) {
 		console.error('[API] Failed to get project:', error);
@@ -49,6 +57,14 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
 	try {
 		const body = await request.json();
+
+		console.log('[API] PUT project request', {
+			projectId: params.id,
+			bodyKeys: Object.keys(body),
+			hasLayers: !!body.layers,
+			layersKeys: body.layers ? Object.keys(body.layers) : [],
+			shapesCount: body.layers?.shapes?.length ?? 0
+		});
 
 		// Build update object with only provided fields
 		const updates: Record<string, unknown> = {};

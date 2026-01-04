@@ -192,6 +192,12 @@ function createProjectStore() {
 			strokeWidth: options.strokeWidth ?? 2
 		};
 		shapes.set(shape.id, shape);
+		console.log('[ProjectStore] addShape called', {
+			shapeId: shape.id,
+			projectId,
+			totalShapes: shapes.size,
+			geometry: shape.geometry
+		});
 		return shape;
 	}
 
@@ -700,6 +706,12 @@ function createProjectStore() {
 	 * Clear all objects from the project
 	 */
 	function clearProject(): void {
+		console.log('[ProjectStore] clearProject called', {
+			previousProjectId: projectId,
+			shapesCleared: shapes.size,
+			hangingPositionsCleared: hangingPositions.size,
+			instrumentsCleared: instruments.size
+		});
 		shapes.clear();
 		hangingPositions.clear();
 		instruments.clear();
@@ -712,6 +724,11 @@ function createProjectStore() {
 	 * Set project metadata
 	 */
 	function setProjectInfo(name: string, id?: string): void {
+		console.log('[ProjectStore] setProjectInfo called', {
+			name,
+			id,
+			previousProjectId: projectId
+		});
 		projectName = name;
 		if (id) projectId = id;
 	}

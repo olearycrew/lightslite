@@ -24,7 +24,7 @@ import {
 	type ConflictManager,
 	type ConflictInfo,
 	type ConflictResolution
-} from './conflict';
+} from './conflict.svelte';
 import { project } from '$lib/stores/project.svelte';
 import type {
 	ShapeObject,

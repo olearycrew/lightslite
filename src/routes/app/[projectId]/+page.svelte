@@ -4,14 +4,81 @@
 	 *
 	 * The main CAD workspace for editing lighting plots.
 	 * Layout: Tool Palette (left) | Canvas (center) | Properties Panel (right)
+	 *
+	 * Integrates with SyncManager for:
+	 * - Loading project data from IndexedDB/server into store
+	 * - Automatic syncing of changes to IndexedDB and server
+	 * - Offline support and conflict resolution
 	 */
 	import type { PageData } from './$types';
 	import { CanvasContainer } from '$lib/components/canvas';
 	import { ToolPalette, PropertiesPanel } from '$lib/components/ui';
 	import { viewport, selection, project, tool } from '$lib/stores';
 	import { grid } from '$lib/stores/grid.svelte';
+	import { onMount, onDestroy } from 'svelte';
+	// Only import types at top level - actual getSyncManager must be called in onMount
+	import type { SyncManager } from '$lib/sync';
 
 	let { data }: { data: PageData } = $props();
+
+	// SyncManager reference - initialized in onMount to avoid SSR issues
+	let syncManager: SyncManager | null = null;
+
+	// Track initialization state
+	let isInitialized = $state(false);
+	let initError = $state<string | null>(null);
+
+	// Initialize SyncManager and load project data on mount (client-side only)
+	onMount(async () => {
+		console.log('[EditorPage] onMount - initializing SyncManager', {
+			projectId: data.project?.id,
+			projectName: data.project?.name,
+			projectLayers: data.project?.layers
+		});
+
+		if (!data.project?.id) {
+			initError = 'No project ID provided';
+			return;
+		}
+
+		try {
+			// Dynamically import SyncManager to avoid SSR issues with $state runes
+			const { getSyncManager } = await import('$lib/sync');
+			syncManager = getSyncManager();
+
+			// Initialize SyncManager - this loads data from IndexedDB/server into the store
+			await syncManager.initialize(data.project.id);
+			syncManager.start();
+			isInitialized = true;
+
+			console.log('[EditorPage] SyncManager initialized', {
+				storeProjectId: project.projectId,
+				storeShapesCount: project.shapes.length,
+				storeHangingPositionsCount: project.hangingPositions.length,
+				syncStatus: syncManager.syncStatus
+			});
+		} catch (error) {
+			console.error('[EditorPage] Failed to initialize SyncManager:', error);
+			initError = error instanceof Error ? error.message : 'Failed to initialize';
+		}
+	});
+
+	// Cleanup on destroy
+	onDestroy(async () => {
+		console.log('[EditorPage] onDestroy - disposing SyncManager', {
+			projectId: data.project?.id,
+			storeShapesCount: project.shapes.length
+		});
+
+		// Dispose SyncManager to save any pending changes
+		if (syncManager) {
+			const { disposeSyncManager } = await import('$lib/sync');
+			await disposeSyncManager();
+		}
+
+		// Clear the project store for the next project
+		project.clearProject();
+	});
 
 	// Mouse position tracking for status bar
 	let mouseX = $state(0);

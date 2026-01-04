@@ -4,12 +4,45 @@
 	 *
 	 * Renders drawing preview (ghost shapes) during tool interactions.
 	 * Handles mouse events for drawing operations.
+	 *
+	 * Integrates with SyncManager to mark the project as dirty when
+	 * objects are created, triggering automatic save to IndexedDB and server.
 	 */
 	import { viewport } from '$lib/stores/viewport.svelte';
 	import { tool } from '$lib/stores/tool.svelte';
 	import { grid } from '$lib/stores/grid.svelte';
 	import { project } from '$lib/stores/project.svelte';
+	import type { SyncManager } from '$lib/sync';
 	import type { InstrumentType } from '$lib/types/instrument';
+	import { onMount } from 'svelte';
+
+	// SyncManager reference - initialized asynchronously to avoid SSR issues
+	// The SyncManager uses $state runes which can't be instantiated during SSR
+	let _syncManager: SyncManager | null = null;
+
+	// Initialize SyncManager on mount (client-side only)
+	onMount(async () => {
+		try {
+			const { getSyncManager } = await import('$lib/sync');
+			_syncManager = getSyncManager();
+			console.log('[ToolOverlay] SyncManager initialized');
+		} catch (error) {
+			console.error('[ToolOverlay] Failed to initialize SyncManager:', error);
+		}
+	});
+
+	/**
+	 * Mark the project as dirty to trigger sync
+	 * Gracefully handles the case when SyncManager isn't initialized yet
+	 */
+	function markProjectDirty(): void {
+		if (_syncManager) {
+			_syncManager.markDirty();
+			console.log('[ToolOverlay] Marked project dirty');
+		} else {
+			console.warn('[ToolOverlay] SyncManager not yet initialized, skipping markDirty');
+		}
+	}
 
 	interface Props {
 		/** SVG element reference for coordinate transformation */
@@ -283,7 +316,7 @@
 	}
 
 	/**
-	 * Place an instrument at the current cursor position
+	 * Place an instrument at the current cursor position and mark project as dirty
 	 */
 	function placeInstrument(): void {
 		if (!ghostInstrument) return;
@@ -305,6 +338,9 @@
 				rotation: 0 // Default rotation (pointing upstage)
 			});
 		}
+
+		// Mark project as dirty to trigger sync
+		markProjectDirty();
 	}
 
 	/**
@@ -343,18 +379,20 @@
 	}
 
 	/**
-	 * Create an object based on the current tool
+	 * Create an object based on the current tool and mark project as dirty
 	 */
 	function createObject(x1: number, y1: number, x2: number, y2: number): void {
 		// Don't create zero-size shapes
 		const minSize = 5;
 		const dx = Math.abs(x2 - x1);
 		const dy = Math.abs(y2 - y1);
+		let objectCreated = false;
 
 		switch (tool.activeTool) {
 			case 'draw-line':
 				if (dx > minSize || dy > minSize) {
 					project.addLine(x1, y1, x2, y2);
+					objectCreated = true;
 				}
 				break;
 			case 'draw-rect':
@@ -362,20 +400,28 @@
 					const x = Math.min(x1, x2);
 					const y = Math.min(y1, y2);
 					project.addRectangle(x, y, dx, dy);
+					objectCreated = true;
 				}
 				break;
 			case 'draw-circle': {
 				const radius = Math.sqrt(dx * dx + dy * dy);
 				if (radius > minSize) {
 					project.addCircle(x1, y1, radius);
+					objectCreated = true;
 				}
 				break;
 			}
 			case 'add-electric':
 				if (dx > minSize || dy > minSize) {
 					project.addElectric(x1, y1, x2, y2);
+					objectCreated = true;
 				}
 				break;
+		}
+
+		// Mark project as dirty to trigger sync
+		if (objectCreated) {
+			markProjectDirty();
 		}
 	}
 
