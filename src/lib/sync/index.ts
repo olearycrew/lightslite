@@ -1,8 +1,9 @@
 /**
  * Sync Module
  *
- * Re-exports all sync-related functionality.
- * Currently includes IndexedDB persistence layer for local storage.
+ * Re-exports all sync-related functionality:
+ * - IndexedDB persistence layer for local storage
+ * - SyncManager for orchestrating server sync
  */
 
 // IndexedDB persistence layer
@@ -40,3 +41,17 @@ export {
 	getLastProjectId,
 	setLastProjectId
 } from './indexeddb';
+
+// SyncManager for server synchronization
+export {
+	// Types
+	type SyncStatus,
+	type SyncResult,
+	// Class
+	SyncManager,
+	// Factory function
+	createSyncManager,
+	// Singleton helpers
+	getSyncManager,
+	disposeSyncManager
+} from './manager';
