@@ -3,7 +3,7 @@
 **Epic:** lxl-192  
 **Version:** 1.0  
 **Date:** 2026-01-03  
-**Tester:** **********\_\_**********
+**Tester:** \***\*\*\*\*\***\_\_\***\*\*\*\*\***
 
 ---
 
@@ -27,9 +27,9 @@
 
 ### Test Environment Notes
 
-- **Browser:** **********\_\_********** (Chrome, Firefox, Safari, Edge)
-- **OS:** **********\_\_********** (macOS, Windows, Linux)
-- **Screen Resolution:** **********\_\_**********
+- **Browser:** \***\*\*\*\*\***\_\_\***\*\*\*\*\*** (Chrome, Firefox, Safari, Edge)
+- **OS:** \***\*\*\*\*\***\_\_\***\*\*\*\*\*** (macOS, Windows, Linux)
+- **Screen Resolution:** \***\*\*\*\*\***\_\_\***\*\*\*\*\***
 - **Touch Device:** Yes / No
 
 ---
@@ -68,25 +68,25 @@
 - **Expected:** Zoom centers on cursor position; the point under cursor stays stationary
 - **Notes:**
 
-#### VP-04: Zoom in button (+)
+#### PASS VP-04: Zoom in button (+)
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Locate zoom controls
   2. Click the "+" button multiple times
 - **Expected:** Canvas zooms in incrementally with each click
 - **Notes:**
 
-#### VP-05: Zoom out button (-)
+#### PASS VP-05: Zoom out button (-)
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Locate zoom controls
   2. Click the "-" button multiple times
 - **Expected:** Canvas zooms out incrementally with each click
 - **Notes:**
 
-#### VP-06: Reset zoom
+#### FAIL VP-06: Reset zoom
 
 - [ ] Pass [ ] Fail
 - **Steps:**
@@ -95,7 +95,7 @@
 - **Expected:** Canvas returns to 100% zoom level
 - **Notes:**
 
-#### VP-07: Fit to view
+#### FAIL VP-07: Fit to view
 
 - [ ] Pass [ ] Fail
 - **Steps:**
@@ -105,9 +105,9 @@
 - **Expected:** All objects become visible and centered in viewport
 - **Notes:**
 
-#### VP-08: Touch: Pinch to zoom
+#### PASS VP-08: Touch: Pinch to zoom
 
-- [ ] Pass [ ] Fail [ ] N/A (Touch only)
+- [x] Pass [ ] Fail [ ] N/A (Touch only)
 - **Steps:**
   1. Using touch device
   2. Place two fingers on canvas
@@ -129,54 +129,54 @@
 
 ### 2. Grid Tests
 
-#### GR-01: Grid visibility
+#### PASS GR-01: Grid visibility
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Open canvas editor
   2. Observe grid lines
 - **Expected:** Grid lines are visible on canvas background
 - **Notes:**
 
-#### GR-02: Green center line
+#### PASS GR-02: Green center line
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Pan to center of canvas (0,0)
   2. Observe horizontal axis
 - **Expected:** Green line visible at Y=0 (center line)
 - **Notes:**
 
-#### GR-03: Magenta plaster line
+#### PASS GR-03: Magenta plaster line
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Pan to locate plaster line
   2. Observe distinguishing line
 - **Expected:** Magenta line visible indicating plaster line position
 - **Notes:**
 
-#### GR-04: Grid adapts to zoom - zoomed out
+#### PASS GR-04: Grid adapts to zoom - zoomed out
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Zoom out significantly
   2. Observe grid spacing
 - **Expected:** Grid shows coarser intervals to avoid clutter
 - **Notes:**
 
-#### GR-05: Grid adapts to zoom - zoomed in
+#### PASS GR-05: Grid adapts to zoom - zoomed in
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Zoom in significantly
   2. Observe grid spacing
 - **Expected:** Grid shows finer intervals for precision
 - **Notes:**
 
-#### GR-06: Origin marker
+#### PASS GR-06: Origin marker
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Pan to (0,0) position
   2. Observe intersection point
@@ -187,81 +187,81 @@
 
 ### 3. Tool Palette Tests
 
-#### TP-01: Tool palette visibility
+#### PASS TP-01: Tool palette visibility
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Open canvas editor
 - **Expected:** Tool palette is visible on screen
 - **Notes:**
 
-#### TP-02: Select tool via click
+#### PASS TP-02: Select tool via click
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Click on Line tool in palette
 - **Expected:** Line tool becomes active; visual indicator shows selection
 - **Notes:**
 
-#### TP-03: Shortcut: V for Select
+#### PASS TP-03: Shortcut: V for Select
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Press "V" key
 - **Expected:** Select tool becomes active
 - **Notes:**
 
-#### TP-04: Shortcut: H for Pan
+#### PASS TP-04: Shortcut: H for Pan
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Press "H" key
 - **Expected:** Pan/Hand tool becomes active
 - **Notes:**
 
-#### TP-05: Shortcut: L for Line
+#### PASS TP-05: Shortcut: L for Line
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Press "L" key
 - **Expected:** Line tool becomes active
 - **Notes:**
 
-#### TP-06: Shortcut: R for Rectangle
+#### PASS TP-06: Shortcut: R for Rectangle
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Press "R" key
 - **Expected:** Rectangle tool becomes active
 - **Notes:**
 
-#### TP-07: Shortcut: C for Circle
+#### PASS TP-07: Shortcut: C for Circle
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Press "C" key
 - **Expected:** Circle tool becomes active
 - **Notes:**
 
-#### TP-08: Shortcut: E for Electric
+#### PASS TP-08: Shortcut: E for Electric
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Press "E" key
 - **Expected:** Electric (hanging position) tool becomes active
 - **Notes:**
 
-#### TP-09: Shortcut: I for Instrument
+#### PASS TP-09: Shortcut: I for Instrument
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Press "I" key
 - **Expected:** Instrument tool becomes active
 - **Notes:**
 
-#### TP-10: Active tool indicator
+#### PASS TP-10: Active tool indicator
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select different tools
   2. Observe palette
@@ -272,19 +272,19 @@
 
 ### 4. Drawing Tests
 
-#### DR-01: Draw a line
+#### PASS DR-01: Draw a line
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select Line tool (L)
   2. Click first point on canvas
-  3. Click second point
+  3. Drag to second point
 - **Expected:** Line appears connecting the two points
 - **Notes:**
 
-#### DR-02: Draw a rectangle
+#### PASS DR-02: Draw a rectangle
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select Rectangle tool (R)
   2. Click and drag on canvas
@@ -292,9 +292,9 @@
 - **Expected:** Rectangle appears with corners at drag start/end
 - **Notes:**
 
-#### DR-03: Draw a circle
+#### PASS DR-03: Draw a circle
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select Circle tool (C)
   2. Click and drag on canvas
@@ -302,9 +302,9 @@
 - **Expected:** Circle appears; center at click point, radius to release
 - **Notes:**
 
-#### DR-04: Line snaps to grid
+#### PASS DR-04: Line snaps to grid
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select Line tool
   2. Click near grid intersection
@@ -312,9 +312,9 @@
 - **Expected:** Line endpoints snap to nearest grid points
 - **Notes:**
 
-#### DR-05: Rectangle snaps to grid
+#### PASS DR-05: Rectangle snaps to grid
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select Rectangle tool
   2. Draw rectangle near grid lines
@@ -330,7 +330,7 @@
 - **Expected:** Circle center snaps to grid
 - **Notes:**
 
-#### DR-07: Shift constrains line horizontal
+#### PASS DR-07: Shift constrains line horizontal
 
 - [ ] Pass [ ] Fail
 - **Steps:**
@@ -341,7 +341,7 @@
 - **Expected:** Line is constrained to horizontal or vertical
 - **Notes:**
 
-#### DR-08: Shift constrains rectangle
+#### FAIL DR-08: Shift constrains rectangle
 
 - [ ] Pass [ ] Fail
 - **Steps:**
@@ -350,18 +350,18 @@
 - **Expected:** Rectangle becomes a square
 - **Notes:**
 
-#### DR-09: Shift constrains circle
+#### PASS DR-09: Shift constrains circle
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select Circle tool
   2. Hold Shift while dragging
 - **Expected:** Circle maintains perfect circular shape (if applicable)
 - **Notes:**
 
-#### DR-10: Cancel drawing with Escape
+#### PASS DR-10: Cancel drawing with Escape
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Start drawing any shape
   2. Press Escape before completing
@@ -372,9 +372,9 @@
 
 ### 5. Hanging Position Tests
 
-#### HP-01: Add electric position
+#### PASS HP-01: Add electric position
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select Electric tool (E)
   2. Click on canvas
@@ -383,16 +383,16 @@
 - **Expected:** Horizontal hanging position (electric pipe) appears
 - **Notes:**
 
-#### HP-02: Position shows name label
+#### PASS HP-02: Position shows name label
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Create a hanging position
   2. Observe the position
 - **Expected:** Name/label is displayed near the position
 - **Notes:**
 
-#### HP-03: Position is selectable
+#### PASS HP-03: Position is selectable
 
 - [ ] Pass [ ] Fail
 - **Steps:**
@@ -401,7 +401,7 @@
 - **Expected:** Position becomes selected; selection handles appear
 - **Notes:**
 
-#### HP-04: Position snaps to grid
+#### PASS HP-04: Position snaps to grid
 
 - [ ] Pass [ ] Fail
 - **Steps:**
@@ -410,9 +410,9 @@
 - **Expected:** Position endpoints snap to grid intersections
 - **Notes:**
 
-#### HP-05: Multiple positions
+#### PASS HP-05: Multiple positions
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Create several hanging positions
   2. Verify they don't interfere
@@ -723,21 +723,21 @@
 
 **Tester**
 
-- Name: **********\_\_**********
-- Signature: **********\_\_**********
-- Date: **********\_\_**********
+- Name: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
+- Signature: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
+- Date: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
 
 **Developer**
 
-- Name: **********\_\_**********
-- Signature: **********\_\_**********
-- Date: **********\_\_**********
+- Name: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
+- Signature: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
+- Date: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
 
 **Product Owner**
 
-- Name: **********\_\_**********
-- Signature: **********\_\_**********
-- Date: **********\_\_**********
+- Name: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
+- Signature: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
+- Date: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
 
 ---
 
