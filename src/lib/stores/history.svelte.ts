@@ -4,9 +4,15 @@
  * Manages undo/redo state for project operations.
  * Uses Svelte 5 runes for reactive state management.
  *
- * This provides the foundation for the undo/redo system.
- * The actual history recording will be implemented in lxl-ar4.4.
+ * Provides:
+ * - Undo/redo stack management
+ * - Command execution
+ * - recordAction helper for undoable operations
+ * - Keyboard shortcut setup
  */
+
+import { SvelteMap } from 'svelte/reactivity';
+import type { UndoableCommand } from './commands/types';
 
 // ============================================================================
 // Types
@@ -283,6 +289,152 @@ function createHistoryStore() {
 	}
 
 	// ========================================================================
+	// Command Execution
+	// ========================================================================
+
+	// Store for command references (keyed by entry ID)
+	const commandMap = new SvelteMap<string, UndoableCommand>();
+
+	/**
+	 * Execute a command and record it for undo/redo
+	 * This is the primary way to perform undoable operations
+	 *
+	 * @param command - The command to execute
+	 */
+	function executeCommand(command: UndoableCommand): void {
+		// Don't record during undo/redo execution
+		if (isExecutingHistory) return;
+
+		// Execute the command
+		command.execute();
+
+		// Create history entry
+		const entryId = generateEntryId();
+		const entry: HistoryEntry = {
+			id: entryId,
+			type: command.type,
+			description: command.description,
+			timestamp: Date.now(),
+			undoData: null, // Command handles its own data
+			redoData: null, // Command handles its own data
+			affectedObjectIds: command.affectedObjectIds
+		};
+
+		// Store command reference
+		commandMap.set(entryId, command);
+
+		// Check if we should merge with the previous entry
+		if (config.groupRapidOperations && undoStack.length > 0) {
+			const lastEntry = undoStack[undoStack.length - 1];
+			const timeSinceLastEntry = entry.timestamp - lastEntry.timestamp;
+
+			if (
+				timeSinceLastEntry < config.groupingWindowMs &&
+				lastEntry.type === command.type &&
+				lastEntry.affectedObjectIds.length === command.affectedObjectIds.length &&
+				lastEntry.affectedObjectIds.every((id) => command.affectedObjectIds.includes(id))
+			) {
+				// Get the previous command to create a merged command
+				const previousCommand = commandMap.get(lastEntry.id);
+				if (previousCommand) {
+					// Create a merged command that undoes to original state
+					// but executes to latest state
+					const mergedCommand: UndoableCommand = {
+						type: command.type,
+						description: command.description,
+						affectedObjectIds: command.affectedObjectIds,
+						execute: command.execute,
+						undo: previousCommand.undo // Use original undo
+					};
+
+					// Update the entry with new timestamp
+					undoStack[undoStack.length - 1] = {
+						...lastEntry,
+						timestamp: entry.timestamp
+					};
+
+					// Update command reference
+					commandMap.set(lastEntry.id, mergedCommand);
+
+					// Clean up new entry's command reference
+					commandMap.delete(entryId);
+
+					// Clear redo stack
+					redoStack = [];
+					return;
+				}
+			}
+		}
+
+		// Add new entry
+		undoStack = [...undoStack, entry];
+		trimUndoStack();
+		redoStack = [];
+	}
+
+	/**
+	 * Undo the last action
+	 *
+	 * @returns true if undo was successful, false if nothing to undo
+	 */
+	function undo(): boolean {
+		if (undoStack.length === 0) return false;
+
+		const entry = undoStack[undoStack.length - 1];
+		const command = commandMap.get(entry.id);
+
+		if (!command) {
+			console.warn('No command found for history entry:', entry.id);
+			// Still remove from stack to prevent infinite loop
+			undoStack = undoStack.slice(0, -1);
+			return false;
+		}
+
+		try {
+			beginHistoryOperation();
+			command.undo();
+			commitUndo();
+			return true;
+		} catch (error) {
+			console.error('Undo failed:', error);
+			return false;
+		} finally {
+			endHistoryOperation();
+		}
+	}
+
+	/**
+	 * Redo the last undone action
+	 *
+	 * @returns true if redo was successful, false if nothing to redo
+	 */
+	function redo(): boolean {
+		if (redoStack.length === 0) return false;
+
+		const entry = redoStack[0];
+		const command = commandMap.get(entry.id);
+
+		if (!command) {
+			console.warn('No command found for history entry:', entry.id);
+			// Still remove from stack
+			redoStack = redoStack.slice(1);
+			return false;
+		}
+
+		try {
+			beginHistoryOperation();
+			command.execute();
+			commitRedo();
+			return true;
+		} catch (error) {
+			console.error('Redo failed:', error);
+			return false;
+		} finally {
+			endHistoryOperation();
+		}
+	}
+
+	// ========================================================================
 	// Return Store Interface
 	// ========================================================================
 
@@ -306,6 +458,11 @@ function createHistoryStore() {
 		get nextRedoDescription() {
 			return nextRedoDescription;
 		},
+
+		// Command execution
+		executeCommand,
+		undo,
+		redo,
 
 		// Stack operations
 		push,
@@ -332,3 +489,104 @@ function createHistoryStore() {
 
 // Export singleton instance
 export const history = createHistoryStore();
+
+// ============================================================================
+// Helper Functions (exported)
+// ============================================================================
+
+/**
+ * Record an action as undoable with simple execute/undo functions
+ * This is a convenience wrapper for simple operations
+ *
+ * @param description - Human-readable description of the action
+ * @param affectedObjectIds - IDs of objects affected by this action
+ * @param execute - Function to execute/redo the action
+ * @param undo - Function to undo the action
+ */
+export function recordAction(
+	description: string,
+	affectedObjectIds: string[],
+	execute: () => void,
+	undo: () => void
+): void {
+	const command: UndoableCommand = {
+		type: 'update',
+		description,
+		affectedObjectIds,
+		execute,
+		undo
+	};
+
+	// Execute and record
+	history.executeCommand(command);
+}
+
+/**
+ * Record a simple action that just needs execute/undo functions
+ * Executes immediately and records for undo
+ *
+ * @param description - Human-readable description
+ * @param execute - Function to execute (called immediately)
+ * @param undo - Function to undo
+ */
+export function recordSimpleAction(
+	description: string,
+	execute: () => void,
+	undo: () => void
+): void {
+	recordAction(description, [], execute, undo);
+}
+
+// ============================================================================
+// Keyboard Shortcuts
+// ============================================================================
+
+/**
+ * Set up keyboard shortcuts for undo/redo
+ * Call this from a component's onMount to enable shortcuts
+ *
+ * @returns Cleanup function to remove event listeners
+ */
+export function setupUndoRedoShortcuts(): () => void {
+	function handleKeydown(event: KeyboardEvent): void {
+		// Check for Ctrl/Cmd key
+		const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+		if (!isCtrlOrCmd) return;
+
+		// Check for Z key
+		if (event.key === 'z' || event.key === 'Z') {
+			// Prevent default browser undo/redo
+			event.preventDefault();
+
+			if (event.shiftKey) {
+				// Ctrl+Shift+Z = Redo
+				history.redo();
+			} else {
+				// Ctrl+Z = Undo
+				history.undo();
+			}
+		}
+
+		// Also support Ctrl+Y for redo (Windows convention)
+		if (event.key === 'y' || event.key === 'Y') {
+			event.preventDefault();
+			history.redo();
+		}
+	}
+
+	// Check if we're in a browser environment
+	if (typeof window !== 'undefined') {
+		window.addEventListener('keydown', handleKeydown);
+
+		// Return cleanup function
+		return () => {
+			window.removeEventListener('keydown', handleKeydown);
+		};
+	}
+
+	// SSR: return no-op cleanup
+	return () => {};
+}
+
+// Re-export command type for convenience
+export type { UndoableCommand };

@@ -24,10 +24,50 @@ export {
 // History store (for undo/redo)
 export {
 	history,
+	recordAction,
+	recordSimpleAction,
+	setupUndoRedoShortcuts,
 	type HistoryActionType,
 	type HistoryEntry,
-	type HistoryConfig
+	type HistoryConfig,
+	type UndoableCommand
 } from './history.svelte';
+
+// Command pattern implementations
+export {
+	// Types
+	type ObjectSnapshot,
+	type ObjectUpdate,
+	type CreateCommandData,
+	type DeleteCommandData,
+	type UpdateCommandData,
+	type MoveCommandData,
+	type BulkCommandData,
+	type AddInstrumentOptions,
+	type AddHangingPositionOptions,
+	type PositionUpdate,
+	// Instrument commands
+	createAddInstrumentCommand,
+	createRemoveInstrumentCommand,
+	createUpdateInstrumentCommand,
+	createMoveInstrumentCommand,
+	createBulkRemoveInstrumentsCommand,
+	createBulkUpdateInstrumentsCommand,
+	createBulkMoveInstrumentsCommand,
+	// Hanging position commands
+	createAddHangingPositionCommand,
+	createRemoveHangingPositionCommand,
+	createUpdateHangingPositionCommand,
+	createMoveHangingPositionCommand,
+	createResizeHangingPositionCommand,
+	createBulkRemoveHangingPositionsCommand,
+	createBulkUpdateHangingPositionsCommand,
+	createBulkMoveHangingPositionsCommand,
+	// Batch commands
+	createBatchCommand,
+	createCompositeCommand,
+	BatchCommandBuilder
+} from './commands';
 
 // Derived stores
 export {
