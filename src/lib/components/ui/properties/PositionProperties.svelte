@@ -51,8 +51,10 @@
 		}
 	}
 
-	function handlePositionTypeChange(value: HangingPositionType) {
-		updatePosition('positionType', value);
+	function handlePositionTypeChange(value: HangingPositionType | null) {
+		if (value !== null) {
+			updatePosition('positionType', value);
+		}
 	}
 
 	function handleTrimHeightChange(value: number | null) {

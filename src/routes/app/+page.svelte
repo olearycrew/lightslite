@@ -3,8 +3,15 @@
 	 * Project List Page
 	 *
 	 * Shows all user's projects with options to create new ones.
-	 * Placeholder UI - will be connected to API later.
+	 * Uses shadcn-svelte components for consistent UI.
 	 */
+	import * as Card from '$lib/components/ui/card';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import FileText from '@lucide/svelte/icons/file-text';
+	import Plus from '@lucide/svelte/icons/plus';
+	import X from '@lucide/svelte/icons/x';
 
 	// Placeholder projects for UI demonstration
 	let projects = $state<Array<{ id: string; name: string; updatedAt: string }>>([]);
@@ -58,78 +65,55 @@
 	<!-- Page Header -->
 	<div class="mb-6 flex items-center justify-between">
 		<div>
-			<h1 class="text-2xl font-bold text-text-primary">Projects</h1>
-			<p class="text-text-secondary">Your lighting plots and designs</p>
+			<h1 class="text-2xl font-bold text-foreground">Projects</h1>
+			<p class="text-muted-foreground">Your lighting plots and designs</p>
 		</div>
-		<button onclick={() => (showNewProjectModal = true)} class="btn-primary">
-			<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-			</svg>
+		<Button onclick={() => (showNewProjectModal = true)}>
+			<Plus class="mr-2 h-4 w-4" />
 			New Project
-		</button>
+		</Button>
 	</div>
 
 	<!-- Projects Grid -->
 	{#if loading}
 		<div class="flex items-center justify-center py-12">
-			<div class="text-text-muted">Loading projects...</div>
+			<div class="text-muted-foreground">Loading projects...</div>
 		</div>
 	{:else if projects.length === 0}
 		<!-- Empty State -->
-		<div class="panel flex flex-col items-center justify-center py-12 text-center">
-			<svg
-				class="mb-4 h-16 w-16 text-text-muted"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="1.5"
-					d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-				/>
-			</svg>
-			<h2 class="mb-2 text-xl font-medium text-text-primary">No projects yet</h2>
-			<p class="mb-4 text-text-secondary">Create your first lighting plot to get started</p>
-			<button onclick={() => (showNewProjectModal = true)} class="btn-primary">
-				<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M12 4v16m8-8H4"
-					/>
-				</svg>
-				Create Project
-			</button>
-		</div>
+		<Card.Root class="flex flex-col items-center justify-center py-12 text-center">
+			<Card.Content class="flex flex-col items-center">
+				<FileText class="mb-4 h-16 w-16 text-muted-foreground" strokeWidth={1.5} />
+				<h2 class="mb-2 text-xl font-medium text-foreground">No projects yet</h2>
+				<p class="mb-4 text-muted-foreground">Create your first lighting plot to get started</p>
+				<Button onclick={() => (showNewProjectModal = true)}>
+					<Plus class="mr-2 h-4 w-4" />
+					Create Project
+				</Button>
+			</Card.Content>
+		</Card.Root>
 	{:else}
 		<!-- Project Cards -->
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each projects as project (project.id)}
-				<a href={`/app/${project.id}`} class="panel group p-4 transition-all hover:border-accent">
-					<div class="mb-3 flex items-start justify-between">
-						<div class="h-10 w-10 rounded bg-bg-secondary flex items-center justify-center">
-							<svg
-								class="h-6 w-6 text-text-muted"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="1.5"
-									d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-								/>
-							</svg>
-						</div>
-					</div>
-					<h3 class="font-medium text-text-primary group-hover:text-accent">{project.name}</h3>
-					<p class="mt-1 text-xs text-text-muted">
-						Updated {new Date(project.updatedAt).toLocaleDateString()}
-					</p>
+				<a href={`/app/${project.id}`} class="block group">
+					<Card.Root
+						class="h-full transition-all hover:border-primary/50 hover:shadow-md hover:bg-secondary/30"
+					>
+						<Card.Header class="pb-2">
+							<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+								<FileText class="h-5 w-5 text-muted-foreground" />
+							</div>
+						</Card.Header>
+						<Card.Content class="pt-0">
+							<Card.Title class="group-hover:text-primary transition-colors">
+								{project.name}
+							</Card.Title>
+							<Card.Description>
+								Updated {new Date(project.updatedAt).toLocaleDateString()}
+							</Card.Description>
+						</Card.Content>
+					</Card.Root>
 				</a>
 			{/each}
 		</div>
@@ -139,41 +123,54 @@
 <!-- New Project Modal -->
 {#if showNewProjectModal}
 	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-		<div class="panel w-full max-w-md p-6">
-			<h2 class="mb-4 text-xl font-bold text-text-primary">New Project</h2>
-			<form
-				onsubmit={(e) => {
-					e.preventDefault();
-					createProject();
-				}}
-			>
-				<div class="mb-4">
-					<label for="projectName" class="mb-1 block text-sm font-medium text-text-secondary">
-						Project Name
-					</label>
-					<input
-						type="text"
-						id="projectName"
-						bind:value={newProjectName}
-						required
-						class="w-full rounded border border-border bg-bg-secondary px-3 py-2 text-text-primary placeholder-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-						placeholder="My Lighting Plot"
-					/>
-				</div>
-				<div class="flex justify-end gap-3">
-					<button
-						type="button"
+		<Card.Root class="w-full max-w-md">
+			<Card.Header>
+				<div class="flex items-center justify-between">
+					<Card.Title class="text-xl">New Project</Card.Title>
+					<Button
+						variant="ghost"
+						size="icon-sm"
 						onclick={() => {
 							showNewProjectModal = false;
 							newProjectName = '';
 						}}
-						class="btn-secondary"
 					>
-						Cancel
-					</button>
-					<button type="submit" class="btn-primary"> Create </button>
+						<X class="h-4 w-4" />
+					</Button>
 				</div>
-			</form>
-		</div>
+			</Card.Header>
+			<Card.Content>
+				<form
+					onsubmit={(e) => {
+						e.preventDefault();
+						createProject();
+					}}
+				>
+					<div class="mb-4">
+						<Label for="projectName" class="mb-2 block">Project Name</Label>
+						<Input
+							type="text"
+							id="projectName"
+							bind:value={newProjectName}
+							required
+							placeholder="My Lighting Plot"
+						/>
+					</div>
+					<div class="flex justify-end gap-3">
+						<Button
+							type="button"
+							variant="outline"
+							onclick={() => {
+								showNewProjectModal = false;
+								newProjectName = '';
+							}}
+						>
+							Cancel
+						</Button>
+						<Button type="submit">Create</Button>
+					</div>
+				</form>
+			</Card.Content>
+		</Card.Root>
 	</div>
 {/if}

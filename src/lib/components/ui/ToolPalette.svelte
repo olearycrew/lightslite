@@ -4,8 +4,12 @@
 	 *
 	 * Vertical toolbar for selecting drawing tools.
 	 * Shows active tool indicator and keyboard shortcuts.
+	 * Built with shadcn-svelte Button and Tooltip components.
 	 */
 	import { tool, TOOL_NAMES, type ToolType } from '$lib/stores/tool.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { Separator } from '$lib/components/ui/separator';
 
 	// Tool configuration with icons and shortcuts
 	const tools: Array<{
@@ -68,128 +72,88 @@
 	const placeTools = $derived(tools.filter((t) => t.group === 'place'));
 </script>
 
-<div class="tool-palette">
-	<!-- Main tools (select, pan) -->
-	<div class="tool-group">
-		{#each mainTools as toolDef (toolDef.id)}
-			<button
-				class="tool-button"
-				class:active={tool.activeTool === toolDef.id}
-				title="{TOOL_NAMES[toolDef.id]} ({toolDef.shortcut})"
-				onclick={() => selectTool(toolDef.id)}
-			>
-				<span class="tool-icon">{toolDef.icon}</span>
-				<span class="tool-shortcut">{toolDef.shortcut}</span>
-			</button>
-		{/each}
+<Tooltip.Provider>
+	<div class="flex flex-col gap-1 p-2 bg-sidebar rounded-lg shadow-lg select-none">
+		<!-- Main tools (select, pan) -->
+		<div class="flex flex-col gap-0.5">
+			{#each mainTools as toolDef (toolDef.id)}
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						<Button
+							variant={tool.activeTool === toolDef.id ? 'default' : 'ghost'}
+							size="icon"
+							class="w-10 h-10 relative {tool.activeTool === toolDef.id
+								? 'bg-primary text-primary-foreground hover:bg-primary/90'
+								: 'text-muted-foreground hover:text-foreground'}"
+							onclick={() => selectTool(toolDef.id)}
+						>
+							<span class="text-lg">{toolDef.icon}</span>
+							<span class="absolute bottom-0.5 right-1 text-[9px] opacity-60">
+								{toolDef.shortcut}
+							</span>
+						</Button>
+					</Tooltip.Trigger>
+					<Tooltip.Content side="right">
+						<p>{TOOL_NAMES[toolDef.id]} ({toolDef.shortcut})</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			{/each}
+		</div>
+
+		<Separator class="my-1" />
+
+		<!-- Drawing tools -->
+		<div class="flex flex-col gap-0.5">
+			{#each drawTools as toolDef (toolDef.id)}
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						<Button
+							variant={tool.activeTool === toolDef.id ? 'default' : 'ghost'}
+							size="icon"
+							class="w-10 h-10 relative {tool.activeTool === toolDef.id
+								? 'bg-primary text-primary-foreground hover:bg-primary/90'
+								: 'text-muted-foreground hover:text-foreground'}"
+							onclick={() => selectTool(toolDef.id)}
+						>
+							<span class="text-lg">{toolDef.icon}</span>
+							<span class="absolute bottom-0.5 right-1 text-[9px] opacity-60">
+								{toolDef.shortcut}
+							</span>
+						</Button>
+					</Tooltip.Trigger>
+					<Tooltip.Content side="right">
+						<p>{TOOL_NAMES[toolDef.id]} ({toolDef.shortcut})</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			{/each}
+		</div>
+
+		<Separator class="my-1" />
+
+		<!-- Placement tools -->
+		<div class="flex flex-col gap-0.5">
+			{#each placeTools as toolDef (toolDef.id)}
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						<Button
+							variant={tool.activeTool === toolDef.id ? 'default' : 'ghost'}
+							size="icon"
+							class="w-10 h-10 relative {tool.activeTool === toolDef.id
+								? 'bg-primary text-primary-foreground hover:bg-primary/90'
+								: 'text-muted-foreground hover:text-foreground'}"
+							onclick={() => selectTool(toolDef.id)}
+						>
+							<span class="text-lg">{toolDef.icon}</span>
+							<span class="absolute bottom-0.5 right-1 text-[9px] opacity-60">
+								{toolDef.shortcut}
+							</span>
+						</Button>
+					</Tooltip.Trigger>
+					<Tooltip.Content side="right">
+						<p>{TOOL_NAMES[toolDef.id]} ({toolDef.shortcut})</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			{/each}
+		</div>
 	</div>
-
-	<div class="separator"></div>
-
-	<!-- Drawing tools -->
-	<div class="tool-group">
-		{#each drawTools as toolDef (toolDef.id)}
-			<button
-				class="tool-button"
-				class:active={tool.activeTool === toolDef.id}
-				title="{TOOL_NAMES[toolDef.id]} ({toolDef.shortcut})"
-				onclick={() => selectTool(toolDef.id)}
-			>
-				<span class="tool-icon">{toolDef.icon}</span>
-				<span class="tool-shortcut">{toolDef.shortcut}</span>
-			</button>
-		{/each}
-	</div>
-
-	<div class="separator"></div>
-
-	<!-- Placement tools -->
-	<div class="tool-group">
-		{#each placeTools as toolDef (toolDef.id)}
-			<button
-				class="tool-button"
-				class:active={tool.activeTool === toolDef.id}
-				title="{TOOL_NAMES[toolDef.id]} ({toolDef.shortcut})"
-				onclick={() => selectTool(toolDef.id)}
-			>
-				<span class="tool-icon">{toolDef.icon}</span>
-				<span class="tool-shortcut">{toolDef.shortcut}</span>
-			</button>
-		{/each}
-	</div>
-</div>
-
-<style>
-	.tool-palette {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		padding: 8px;
-		background: var(--color-crust, #11111b);
-		border-radius: 8px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-		user-select: none;
-	}
-
-	.tool-group {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	.separator {
-		height: 1px;
-		background: var(--color-surface1, #45475a);
-		margin: 4px 0;
-	}
-
-	.tool-button {
-		position: relative;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 40px;
-		height: 40px;
-		padding: 0;
-		border: none;
-		border-radius: 6px;
-		background: transparent;
-		color: var(--color-subtext1, #bac2de);
-		cursor: pointer;
-		transition:
-			background-color 0.15s,
-			color 0.15s;
-	}
-
-	.tool-button:hover {
-		background: var(--color-surface0, #313244);
-		color: var(--color-text, #cdd6f4);
-	}
-
-	.tool-button.active {
-		background: var(--color-brand, #b4befe);
-		color: var(--color-crust, #11111b);
-	}
-
-	.tool-button.active:hover {
-		background: var(--color-lavender, #e7cbff);
-	}
-
-	.tool-icon {
-		font-size: 18px;
-		line-height: 1;
-	}
-
-	.tool-shortcut {
-		position: absolute;
-		bottom: 2px;
-		right: 3px;
-		font-size: 9px;
-		font-family: system-ui, sans-serif;
-		opacity: 0.6;
-	}
-
-	.tool-button.active .tool-shortcut {
-		opacity: 0.8;
-	}
-</style>
+</Tooltip.Provider>

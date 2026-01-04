@@ -3,7 +3,9 @@
 	 * SelectDropdown Component
 	 *
 	 * Styled select element with consistent styling.
+	 * Built on shadcn-svelte Select component.
 	 */
+	import * as Select from '$lib/components/ui/select';
 
 	interface Props {
 		value: T | null;
@@ -11,6 +13,7 @@
 		id?: string;
 		placeholder?: string;
 		disabled?: boolean;
+		class?: string;
 		onchange?: (value: T | null) => void;
 	}
 
@@ -20,62 +23,32 @@
 		id = '',
 		placeholder = 'Select...',
 		disabled = false,
+		class: className = '',
 		onchange
 	}: Props = $props();
 
-	function handleChange(event: Event) {
-		const select = event.target as HTMLSelectElement;
-		const newValue = select.value === '' ? null : (select.value as T);
-		// Only update local value if using bind:value (no onchange callback)
-		// If onchange is provided, the parent controls state via prop
+	// Convert value to the format Select expects
+	const selectedOption = $derived(options.find((o) => o.value === value));
+
+	function handleChange(newValue: string | undefined) {
+		const typedValue = newValue === undefined || newValue === '' ? null : (newValue as T);
 		if (onchange) {
-			onchange(newValue);
+			onchange(typedValue);
 		} else {
-			value = newValue;
+			value = typedValue;
 		}
 	}
 </script>
 
-<select class="select-dropdown" {id} {disabled} onchange={handleChange}>
-	{#if placeholder}
-		<option value="" selected={value === null}>{placeholder}</option>
-	{/if}
-	{#each options as option (option.value)}
-		<option value={option.value} selected={value === option.value}>
-			{option.label}
-		</option>
-	{/each}
-</select>
-
-<style>
-	.select-dropdown {
-		width: 100%;
-		padding: 6px 24px 6px 8px;
-		font-size: 12px;
-		color: var(--color-text-primary, #fff);
-		background: var(--color-bg-tertiary, #1e1e1e);
-		border: 1px solid var(--color-border, #444);
-		border-radius: 4px;
-		outline: none;
-		font-family: inherit;
-		cursor: pointer;
-		appearance: none;
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
-		background-repeat: no-repeat;
-		background-position: right 8px center;
-	}
-
-	.select-dropdown:focus {
-		border-color: var(--color-accent, #4287f5);
-	}
-
-	.select-dropdown:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.select-dropdown option {
-		background: var(--color-bg-secondary, #2d2d2d);
-		color: var(--color-text-primary, #fff);
-	}
-</style>
+<Select.Root type="single" value={value ?? undefined} onValueChange={handleChange} {disabled}>
+	<Select.Trigger {id} size="sm" class="w-full text-xs {className}">
+		<span data-slot="select-value">
+			{selectedOption?.label ?? placeholder}
+		</span>
+	</Select.Trigger>
+	<Select.Content>
+		{#each options as option (option.value)}
+			<Select.Item value={option.value} label={option.label} class="text-xs" />
+		{/each}
+	</Select.Content>
+</Select.Root>

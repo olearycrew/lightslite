@@ -4,7 +4,11 @@
 	 *
 	 * Color input with text field and preset swatches.
 	 * Supports common theatrical gel colors as presets.
+	 * Uses Tailwind CSS for styling to align with shadcn-svelte.
 	 */
+	import { Input } from '$lib/components/ui/input';
+	import { Button } from '$lib/components/ui/button';
+	import { cn } from '$lib/utils';
 
 	interface Props {
 		value: string | null;
@@ -13,6 +17,7 @@
 		disabled?: boolean;
 		showPresets?: boolean;
 		presets?: string[];
+		class?: string;
 		onchange?: (value: string | null) => void;
 	}
 
@@ -36,17 +41,15 @@
 		disabled = false,
 		showPresets = true,
 		presets = DEFAULT_PRESETS,
+		class: className = '',
 		onchange
 	}: Props = $props();
 
-	let showPicker = $state(false);
 	let pickerColor = $state('#ffffff');
 
 	function handleInput(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const newValue = input.value === '' ? null : input.value;
-		// Only update local value if using bind:value (no onchange callback)
-		// If onchange is provided, the parent controls state via prop
 		if (onchange) {
 			onchange(newValue);
 		} else {
@@ -55,7 +58,6 @@
 	}
 
 	function selectPreset(color: string) {
-		// Only update local value if using bind:value (no onchange callback)
 		if (onchange) {
 			onchange(color);
 		} else {
@@ -66,7 +68,6 @@
 	function handleColorPick(event: Event) {
 		const input = event.target as HTMLInputElement;
 		pickerColor = input.value;
-		// Only update local value if using bind:value (no onchange callback)
 		if (onchange) {
 			onchange(input.value);
 		} else {
@@ -75,44 +76,60 @@
 	}
 </script>
 
-<div class="color-input-wrapper">
-	<div class="input-row">
+<div class="flex flex-col gap-1.5 {className}">
+	<div class="flex gap-1 items-center">
 		<button
 			type="button"
-			class="color-preview"
-			style:background-color={value || '#transparent'}
-			onclick={() => (showPicker = !showPicker)}
+			class={cn(
+				'w-6 h-6 rounded border border-input shrink-0 flex items-center justify-center',
+				'hover:border-ring transition-colors',
+				disabled && 'opacity-50 cursor-not-allowed'
+			)}
+			style:background-color={value || 'transparent'}
 			{disabled}
 		>
 			{#if !value}
-				<span class="no-color">✕</span>
+				<span class="text-xs text-muted-foreground">✕</span>
 			{/if}
 		</button>
-		<input
+
+		<Input
 			type="text"
-			class="color-text"
 			{id}
 			value={value ?? ''}
 			{placeholder}
 			{disabled}
+			class="h-8 text-xs flex-1 min-w-0"
 			oninput={handleInput}
 		/>
-		<input
-			type="color"
-			class="color-picker-native"
-			value={pickerColor}
-			{disabled}
-			oninput={handleColorPick}
-		/>
+
+		<div class="relative">
+			<input
+				type="color"
+				class={cn(
+					'w-6 h-6 p-0 rounded border border-input cursor-pointer bg-transparent',
+					'[&::-webkit-color-swatch-wrapper]:p-0',
+					'[&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded',
+					disabled && 'opacity-50 cursor-not-allowed'
+				)}
+				value={pickerColor}
+				{disabled}
+				oninput={handleColorPick}
+			/>
+		</div>
 	</div>
 
 	{#if showPresets}
-		<div class="presets">
+		<div class="flex gap-1 flex-wrap">
 			{#each presets as preset (preset)}
 				<button
 					type="button"
-					class="preset-swatch"
-					class:selected={value === preset}
+					class={cn(
+						'w-5 h-5 rounded border border-input p-0 cursor-pointer',
+						'hover:border-muted-foreground transition-colors',
+						value === preset && 'border-ring border-2',
+						disabled && 'opacity-50 cursor-not-allowed'
+					)}
 					style:background-color={preset}
 					onclick={() => selectPreset(preset)}
 					{disabled}
@@ -122,109 +139,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	.color-input-wrapper {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.input-row {
-		display: flex;
-		gap: 4px;
-		align-items: center;
-	}
-
-	.color-preview {
-		width: 24px;
-		height: 24px;
-		border: 1px solid var(--color-border, #444);
-		border-radius: 4px;
-		cursor: pointer;
-		flex-shrink: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.color-preview:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.no-color {
-		font-size: 12px;
-		color: var(--color-text-muted, #666);
-	}
-
-	.color-text {
-		flex: 1;
-		min-width: 0;
-		padding: 6px 8px;
-		font-size: 12px;
-		color: var(--color-text-primary, #fff);
-		background: var(--color-bg-tertiary, #1e1e1e);
-		border: 1px solid var(--color-border, #444);
-		border-radius: 4px;
-		outline: none;
-		font-family: inherit;
-	}
-
-	.color-text:focus {
-		border-color: var(--color-accent, #4287f5);
-	}
-
-	.color-text:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.color-picker-native {
-		width: 24px;
-		height: 24px;
-		padding: 0;
-		border: 1px solid var(--color-border, #444);
-		border-radius: 4px;
-		cursor: pointer;
-		background: none;
-	}
-
-	.color-picker-native::-webkit-color-swatch-wrapper {
-		padding: 0;
-	}
-
-	.color-picker-native::-webkit-color-swatch {
-		border: none;
-		border-radius: 3px;
-	}
-
-	.presets {
-		display: flex;
-		gap: 4px;
-		flex-wrap: wrap;
-	}
-
-	.preset-swatch {
-		width: 20px;
-		height: 20px;
-		border: 1px solid var(--color-border, #444);
-		border-radius: 3px;
-		cursor: pointer;
-		padding: 0;
-	}
-
-	.preset-swatch:hover {
-		border-color: var(--color-text-secondary, #999);
-	}
-
-	.preset-swatch.selected {
-		border-color: var(--color-accent, #4287f5);
-		border-width: 2px;
-	}
-
-	.preset-swatch:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-</style>

@@ -3,94 +3,38 @@
 	 * CollapsibleSection Component
 	 *
 	 * A collapsible section with header and content.
+	 * Built on shadcn-svelte Collapsible component.
 	 */
+	import * as Collapsible from '$lib/components/ui/collapsible';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 
 	interface Props {
 		title: string;
 		defaultOpen?: boolean;
+		class?: string;
 		children: import('svelte').Snippet;
 	}
 
-	let { title, defaultOpen = true, children }: Props = $props();
+	let { title, defaultOpen = true, class: className = '', children }: Props = $props();
 
 	let isOpen = $state(defaultOpen);
 </script>
 
-<div class="collapsible-section" class:open={isOpen}>
-	<button type="button" class="section-header" onclick={() => (isOpen = !isOpen)}>
-		<span class="chevron">
-			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-				<polyline
-					points="6 9 12 15 18 9"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				/>
-			</svg>
+<Collapsible.Root bind:open={isOpen} class="border-b border-border {className}">
+	<Collapsible.Trigger
+		class="flex items-center gap-2 w-full py-3 px-4 text-left hover:bg-secondary/50 transition-colors"
+	>
+		<ChevronDown
+			class="h-4 w-4 text-muted-foreground transition-transform duration-200 {isOpen
+				? ''
+				: '-rotate-90'}"
+		/>
+		<span class="text-xs font-semibold uppercase tracking-wider text-foreground">
+			{title}
 		</span>
-		<span class="section-title">{title}</span>
-	</button>
+	</Collapsible.Trigger>
 
-	{#if isOpen}
-		<div class="section-content">
-			{@render children()}
-		</div>
-	{/if}
-</div>
-
-<style>
-	.collapsible-section {
-		border-bottom: 1px solid var(--color-border, #444);
-	}
-
-	.section-header {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		width: 100%;
-		padding: 12px 16px;
-		background: none;
-		border: none;
-		color: var(--color-text-primary, #fff);
-		font-size: 12px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		cursor: pointer;
-		text-align: left;
-	}
-
-	.section-header:hover {
-		background: var(--color-bg-hover, rgba(255, 255, 255, 0.05));
-	}
-
-	.chevron {
-		width: 16px;
-		height: 16px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: transform 0.2s ease;
-		transform: rotate(-90deg);
-	}
-
-	.chevron svg {
-		width: 12px;
-		height: 12px;
-	}
-
-	.open .chevron {
-		transform: rotate(0deg);
-	}
-
-	.section-title {
-		flex: 1;
-	}
-
-	.section-content {
-		padding: 0 16px 16px;
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-</style>
+	<Collapsible.Content class="px-4 pb-4 flex flex-col gap-3">
+		{@render children()}
+	</Collapsible.Content>
+</Collapsible.Root>

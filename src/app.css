@@ -1,36 +1,94 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
 
 /*
- * LightsLite - Catppuccin Mocha Theme
+ * LightsLite - Catppuccin Mocha Theme integrated with shadcn-svelte
  * A CAD/technical application theme using Catppuccin Mocha palette
  * https://catppuccin.com/
  */
 
-/* Catppuccin Mocha CSS Custom Properties */
-@theme {
+/* 
+ * Catppuccin Mocha Colors Reference:
+ * --crust: #11111b     (darkest)
+ * --mantle: #181825    (elevated dark)
+ * --base: #1e1e2e      (main background)
+ * --surface0: #313244  (surface)
+ * --surface1: #45475a  (border/elevated)
+ * --surface2: #585b70  (highlighted border)
+ * --overlay0: #6c7086  (muted text)
+ * --overlay1: #7f849c  
+ * --overlay2: #9399b2  
+ * --subtext0: #a6adc8  
+ * --subtext1: #bac2de  (secondary text)
+ * --text: #cdd6f4      (primary text)
+ * --blue: #89b4fa      (accent)
+ * --lavender: #b4befe  (brand)
+ */
+
+/* Dark theme by default (Catppuccin Mocha) */
+:root {
+	--radius: 0.375rem;
+
+	/* Map shadcn variables to Catppuccin Mocha dark theme */
+	--background: #1e1e2e; /* base */
+	--foreground: #cdd6f4; /* text */
+	--card: #181825; /* mantle */
+	--card-foreground: #cdd6f4; /* text */
+	--popover: #181825; /* mantle */
+	--popover-foreground: #cdd6f4; /* text */
+	--primary: #b4befe; /* lavender */
+	--primary-foreground: #11111b; /* crust */
+	--secondary: #313244; /* surface0 */
+	--secondary-foreground: #cdd6f4;
+	--muted: #313244; /* surface0 */
+	--muted-foreground: #a6adc8; /* subtext0 */
+	--accent: #313244; /* surface0 */
+	--accent-foreground: #cdd6f4; /* text */
+	--destructive: #f38ba8; /* red */
+	--destructive-foreground: #11111b;
+	--border: #45475a; /* surface1 */
+	--input: #313244; /* surface0 */
+	--ring: #b4befe; /* lavender */
+	--chart-1: #89b4fa; /* blue */
+	--chart-2: #a6e3a1; /* green */
+	--chart-3: #fab387; /* peach */
+	--chart-4: #cba6f7; /* mauve */
+	--chart-5: #94e2d5; /* teal */
+	--sidebar: #11111b; /* crust */
+	--sidebar-foreground: #cdd6f4; /* text */
+	--sidebar-primary: #b4befe; /* lavender */
+	--sidebar-primary-foreground: #11111b;
+	--sidebar-accent: #313244; /* surface0 */
+	--sidebar-accent-foreground: #cdd6f4;
+	--sidebar-border: #45475a; /* surface1 */
+	--sidebar-ring: #b4befe;
+
+	/* === Extended Catppuccin Mocha Colors for CAD app === */
 	--color-brand: #e7cbff;
-	/* === Catppuccin Mocha Base Colors === */
-	/* Base/Background colors - darkest to lightest */
+
+	/* Base/Background colors */
 	--color-crust: #11111b;
 	--color-mantle: #181825;
 	--color-base: #1e1e2e;
 
-	/* Surface colors - for elevated elements */
+	/* Surface colors */
 	--color-surface0: #313244;
 	--color-surface1: #45475a;
 	--color-surface2: #585b70;
 
-	/* Overlay colors - for overlays and modals */
+	/* Overlay colors */
 	--color-overlay0: #6c7086;
 	--color-overlay1: #7f849c;
 	--color-overlay2: #9399b2;
 
-	/* Text colors - muted to bright */
+	/* Text colors */
 	--color-subtext0: #a6adc8;
 	--color-subtext1: #bac2de;
 	--color-text: #cdd6f4;
 
-	/* === Catppuccin Mocha Accent Colors === */
+	/* === Catppuccin Accent Colors === */
 	--color-rosewater: #f5e0dc;
 	--color-flamingo: #f2cdcd;
 	--color-pink: #f5c2e7;
@@ -46,53 +104,36 @@
 	--color-blue: #89b4fa;
 	--color-lavender: #b4befe;
 
-	/* === Semantic Color Mappings === */
-	/* Canvas - main drawing area */
-	--color-canvas: #1e1e2e; /* base */
-	--color-canvas-dark: #181825; /* mantle - for depth */
-
-	/* Panel - UI panels and sidebars */
-	--color-panel: #181825; /* mantle */
-	--color-panel-hover: #313244; /* surface0 */
-
-	/* Background colors for layouts (aliases for compatibility) */
-	--color-bg-primary: #1e1e2e; /* base - main background */
-	--color-bg-secondary: #181825; /* mantle - elevated surfaces */
-	--color-bg-tertiary: #11111b; /* crust - highest elevation */
-	--color-bg-hover: #313244; /* surface0 - hover states */
-
-	/* Border colors */
-	--color-border: #45475a; /* surface1 */
-	--color-border-focus: #585b70; /* surface2 */
-
-	/* Primary accent - blue for selection/focus */
-	--color-accent: #04a5e5; /* blue */
-	--color-accent-hover: #74c7ec; /* sapphire - darker on hover */
-	--color-accent-muted: #7287fd; /* sapphire muted */
-
-	/* Status colors */
-	--color-success: #a6e3a1; /* green */
-	--color-warning: #f9e2af; /* yellow */
-	--color-error: #f38ba8; /* red */
-	--color-info: #89dceb; /* sky */
-
-	/* Text semantic colors */
-	--color-text-primary: #cdd6f4; /* text */
-	--color-text-secondary: #bac2de; /* subtext1 */
-	--color-text-muted: #a6adc8; /* subtext0 */
-	--color-text-subtle: #9399b2; /* overlay2 */
-
-	/* Grid and guide colors for CAD */
-	--color-grid-major: #45475a; /* surface1 */
-	--color-grid-minor: #313244; /* surface0 */
-	--color-guide: #fab387; /* peach - for guides */
-	--color-selection: #89b4fa; /* blue - for selections */
-
-	/* Shape/drawing default colors - visible on dark background */
-	--color-stroke-default: #cdd6f4; /* text - white-ish for visibility */
+	/* === CAD-specific Semantic Colors === */
+	--color-canvas: #1e1e2e;
+	--color-canvas-dark: #181825;
+	--color-panel: #181825;
+	--color-panel-hover: #313244;
+	--color-bg-primary: #1e1e2e;
+	--color-bg-secondary: #181825;
+	--color-bg-tertiary: #11111b;
+	--color-bg-hover: #313244;
+	--color-border: #45475a;
+	--color-border-focus: #585b70;
+	--color-accent: #04a5e5;
+	--color-accent-hover: #74c7ec;
+	--color-accent-muted: #7287fd;
+	--color-success: #a6e3a1;
+	--color-warning: #f9e2af;
+	--color-error: #f38ba8;
+	--color-info: #89dceb;
+	--color-text-primary: #cdd6f4;
+	--color-text-secondary: #bac2de;
+	--color-text-muted: #a6adc8;
+	--color-text-subtle: #9399b2;
+	--color-grid-major: #45475a;
+	--color-grid-minor: #313244;
+	--color-guide: #fab387;
+	--color-selection: #89b4fa;
+	--color-stroke-default: #cdd6f4;
 	--color-fill-default: transparent;
 
-	/* Spacing for precision UI */
+	/* Spacing */
 	--spacing-toolbar: 40px;
 	--spacing-panel: 260px;
 	--spacing-statusbar: 24px;
@@ -101,11 +142,103 @@
 	--font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
 }
 
-/* Base styles for CAD application */
+/* Light mode - kept for potential future use but app defaults to dark */
+.light {
+	--background: #ffffff;
+	--foreground: #1e1e2e;
+	--card: #ffffff;
+	--card-foreground: #1e1e2e;
+	--popover: #ffffff;
+	--popover-foreground: #1e1e2e;
+	--primary: #1e1e2e;
+	--primary-foreground: #ffffff;
+	--secondary: #f4f4f5;
+	--secondary-foreground: #1e1e2e;
+	--muted: #f4f4f5;
+	--muted-foreground: #6c7086;
+	--accent: #f4f4f5;
+	--accent-foreground: #1e1e2e;
+	--destructive: #ef4444;
+	--border: #e4e4e7;
+	--input: #e4e4e7;
+	--ring: #1e1e2e;
+}
+
+@theme inline {
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+
+	/* Extended Catppuccin colors exposed to Tailwind */
+	--color-crust: var(--color-crust);
+	--color-mantle: var(--color-mantle);
+	--color-base: var(--color-base);
+	--color-surface0: var(--color-surface0);
+	--color-surface1: var(--color-surface1);
+	--color-surface2: var(--color-surface2);
+	--color-overlay0: var(--color-overlay0);
+	--color-overlay1: var(--color-overlay1);
+	--color-overlay2: var(--color-overlay2);
+	--color-subtext0: var(--color-subtext0);
+	--color-subtext1: var(--color-subtext1);
+	--color-text: var(--color-text);
+	--color-rosewater: var(--color-rosewater);
+	--color-flamingo: var(--color-flamingo);
+	--color-pink: var(--color-pink);
+	--color-mauve: var(--color-mauve);
+	--color-red: var(--color-red);
+	--color-maroon: var(--color-maroon);
+	--color-peach: var(--color-peach);
+	--color-yellow: var(--color-yellow);
+	--color-green: var(--color-green);
+	--color-teal: var(--color-teal);
+	--color-sky: var(--color-sky);
+	--color-sapphire: var(--color-sapphire);
+	--color-blue: var(--color-blue);
+	--color-lavender: var(--color-lavender);
+}
+
 @layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
 	html,
 	body {
-		@apply bg-base text-text antialiased;
+		@apply bg-background text-foreground antialiased;
 		font-feature-settings:
 			'tnum' 1,
 			'kern' 1;
@@ -123,15 +256,16 @@
 	}
 
 	::-webkit-scrollbar-track {
-		@apply bg-mantle;
+		background: var(--color-mantle);
 	}
 
 	::-webkit-scrollbar-thumb {
-		@apply bg-surface1 rounded-full;
+		background: var(--color-surface1);
+		border-radius: 9999px;
 	}
 
 	::-webkit-scrollbar-thumb:hover {
-		@apply bg-surface2;
+		background: var(--color-surface2);
 	}
 }
 
@@ -139,44 +273,44 @@
 @layer components {
 	/* Panel styling */
 	.panel {
-		@apply bg-mantle border border-surface1 rounded-sm;
+		@apply bg-card border border-border rounded-sm;
 	}
 
 	/* Primary button - accent colored with dark text for contrast */
 	.btn-primary {
 		@apply inline-flex items-center justify-center px-4 py-2 rounded-md
-               bg-blue text-crust font-medium
-               hover:bg-sapphire transition-colors duration-150;
+           bg-primary text-primary-foreground font-medium
+           hover:bg-primary/90 transition-colors duration-150;
 	}
 
 	/* Secondary button - outlined */
 	.btn-secondary {
 		@apply inline-flex items-center justify-center px-4 py-2 rounded-md
-               border border-surface1 text-subtext1
-               hover:bg-surface0 hover:text-text transition-colors duration-150;
+           border border-border text-muted-foreground
+           hover:bg-secondary hover:text-foreground transition-colors duration-150;
 	}
 
 	/* Toolbar button base */
 	.toolbar-btn {
 		@apply flex items-center justify-center w-8 h-8 rounded-sm
-               text-subtext1 hover:text-text hover:bg-surface0
-               transition-colors duration-150;
+           text-muted-foreground hover:text-foreground hover:bg-secondary
+           transition-colors duration-150;
 	}
 
 	.toolbar-btn.active {
-		@apply bg-blue text-crust;
+		@apply bg-primary text-primary-foreground;
 	}
 
 	/* Input styling for precision values */
 	.input-precision {
-		@apply bg-base border border-surface1 rounded-sm px-2 py-1
-               font-mono text-sm text-text
-               focus:outline-none focus:border-blue;
+		@apply bg-background border border-border rounded-sm px-2 py-1
+           font-mono text-sm text-foreground
+           focus:outline-none focus:border-ring;
 	}
 
 	/* Card styling for panels */
 	.card {
-		@apply bg-surface0 border border-surface1 rounded-lg p-4;
+		@apply bg-secondary border border-border rounded-lg p-4;
 	}
 
 	/* Badge/tag styling */
@@ -185,19 +319,23 @@
 	}
 
 	.badge-blue {
-		@apply bg-blue/20 text-blue;
+		background: color-mix(in srgb, var(--color-blue) 20%, transparent);
+		color: var(--color-blue);
 	}
 
 	.badge-green {
-		@apply bg-green/20 text-green;
+		background: color-mix(in srgb, var(--color-green) 20%, transparent);
+		color: var(--color-green);
 	}
 
 	.badge-yellow {
-		@apply bg-yellow/20 text-yellow;
+		background: color-mix(in srgb, var(--color-yellow) 20%, transparent);
+		color: var(--color-yellow);
 	}
 
 	.badge-red {
-		@apply bg-red/20 text-red;
+		background: color-mix(in srgb, var(--color-red) 20%, transparent);
+		color: var(--color-red);
 	}
 }
 

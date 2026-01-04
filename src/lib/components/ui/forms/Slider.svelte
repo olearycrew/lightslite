@@ -3,7 +3,9 @@
 	 * Slider Component
 	 *
 	 * Range slider with value display.
+	 * Built on shadcn-svelte Slider component.
 	 */
+	import { Slider } from '$lib/components/ui/slider';
 
 	interface Props {
 		value: number;
@@ -14,6 +16,7 @@
 		disabled?: boolean;
 		showValue?: boolean;
 		unit?: string;
+		class?: string;
 		onchange?: (value: number) => void;
 	}
 
@@ -26,14 +29,15 @@
 		disabled = false,
 		showValue = true,
 		unit = '',
+		class: className = '',
 		onchange
 	}: Props = $props();
 
-	function handleInput(event: Event) {
-		const input = event.target as HTMLInputElement;
-		const newValue = parseFloat(input.value);
-		// Only update local value if using bind:value (no onchange callback)
-		// If onchange is provided, the parent controls state via prop
+	// shadcn Slider uses an array for values
+	let sliderValue = $derived([value]);
+
+	function handleChange(newValues: number[]) {
+		const newValue = newValues[0] ?? min;
 		if (onchange) {
 			onchange(newValue);
 		} else {
@@ -42,78 +46,21 @@
 	}
 </script>
 
-<div class="slider-wrapper">
-	<input
-		type="range"
-		class="slider"
+<div class="flex items-center gap-3 {className}">
+	<Slider
 		{id}
-		{value}
+		type="multiple"
+		value={sliderValue}
 		{min}
 		{max}
 		{step}
 		{disabled}
-		oninput={handleInput}
+		class="flex-1"
+		onValueChange={handleChange}
 	/>
 	{#if showValue}
-		<span class="slider-value">
+		<span class="text-xs text-muted-foreground min-w-[40px] text-right tabular-nums">
 			{value}{unit}
 		</span>
 	{/if}
 </div>
-
-<style>
-	.slider-wrapper {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.slider {
-		flex: 1;
-		height: 4px;
-		-webkit-appearance: none;
-		appearance: none;
-		background: var(--color-bg-tertiary, #1e1e1e);
-		border-radius: 2px;
-		outline: none;
-	}
-
-	.slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: var(--color-accent, #4287f5);
-		cursor: pointer;
-		border: none;
-	}
-
-	.slider::-moz-range-thumb {
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		background: var(--color-accent, #4287f5);
-		cursor: pointer;
-		border: none;
-	}
-
-	.slider:disabled {
-		opacity: 0.5;
-	}
-
-	.slider:disabled::-webkit-slider-thumb {
-		cursor: not-allowed;
-	}
-
-	.slider:disabled::-moz-range-thumb {
-		cursor: not-allowed;
-	}
-
-	.slider-value {
-		font-size: 12px;
-		color: var(--color-text-secondary, #999);
-		min-width: 40px;
-		text-align: right;
-	}
-</style>

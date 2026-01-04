@@ -4,76 +4,48 @@
 	 *
 	 * A label + input wrapper with consistent styling.
 	 * Supports both horizontal and vertical layouts.
+	 * Built with shadcn-svelte Label component.
 	 */
+	import { Label } from '$lib/components/ui/label';
 
 	interface Props {
 		label: string;
 		id?: string;
 		layout?: 'horizontal' | 'vertical';
 		hint?: string;
+		class?: string;
 		children: import('svelte').Snippet;
 	}
 
-	let { label, id = '', layout = 'horizontal', hint = '', children }: Props = $props();
+	let {
+		label,
+		id = '',
+		layout = 'horizontal',
+		hint = '',
+		class: className = '',
+		children
+	}: Props = $props();
 </script>
 
 <div
-	class="form-field"
-	class:horizontal={layout === 'horizontal'}
-	class:vertical={layout === 'vertical'}
+	class="flex gap-2 {layout === 'horizontal'
+		? 'flex-row items-center justify-between'
+		: 'flex-col items-stretch'} {className}"
 >
-	<label class="field-label" for={id || undefined}>
+	<Label
+		for={id || undefined}
+		class="text-xs text-muted-foreground whitespace-nowrap shrink-0 {layout === 'horizontal'
+			? 'min-w-[80px]'
+			: ''}"
+	>
 		{label}
 		{#if hint}
-			<span class="hint">{hint}</span>
+			<span class="block text-[10px] text-muted-foreground/70 font-normal">
+				{hint}
+			</span>
 		{/if}
-	</label>
-	<div class="field-input">
+	</Label>
+	<div class="flex-1 min-w-0 {layout === 'horizontal' ? 'max-w-[140px]' : ''}">
 		{@render children()}
 	</div>
 </div>
-
-<style>
-	.form-field {
-		display: flex;
-		gap: 8px;
-	}
-
-	.form-field.horizontal {
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.form-field.vertical {
-		flex-direction: column;
-		align-items: stretch;
-	}
-
-	.field-label {
-		font-size: 12px;
-		color: var(--color-text-secondary, #999);
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-
-	.form-field.horizontal .field-label {
-		min-width: 80px;
-	}
-
-	.hint {
-		display: block;
-		font-size: 10px;
-		color: var(--color-text-muted, #666);
-		font-weight: normal;
-	}
-
-	.field-input {
-		flex: 1;
-		min-width: 0;
-	}
-
-	.form-field.horizontal .field-input {
-		max-width: 140px;
-	}
-</style>

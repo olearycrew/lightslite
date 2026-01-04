@@ -3,8 +3,9 @@
 	 * NumberInput Component
 	 *
 	 * Number input with optional unit suffix.
-	 * Supports min/max/step validation.
+	 * Built on shadcn-svelte Input component.
 	 */
+	import { Input } from '$lib/components/ui/input';
 
 	interface Props {
 		value: number | null;
@@ -15,6 +16,7 @@
 		step?: number;
 		unit?: string;
 		disabled?: boolean;
+		class?: string;
 		onchange?: (value: number | null) => void;
 	}
 
@@ -27,14 +29,13 @@
 		step = 1,
 		unit = '',
 		disabled = false,
+		class: className = '',
 		onchange
 	}: Props = $props();
 
 	function handleInput(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const newValue = input.value === '' ? null : parseFloat(input.value);
-		// Only update local value if using bind:value (no onchange callback)
-		// If onchange is provided, the parent controls state via prop
 		if (onchange) {
 			onchange(newValue);
 		} else {
@@ -43,10 +44,9 @@
 	}
 </script>
 
-<div class="number-input-wrapper">
-	<input
+<div class="relative flex items-center">
+	<Input
 		type="number"
-		class="number-input"
 		{id}
 		value={value ?? ''}
 		{placeholder}
@@ -54,62 +54,14 @@
 		{max}
 		{step}
 		{disabled}
+		class="h-8 text-xs font-mono {unit
+			? 'pr-7'
+			: ''} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none {className}"
 		oninput={handleInput}
 	/>
 	{#if unit}
-		<span class="unit">{unit}</span>
+		<span class="absolute right-2 text-[10px] text-muted-foreground pointer-events-none">
+			{unit}
+		</span>
 	{/if}
 </div>
-
-<style>
-	.number-input-wrapper {
-		position: relative;
-		display: flex;
-		align-items: center;
-	}
-
-	.number-input {
-		width: 100%;
-		padding: 6px 8px;
-		padding-right: var(--unit-padding, 8px);
-		font-size: 12px;
-		color: var(--color-text-primary, #fff);
-		background: var(--color-bg-tertiary, #1e1e1e);
-		border: 1px solid var(--color-border, #444);
-		border-radius: 4px;
-		outline: none;
-		font-family: inherit;
-		-moz-appearance: textfield;
-	}
-
-	.number-input::-webkit-outer-spin-button,
-	.number-input::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
-
-	.number-input:focus {
-		border-color: var(--color-accent, #4287f5);
-	}
-
-	.number-input:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.number-input::placeholder {
-		color: var(--color-text-muted, #666);
-	}
-
-	.unit {
-		position: absolute;
-		right: 8px;
-		font-size: 10px;
-		color: var(--color-text-muted, #666);
-		pointer-events: none;
-	}
-
-	.number-input-wrapper:has(.unit) .number-input {
-		padding-right: 28px;
-	}
-</style>
