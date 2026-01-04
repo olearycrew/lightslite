@@ -482,25 +482,25 @@
 
 ### 7. Selection Tests
 
-#### SL-01: Click to select single object
+#### PASS SL-01: Click to select single object
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Draw several shapes
   2. Click on one shape
 - **Expected:** Only clicked shape is selected
 - **Notes:**
 
-#### SL-02: Shift+click adds to selection
+#### PASS SL-02: Shift+click adds to selection
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select one shape
   2. Shift+click another shape
 - **Expected:** Both shapes are now selected
 - **Notes:**
 
-#### SL-03: Shift+click toggles selection
+#### FAIL SL-03: Shift+click toggles selection
 
 - [ ] Pass [ ] Fail
 - **Steps:**
@@ -509,7 +509,7 @@
 - **Expected:** That shape is deselected; other remains selected
 - **Notes:**
 
-#### SL-04: Marquee select (click-drag on empty)
+#### FAIL SL-04: Marquee select (click-drag on empty)
 
 - [ ] Pass [ ] Fail
 - **Steps:**
@@ -519,45 +519,45 @@
 - **Expected:** All objects within the box become selected
 - **Notes:**
 
-#### SL-05: Escape clears selection
+#### PASS SL-05: Escape clears selection
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select one or more objects
   2. Press Escape
 - **Expected:** All objects are deselected
 - **Notes:**
 
-#### SL-06: Delete removes selected objects
+#### PASS SL-06: Delete removes selected objects
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select one or more objects
   2. Press Delete key
 - **Expected:** Selected objects are removed from canvas
 - **Notes:**
 
-#### SL-07: Backspace removes selected objects
+#### PASS SL-07: Backspace removes selected objects
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select one or more objects
   2. Press Backspace key
 - **Expected:** Selected objects are removed from canvas
 - **Notes:**
 
-#### SL-08: Selection handles visible
+#### PASS SL-08: Selection handles visible
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select an object
   2. Observe the object
 - **Expected:** Selection handles/bounding box appear around object
 - **Notes:**
 
-#### SL-09: Click empty to deselect
+#### PASS SL-09: Click empty to deselect
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select objects
   2. Click on empty canvas area
@@ -568,9 +568,9 @@
 
 ### 8. Properties Panel Tests
 
-#### PP-01: Panel shows project properties (nothing selected)
+#### PASS PP-01: Panel shows project properties (nothing selected)
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Ensure no objects selected (press Escape)
   2. Observe properties panel
@@ -586,27 +586,27 @@
 - **Expected:** Panel shows instrument-specific fields (type, channel, color, etc.)
 - **Notes:**
 
-#### PP-03: Panel shows position properties
+#### PASS PP-03: Panel shows position properties
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select a hanging position
   2. Observe properties panel
 - **Expected:** Panel shows position-specific fields (name, length, height, etc.)
 - **Notes:**
 
-#### PP-04: Panel shows shape properties
+#### PASS PP-04: Panel shows shape properties
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select a drawn shape (line/rect/circle)
   2. Observe properties panel
 - **Expected:** Panel shows shape-specific fields (dimensions, stroke, fill, etc.)
 - **Notes:**
 
-#### PP-05: Panel shows multi-select info
+#### PASS PP-05: Panel shows multi-select info
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select multiple objects
   2. Observe properties panel
@@ -623,9 +623,9 @@
 - **Expected:** Change is immediately reflected on canvas
 - **Notes:**
 
-#### PP-07: Change color property
+#### PASS PP-07: Change color property
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select an instrument
   2. Change color in properties panel
@@ -641,141 +641,14 @@
 - **Expected:** Shape resizes accordingly on canvas
 - **Notes:**
 
-#### PP-09: Change text property
+#### PASS PP-09: Change text property
 
-- [ ] Pass [ ] Fail
+- [x] Pass [ ] Fail
 - **Steps:**
   1. Select a hanging position
   2. Change the name
 - **Expected:** Label updates on canvas
 - **Notes:**
-
----
-
-## Test Results Summary
-
-### Overall Results
-
-**Viewport Tests (9 total)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-**Grid Tests (6 total)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-**Tool Palette Tests (10 total)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-**Drawing Tests (10 total)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-**Hanging Position Tests (5 total)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-**Instrument Tests (6 total)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-**Selection Tests (9 total)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-**Properties Panel Tests (9 total)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-**TOTAL (64 tests)**
-
-- Passed: \_\_\_
-- Failed: \_\_\_
-- Blocked: \_\_\_
-- Not Run: \_\_\_
-
-### Sign-Off
-
-**Tester**
-
-- Name: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-- Signature: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-- Date: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-
-**Developer**
-
-- Name: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-- Signature: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-- Date: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-
-**Product Owner**
-
-- Name: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-- Signature: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-- Date: \***\*\*\*\*\***\_\_\***\*\*\*\*\***
-
----
-
-## Defects Found
-
-### Defect 1
-
-- **Test Case:**
-- **Severity:** Critical / High / Medium / Low
-- **Description:**
-- **Steps to Reproduce:**
-- **Status:**
-
-### Defect 2
-
-- **Test Case:**
-- **Severity:** Critical / High / Medium / Low
-- **Description:**
-- **Steps to Reproduce:**
-- **Status:**
-
-### Defect 3
-
-- **Test Case:**
-- **Severity:** Critical / High / Medium / Low
-- **Description:**
-- **Steps to Reproduce:**
-- **Status:**
-
-_(Add more defects as needed)_
-
----
-
-## Notes & Observations
-
-_Use this space to record any observations, edge cases, or suggestions discovered during testing:_
-
----
 
 ## Appendix: Keyboard Shortcuts Reference
 

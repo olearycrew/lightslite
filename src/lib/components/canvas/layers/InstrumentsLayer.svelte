@@ -169,9 +169,65 @@
 	<!-- Render free-floating instruments (not attached to a hanging position) -->
 	<g class="free-instruments">
 		{#each freeInstruments as instrument (instrument.id)}
-			{#if instrument.visible}
-				<!-- Free instruments would need their own position storage -->
-				<!-- For now, we skip them as they require extended data model -->
+			{#if instrument.visible && instrument.x !== undefined && instrument.y !== undefined}
+				{@const bounds = getInstrumentBounds(
+					instrument.instrumentType,
+					instrument.x,
+					instrument.y,
+					instrument.rotation
+				)}
+				<SelectableObject
+					id={instrument.id}
+					type="instrument"
+					x={bounds.x}
+					y={bounds.y}
+					width={bounds.width}
+					height={bounds.height}
+					locked={instrument.locked}
+					visible={instrument.visible}
+					ondrag={(dx, dy) => {
+						// Free instruments can be moved freely
+						if (instrument.x !== undefined && instrument.y !== undefined) {
+							project.updateInstrument(instrument.id, {
+								x: instrument.x + dx,
+								y: instrument.y + dy
+							});
+						}
+					}}
+				>
+					<InstrumentSymbol
+						type={instrument.instrumentType as InstrumentType}
+						x={instrument.x}
+						y={instrument.y}
+						rotation={instrument.rotation}
+						fill={instrument.color ? undefined : undefined}
+						isSelected={selection.isSelected(instrument.id)}
+						isHovered={hoveredId === instrument.id}
+						channelLabel={instrument.channel}
+					/>
+
+					<!-- Render label if instrument has metadata -->
+					{#if instrument.channel || instrument.color || instrument.focus}
+						<InstrumentLabel
+							x={instrument.x}
+							y={instrument.y}
+							offsetY={getSymbol(instrument.instrumentType).labelOffset.y}
+							config={{
+								showChannel: true,
+								showUnitNumber: false,
+								showColor: !!instrument.color,
+								showPurpose: !!instrument.focus,
+								showDimmer: !!instrument.dimmer,
+								showGobo: false,
+								position: 'auto'
+							}}
+							channel={instrument.channel}
+							color={instrument.color}
+							purpose={instrument.focus}
+							dimmer={instrument.dimmer}
+						/>
+					{/if}
+				</SelectableObject>
 			{/if}
 		{/each}
 	</g>

@@ -126,8 +126,8 @@
 			return;
 		}
 
-		// Try drawing tool first (if left click and drawing tool active)
-		if (event.button === 0 && (tool.isDrawingTool || tool.activeTool === 'add-electric')) {
+		// Try drawing/placement tool first (if left click and drawing or placement tool active)
+		if (event.button === 0 && (tool.isDrawingTool || tool.isPlacementTool)) {
 			if (toolOverlayRef?.handleMouseDown(event)) {
 				isDrawing = true;
 				return;
@@ -163,6 +163,13 @@
 		if (isDrawing) {
 			toolOverlayRef?.handleMouseMove(event);
 			return;
+		}
+
+		// If instrument tool is active, delegate mouse move for preview tracking
+		// (instrument tool needs to track cursor position even when not "drawing")
+		if (tool.activeTool === 'add-instrument') {
+			toolOverlayRef?.handleMouseMove(event);
+			// Don't return - let other handlers see this too if needed
 		}
 
 		if (isPanning) {

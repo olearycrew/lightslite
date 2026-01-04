@@ -64,13 +64,17 @@ export interface HangingPositionObject extends BaseCanvasObject {
 	labelOffsetY?: number;
 }
 
-/** An instrument on a hanging position */
+/** An instrument on a hanging position or free-floating on canvas */
 export interface InstrumentObject extends BaseCanvasObject {
 	objectType: 'instrument';
-	/** ID of the hanging position this instrument is on */
-	hangingPositionId: string;
-	/** Position along the hanging position (0-1) */
+	/** ID of the hanging position this instrument is on (null if free-floating) */
+	hangingPositionId: string | null;
+	/** Position along the hanging position (0-1), only used if on a hanging position */
 	positionOnBar: number;
+	/** World X coordinate (only used for free-floating instruments) */
+	x?: number;
+	/** World Y coordinate (only used for free-floating instruments) */
+	y?: number;
 	/** Instrument type/symbol ID */
 	instrumentType: string;
 	/** Channel number */
@@ -349,7 +353,7 @@ function createProjectStore() {
 	// ========================================================================
 
 	/**
-	 * Add a new instrument
+	 * Add a new instrument on a hanging position
 	 */
 	function addInstrument(
 		hangingPositionId: string,
@@ -376,6 +380,41 @@ function createProjectStore() {
 			visible: options.visible ?? true,
 			hangingPositionId,
 			positionOnBar,
+			instrumentType,
+			channel: options.channel,
+			dimmer: options.dimmer,
+			color: options.color,
+			focus: options.focus,
+			rotation: options.rotation ?? 0
+		};
+		instruments.set(instrument.id, instrument);
+		return instrument;
+	}
+
+	/**
+	 * Add a free-floating instrument at a specific position on the canvas
+	 */
+	function addFreeInstrument(
+		x: number,
+		y: number,
+		instrumentType: string,
+		options: Partial<
+			Omit<
+				InstrumentObject,
+				'id' | 'objectType' | 'hangingPositionId' | 'x' | 'y' | 'instrumentType'
+			>
+		> = {}
+	): InstrumentObject {
+		const instrument: InstrumentObject = {
+			id: generateId('inst'),
+			objectType: 'instrument',
+			name: options.name ?? 'Instrument',
+			locked: options.locked ?? false,
+			visible: options.visible ?? true,
+			hangingPositionId: null,
+			positionOnBar: 0,
+			x,
+			y,
 			instrumentType,
 			channel: options.channel,
 			dimmer: options.dimmer,
@@ -723,6 +762,7 @@ function createProjectStore() {
 
 		// Instrument operations
 		addInstrument,
+		addFreeInstrument,
 		updateInstrument,
 		deleteInstrument,
 

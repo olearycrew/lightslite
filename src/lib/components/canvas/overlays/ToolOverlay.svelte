@@ -9,7 +9,6 @@
 	import { tool } from '$lib/stores/tool.svelte';
 	import { grid } from '$lib/stores/grid.svelte';
 	import { project } from '$lib/stores/project.svelte';
-	import { getSymbol } from '$lib/symbols';
 	import type { InstrumentType } from '$lib/types/instrument';
 
 	interface Props {
@@ -143,9 +142,6 @@
 		};
 	});
 
-	// Get the symbol for the currently selected instrument type
-	const instrumentSymbol = $derived(getSymbol(selectedInstrumentType));
-
 	/**
 	 * Get world coordinates from a mouse event
 	 */
@@ -220,6 +216,11 @@
 		if (tool.activeTool === 'add-instrument') {
 			event.preventDefault();
 			event.stopPropagation();
+			// Get fresh coordinates from the click event itself to ensure accuracy
+			const coords = getWorldCoords(event);
+			cursorX = coords.x;
+			cursorY = coords.y;
+			nearestHangingPosition = findNearestHangingPosition(coords.x, coords.y);
 			placeInstrument();
 			return true;
 		}
@@ -298,9 +299,11 @@
 				}
 			);
 		} else {
-			// For now, instruments must be placed on a hanging position
-			// In the future, could support free-floating instruments
-			console.warn('Instruments must be placed on a hanging position');
+			// Place as a free-floating instrument at the cursor position
+			const snapped = snapCoords(ghostInstrument.x, ghostInstrument.y);
+			project.addFreeInstrument(snapped.x, snapped.y, selectedInstrumentType, {
+				rotation: 0 // Default rotation (pointing upstage)
+			});
 		}
 	}
 
@@ -462,53 +465,29 @@
 		<circle class="ghost-point" cx={ghostElectric.x2} cy={ghostElectric.y2} r={6 / viewport.zoom} />
 	{/if}
 
-	<!-- Ghost instrument preview -->
+	<!-- Instrument placement crosshair cursor -->
 	{#if ghostInstrument}
-		<g
-			class="ghost-instrument"
-			class:snapped={ghostInstrument.snappedToPosition}
-			class:not-snapped={!ghostInstrument.snappedToPosition}
-			transform="translate({ghostInstrument.x}, {ghostInstrument.y})"
-		>
-			<!-- Render the symbol path -->
-			<path
-				class="ghost-instrument-body"
-				d={instrumentSymbol.path}
-				stroke-width={strokeWidth}
-				stroke-dasharray={ghostInstrument.snappedToPosition ? 'none' : dashArray}
-			/>
-			<!-- Render detail paths -->
-			{#if instrumentSymbol.detailPaths}
-				{#each instrumentSymbol.detailPaths as detailPath, i (i)}
-					<path
-						class="ghost-instrument-detail"
-						d={detailPath}
-						fill="none"
-						stroke-width={strokeWidth * 0.75}
-					/>
-				{/each}
-			{/if}
-			<!-- Front indicator -->
-			{#if instrumentSymbol.showFrontIndicator && instrumentSymbol.frontIndicator}
-				<polygon
-					class="ghost-instrument-front"
-					points="0,-4 -3,2 3,2"
-					transform="translate(0, {instrumentSymbol.frontIndicator.y}) scale({1 / viewport.zoom})"
-				/>
-			{/if}
-		</g>
-		<!-- Snap indicator line to hanging position -->
-		{#if !ghostInstrument.snappedToPosition && nearestHangingPosition}
+		<g class="instrument-cursor" transform="translate({ghostInstrument.x}, {ghostInstrument.y})">
+			<!-- Simple crosshair -->
 			<line
-				class="snap-indicator"
-				x1={ghostInstrument.x}
-				y1={ghostInstrument.y}
-				x2={nearestHangingPosition.x}
-				y2={nearestHangingPosition.y}
-				stroke-width={strokeWidth / 2}
-				stroke-dasharray={dashArray}
+				class="cursor-crosshair"
+				class:snapped={ghostInstrument.snappedToPosition}
+				x1={-10 / viewport.zoom}
+				y1={0}
+				x2={10 / viewport.zoom}
+				y2={0}
+				stroke-width={strokeWidth}
 			/>
-		{/if}
+			<line
+				class="cursor-crosshair"
+				class:snapped={ghostInstrument.snappedToPosition}
+				x1={0}
+				y1={-10 / viewport.zoom}
+				x2={0}
+				y2={10 / viewport.zoom}
+				stroke-width={strokeWidth}
+			/>
+		</g>
 	{/if}
 
 	<!-- Dimension feedback -->
@@ -576,52 +555,17 @@
 		pointer-events: none;
 	}
 
-	/* Ghost instrument styles */
-	.ghost-instrument {
+	/* Instrument cursor crosshair styles */
+	.instrument-cursor {
 		pointer-events: none;
 	}
 
-	.ghost-instrument-body {
-		fill: rgba(137, 180, 250, 0.2); /* Catppuccin blue */
+	.cursor-crosshair {
 		stroke: #89b4fa; /* Catppuccin blue */
-	}
-
-	.ghost-instrument.snapped .ghost-instrument-body {
-		fill: rgba(166, 227, 161, 0.2); /* Catppuccin green */
-		stroke: #a6e3a1; /* Catppuccin green */
-	}
-
-	.ghost-instrument.not-snapped .ghost-instrument-body {
-		fill: rgba(250, 179, 135, 0.2); /* Catppuccin peach */
-		stroke: #fab387; /* Catppuccin peach */
-	}
-
-	.ghost-instrument-detail {
-		stroke: #89b4fa; /* Catppuccin blue */
-	}
-
-	.ghost-instrument.snapped .ghost-instrument-detail {
-		stroke: #a6e3a1; /* Catppuccin green */
-	}
-
-	.ghost-instrument.not-snapped .ghost-instrument-detail {
-		stroke: #fab387; /* Catppuccin peach */
-	}
-
-	.ghost-instrument-front {
-		fill: #89b4fa; /* Catppuccin blue */
-	}
-
-	.ghost-instrument.snapped .ghost-instrument-front {
-		fill: #a6e3a1; /* Catppuccin green */
-	}
-
-	.ghost-instrument.not-snapped .ghost-instrument-front {
-		fill: #fab387; /* Catppuccin peach */
-	}
-
-	.snap-indicator {
-		stroke: rgba(147, 153, 178, 0.5); /* Catppuccin overlay2 */
 		fill: none;
+	}
+
+	.cursor-crosshair.snapped {
+		stroke: #a6e3a1; /* Catppuccin green */
 	}
 </style>
