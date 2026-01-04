@@ -7,6 +7,7 @@
  * - Version tracking for conflict detection
  * - Online/offline handling with change queuing
  * - Dirty state tracking for UI indicators
+ * - Conflict detection and resolution with ConflictManager
  */
 
 import {
@@ -18,6 +19,12 @@ import {
 	markSessionActive,
 	markSessionClean
 } from './indexeddb';
+import {
+	createConflictManager,
+	type ConflictManager,
+	type ConflictInfo,
+	type ConflictResolution
+} from './conflict';
 import { project } from '$lib/stores/project.svelte';
 import type {
 	ShapeObject,
@@ -125,6 +132,9 @@ export class SyncManager {
 	/** Cleanup functions for effects */
 	private cleanupFunctions: (() => void)[] = [];
 
+	/** Conflict manager for handling version conflicts */
+	private _conflictManager: ConflictManager = createConflictManager();
+
 	// ========================================================================
 	// Reactive Getters
 	// ========================================================================
@@ -162,6 +172,21 @@ export class SyncManager {
 	/** Whether currently online */
 	get isOnline(): boolean {
 		return this._isOnline;
+	}
+
+	/** Whether there is a version conflict pending resolution */
+	get hasConflict(): boolean {
+		return this._conflictManager.hasConflict;
+	}
+
+	/** Current conflict information, if any */
+	get conflictInfo(): ConflictInfo | null {
+		return this._conflictManager.conflictInfo;
+	}
+
+	/** The conflict manager instance for advanced conflict handling */
+	get conflictManager(): ConflictManager {
+		return this._conflictManager;
 	}
 
 	// ========================================================================
@@ -333,20 +358,42 @@ export class SyncManager {
 
 			// Check for version conflict
 			if (serverProject.version > this._serverVersion) {
-				// Server has newer data
+				const localState = this.getProjectState();
+				const serverState = this.serverProjectToLocal(serverProject);
+
+				// Server has newer data - check if we have conflicting local changes
 				if (this._isDirty) {
-					// We have local changes that would be overwritten
-					this._syncStatus = 'idle';
-					return {
-						success: true,
-						localVersion: this._localVersion,
-						serverVersion: serverProject.version,
-						conflictDetected: true
-					};
+					// Use ConflictManager to detect if there's a real conflict
+					const hasConflict = this._conflictManager.detectConflict(
+						localState,
+						serverState,
+						this._localVersion,
+						serverProject.version
+					);
+
+					if (hasConflict) {
+						// Set conflict state for UI to handle
+						this._conflictManager.setConflict({
+							projectId: this._projectId!,
+							localVersion: this._localVersion,
+							serverVersion: serverProject.version,
+							localState,
+							serverState,
+							detectedAt: new Date()
+						});
+
+						this._syncStatus = 'idle';
+						return {
+							success: true,
+							localVersion: this._localVersion,
+							serverVersion: serverProject.version,
+							conflictDetected: true
+						};
+					}
 				}
 
 				// Safe to update local with server data
-				const projectForStore = this.serverProjectToLocal(serverProject);
+				const projectForStore = serverState;
 				this.loadProjectIntoStore(projectForStore);
 				await saveProject(projectForStore);
 				this._localVersion = serverProject.version;
@@ -407,6 +454,77 @@ export class SyncManager {
 				this.scheduleServerSync();
 			}
 		}
+	}
+
+	// ========================================================================
+	// Conflict Resolution
+	// ========================================================================
+
+	/**
+	 * Resolve a version conflict using the specified strategy
+	 *
+	 * @param resolution - How to resolve the conflict:
+	 *   - 'accept-server': Use server version (default, server-authoritative)
+	 *   - 'keep-local': Keep local changes, will overwrite server
+	 *   - 'merge': Attempt to merge changes (basic implementation)
+	 * @returns The resolved project state
+	 */
+	async resolveConflict(resolution: ConflictResolution): Promise<SyncResult> {
+		if (!this._conflictManager.hasConflict) {
+			return {
+				success: false,
+				localVersion: this._localVersion,
+				error: 'No conflict to resolve'
+			};
+		}
+
+		try {
+			// Resolve the conflict using the ConflictManager
+			const resolvedProject = await this._conflictManager.resolve(resolution);
+
+			// Load the resolved state into the store
+			this.loadProjectIntoStore(resolvedProject);
+
+			// Update version tracking
+			this._localVersion = resolvedProject.version;
+
+			// If we kept local or merged, we need to sync to server
+			if (resolution !== 'accept-server') {
+				this._isDirty = true;
+				// Save to IndexedDB immediately
+				await this.saveToIndexedDB();
+				// Schedule server sync
+				this.scheduleServerSync();
+			} else {
+				// Accepting server - save to IndexedDB and update server version
+				this._serverVersion = resolvedProject.version;
+				this._isDirty = false;
+				await this.saveToIndexedDB();
+			}
+
+			return {
+				success: true,
+				localVersion: this._localVersion,
+				serverVersion: this._serverVersion
+			};
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Conflict resolution failed';
+			this._lastError = errorMessage;
+
+			return {
+				success: false,
+				localVersion: this._localVersion,
+				error: errorMessage
+			};
+		}
+	}
+
+	/**
+	 * Clear the current conflict without resolving it
+	 * Useful if the user cancels the conflict dialog
+	 */
+	clearConflict(): void {
+		this._conflictManager.clearConflict();
 	}
 
 	// ========================================================================

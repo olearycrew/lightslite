@@ -13,6 +13,7 @@
 // Application-specific UI components
 export { default as ToolPalette } from './ToolPalette.svelte';
 export { default as PropertiesPanel } from './PropertiesPanel.svelte';
+export { default as ConflictDialog } from './ConflictDialog.svelte';
 
 // Re-export form components (wrapper components with app-specific APIs)
 export * from './forms';

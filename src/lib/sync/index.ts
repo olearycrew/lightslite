@@ -4,6 +4,7 @@
  * Re-exports all sync-related functionality:
  * - IndexedDB persistence layer for local storage
  * - SyncManager for orchestrating server sync
+ * - ConflictManager for version conflict handling
  */
 
 // IndexedDB persistence layer
@@ -55,3 +56,17 @@ export {
 	getSyncManager,
 	disposeSyncManager
 } from './manager';
+
+// ConflictManager for version conflict handling
+export {
+	// Types
+	type ConflictInfo,
+	type ConflictResolution,
+	type ProjectDiff,
+	type ConflictManager,
+	// Factory function
+	createConflictManager,
+	// Singleton helpers
+	getConflictManager,
+	clearConflictManager
+} from './conflict';
