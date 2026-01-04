@@ -136,33 +136,33 @@
 
 <style>
 	.marquee-rect {
-		fill: rgba(66, 135, 245, 0.1);
-		stroke: #4287f5;
+		fill: rgba(137, 180, 250, 0.1); /* Catppuccin blue */
+		stroke: #89b4fa; /* Catppuccin blue */
 		stroke-dasharray: 4, 4;
 		pointer-events: none;
 	}
 
 	.selection-box {
 		fill: none;
-		stroke: #4287f5;
+		stroke: #89b4fa; /* Catppuccin blue */
 		pointer-events: none;
 	}
 
 	.selection-handle {
-		fill: white;
-		stroke: #4287f5;
+		fill: #1e1e2e; /* Catppuccin base */
+		stroke: #89b4fa; /* Catppuccin blue */
 		cursor: inherit;
 	}
 
 	.rotation-line {
-		stroke: #4287f5;
+		stroke: #89b4fa; /* Catppuccin blue */
 		stroke-dasharray: 2, 2;
 		pointer-events: none;
 	}
 
 	.rotation-handle {
-		fill: white;
-		stroke: #4287f5;
+		fill: #1e1e2e; /* Catppuccin base */
+		stroke: #89b4fa; /* Catppuccin blue */
 		cursor: grab;
 	}
 </style>

@@ -112,6 +112,30 @@ function createViewportStore() {
 	}
 
 	/**
+	 * Center the world origin (0,0) in the viewport
+	 * @param viewportWidth - Width of the viewport
+	 * @param viewportHeight - Height of the viewport
+	 */
+	function centerOrigin(viewportWidth: number, viewportHeight: number) {
+		// Position the pan so that world (0,0) is at the center of the viewport
+		// screenX = worldX * zoom + panX
+		// viewportCenterX = 0 * zoom + panX
+		// panX = viewportCenterX
+		panX = viewportWidth / 2;
+		panY = viewportHeight / 2;
+	}
+
+	/**
+	 * Initialize the viewport with origin centered
+	 * @param viewportWidth - Width of the viewport
+	 * @param viewportHeight - Height of the viewport
+	 */
+	function initializeWithCenter(viewportWidth: number, viewportHeight: number) {
+		zoom = DEFAULT_ZOOM;
+		centerOrigin(viewportWidth, viewportHeight);
+	}
+
+	/**
 	 * Fit the viewport to show all content within the given bounds
 	 * @param bounds - Content bounds to fit
 	 * @param viewportWidth - Width of the viewport
@@ -207,6 +231,8 @@ function createViewportStore() {
 		setZoomPreset,
 		resetView,
 		fitToContent,
+		centerOrigin,
+		initializeWithCenter,
 
 		// Coordinate conversion utilities
 		screenToWorld,

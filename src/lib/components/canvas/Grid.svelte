@@ -240,42 +240,42 @@
 </g>
 
 <style>
-	/* Minor grid lines - subtle */
+	/* Minor grid lines - subtle (Catppuccin surface0) */
 	.grid-line.minor {
-		stroke: var(--color-border, #333);
+		stroke: #313244;
 		stroke-width: 0.5;
-		opacity: 0.3;
+		opacity: 0.4;
 		vector-effect: non-scaling-stroke;
 	}
 
-	/* Major grid lines - more visible */
+	/* Major grid lines - more visible (Catppuccin surface1) */
 	.grid-line.major {
-		stroke: var(--color-border, #444);
+		stroke: #45475a;
 		stroke-width: 1;
-		opacity: 0.5;
+		opacity: 0.6;
 		vector-effect: non-scaling-stroke;
 	}
 
-	/* Center line - vertical at x=0 (green) */
+	/* Center line - vertical at x=0 (Catppuccin green) */
 	.reference-line.center-line {
-		stroke: #22c55e;
+		stroke: #a6e3a1;
 		stroke-width: 1.5;
 		opacity: 0.8;
 		vector-effect: non-scaling-stroke;
 	}
 
-	/* Plaster line - horizontal at y=0 (magenta) */
+	/* Plaster line - horizontal at y=0 (Catppuccin pink) */
 	.reference-line.plaster-line {
-		stroke: #ec4899;
+		stroke: #f5c2e7;
 		stroke-width: 1.5;
 		opacity: 0.8;
 		vector-effect: non-scaling-stroke;
 	}
 
-	/* Origin marker */
+	/* Origin marker (Catppuccin peach) */
 	.origin-marker {
-		fill: #f59e0b;
-		stroke: #f59e0b;
+		fill: #fab387;
+		stroke: #fab387;
 		stroke-width: 2;
 		opacity: 0.9;
 		vector-effect: non-scaling-stroke;

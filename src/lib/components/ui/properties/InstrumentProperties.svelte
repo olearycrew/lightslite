@@ -30,16 +30,7 @@
 		label
 	}));
 
-	// Local state for editing
-	let instrumentType = $state(instrument.instrumentType as InstrumentType);
-	let channel = $state(instrument.channel ?? null);
-	let dimmer = $state(instrument.dimmer ?? null);
-	let color = $state(instrument.color ?? null);
-	let focus = $state(instrument.focus ?? null);
-	let rotation = $state(instrument.rotation);
-	let name = $state(instrument.name);
-
-	// Additional fields not in InstrumentObject but from Instrument type
+	// Local state for fields NOT stored in InstrumentObject
 	let circuit = $state<string | null>(null);
 	let universe = $state<number | null>(null);
 	let address = $state<number | null>(null);
@@ -49,7 +40,7 @@
 	let purpose = $state<string | null>(null);
 	let notes = $state<string | null>(null);
 
-	// Label display options
+	// Label display options (local only)
 	let showChannel = $state(true);
 	let showUnitNumber = $state(false);
 	let showColor = $state(false);
@@ -57,77 +48,82 @@
 	let showDimmer = $state(false);
 	let showGobo = $state(false);
 
-	// Update instrument when values change
+	// Update instrument directly through onchange handlers
 	function updateInstrument<K extends keyof InstrumentObject>(key: K, value: InstrumentObject[K]) {
 		project.updateInstrument(instrument.id, { [key]: value });
 	}
 
-	// Watchers to update store when local state changes
-	$effect(() => {
-		if (instrumentType !== instrument.instrumentType) {
-			updateInstrument('instrumentType', instrumentType);
+	function handleInstrumentTypeChange(value: InstrumentType | null) {
+		if (value !== null) {
+			updateInstrument('instrumentType', value);
 		}
-	});
+	}
 
-	$effect(() => {
-		if (channel !== instrument.channel) {
-			updateInstrument('channel', channel ?? undefined);
-		}
-	});
+	function handleChannelChange(value: number | null) {
+		updateInstrument('channel', value ?? undefined);
+	}
 
-	$effect(() => {
-		if (dimmer !== instrument.dimmer) {
-			updateInstrument('dimmer', dimmer ?? undefined);
-		}
-	});
+	function handleDimmerChange(value: number | null) {
+		updateInstrument('dimmer', value ?? undefined);
+	}
 
-	$effect(() => {
-		if (color !== instrument.color) {
-			updateInstrument('color', color ?? undefined);
-		}
-	});
+	function handleColorChange(value: string | null) {
+		updateInstrument('color', value ?? undefined);
+	}
 
-	$effect(() => {
-		if (focus !== instrument.focus) {
-			updateInstrument('focus', focus ?? undefined);
-		}
-	});
+	function handleFocusChange(value: string | null) {
+		updateInstrument('focus', value ?? undefined);
+	}
 
-	$effect(() => {
-		if (rotation !== instrument.rotation) {
-			updateInstrument('rotation', rotation);
-		}
-	});
+	function handleRotationChange(value: number) {
+		updateInstrument('rotation', value);
+	}
 
-	$effect(() => {
-		if (name !== instrument.name) {
-			updateInstrument('name', name);
+	function handleNameChange(value: string | null) {
+		if (value !== null) {
+			updateInstrument('name', value);
 		}
-	});
+	}
 </script>
 
 <div class="instrument-properties">
 	<CollapsibleSection title="Instrument">
 		<FormField label="Type">
 			<SelectDropdown
-				bind:value={instrumentType}
+				value={instrument.instrumentType as InstrumentType}
+				onchange={handleInstrumentTypeChange}
 				options={instrumentTypeOptions}
 				placeholder="Select type..."
 			/>
 		</FormField>
 
 		<FormField label="Name">
-			<TextInput bind:value={name} placeholder="Instrument name" />
+			<TextInput
+				value={instrument.name}
+				onchange={handleNameChange}
+				placeholder="Instrument name"
+			/>
 		</FormField>
 	</CollapsibleSection>
 
 	<CollapsibleSection title="Control">
 		<FormField label="Channel">
-			<NumberInput bind:value={channel} placeholder="Ch #" min={1} max={9999} />
+			<NumberInput
+				value={instrument.channel ?? null}
+				onchange={handleChannelChange}
+				placeholder="Ch #"
+				min={1}
+				max={9999}
+			/>
 		</FormField>
 
 		<FormField label="Dimmer">
-			<NumberInput bind:value={dimmer} placeholder="Dim #" min={1} />
+			<NumberInput
+				value={instrument.dimmer ?? null}
+				onchange={handleDimmerChange}
+				placeholder="Dim #"
+				min={1}
+			/>
 		</FormField>
 
 		<FormField label="Circuit">
@@ -147,7 +143,11 @@
 
 	<CollapsibleSection title="Accessories">
 		<FormField label="Color" layout="vertical">
-			<ColorInput bind:value={color} placeholder="e.g., R33, L201" />
+			<ColorInput
+				value={instrument.color ?? null}
+				onchange={handleColorChange}
+				placeholder="e.g., R33, L201"
+			/>
 		</FormField>
 
 		<FormField label="Gobo">
@@ -169,7 +169,11 @@
 		</FormField>
 
 		<FormField label="Focus">
-			<TextInput bind:value={focus} placeholder="Focus notes" />
+			<TextInput
+				value={instrument.focus ?? null}
+				onchange={handleFocusChange}
+				placeholder="Focus notes"
+			/>
 		</FormField>
 
 		<FormField label="Notes" layout="vertical">
@@ -179,7 +183,14 @@
 
 	<CollapsibleSection title="Transform">
 		<FormField label="Rotation">
-			<Slider bind:value={rotation} min={0} max={360} step={1} unit="°" />
+			<Slider
+				value={instrument.rotation}
+				onchange={handleRotationChange}
+				min={0}
+				max={360}
+				step={1}
+				unit="°"
+			/>
 		</FormField>
 	</CollapsibleSection>
 

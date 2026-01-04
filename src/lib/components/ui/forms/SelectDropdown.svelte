@@ -26,8 +26,13 @@
 	function handleChange(event: Event) {
 		const select = event.target as HTMLSelectElement;
 		const newValue = select.value === '' ? null : (select.value as T);
-		value = newValue;
-		onchange?.(newValue);
+		// Only update local value if using bind:value (no onchange callback)
+		// If onchange is provided, the parent controls state via prop
+		if (onchange) {
+			onchange(newValue);
+		} else {
+			value = newValue;
+		}
 	}
 </script>
 

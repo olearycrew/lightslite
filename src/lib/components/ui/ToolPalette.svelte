@@ -125,9 +125,9 @@
 		flex-direction: column;
 		gap: 4px;
 		padding: 8px;
-		background: var(--color-bg-secondary, #2d2d2d);
+		background: var(--color-mantle, #181825);
 		border-radius: 8px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 		user-select: none;
 	}
 
@@ -139,7 +139,7 @@
 
 	.separator {
 		height: 1px;
-		background: var(--color-border, #444);
+		background: var(--color-surface1, #45475a);
 		margin: 4px 0;
 	}
 
@@ -154,7 +154,7 @@
 		border: none;
 		border-radius: 6px;
 		background: transparent;
-		color: var(--color-text-secondary, #999);
+		color: var(--color-subtext1, #bac2de);
 		cursor: pointer;
 		transition:
 			background-color 0.15s,
@@ -162,17 +162,17 @@
 	}
 
 	.tool-button:hover {
-		background: var(--color-bg-hover, #3d3d3d);
-		color: var(--color-text-primary, #fff);
+		background: var(--color-surface0, #313244);
+		color: var(--color-text, #cdd6f4);
 	}
 
 	.tool-button.active {
-		background: var(--color-accent, #4287f5);
-		color: white;
+		background: var(--color-blue, #89b4fa);
+		color: var(--color-crust, #11111b);
 	}
 
 	.tool-button.active:hover {
-		background: var(--color-accent-hover, #5a9df5);
+		background: var(--color-lavender, #b4befe);
 	}
 
 	.tool-icon {

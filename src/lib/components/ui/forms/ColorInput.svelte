@@ -45,20 +45,33 @@
 	function handleInput(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const newValue = input.value === '' ? null : input.value;
-		value = newValue;
-		onchange?.(newValue);
+		// Only update local value if using bind:value (no onchange callback)
+		// If onchange is provided, the parent controls state via prop
+		if (onchange) {
+			onchange(newValue);
+		} else {
+			value = newValue;
+		}
 	}
 
 	function selectPreset(color: string) {
-		value = color;
-		onchange?.(color);
+		// Only update local value if using bind:value (no onchange callback)
+		if (onchange) {
+			onchange(color);
+		} else {
+			value = color;
+		}
 	}
 
 	function handleColorPick(event: Event) {
 		const input = event.target as HTMLInputElement;
 		pickerColor = input.value;
-		value = input.value;
-		onchange?.(input.value);
+		// Only update local value if using bind:value (no onchange callback)
+		if (onchange) {
+			onchange(input.value);
+		} else {
+			value = input.value;
+		}
 	}
 </script>
 

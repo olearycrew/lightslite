@@ -551,27 +551,27 @@
 
 	.ghost-electric {
 		fill: none;
-		stroke: #f5a742;
+		stroke: #fab387; /* Catppuccin peach */
 	}
 
 	.ghost-point {
-		fill: #4287f5;
+		fill: #89b4fa; /* Catppuccin blue */
 		stroke: none;
 		pointer-events: none;
 	}
 
 	.ghost-electric + .ghost-point,
 	.ghost-electric ~ .ghost-point {
-		fill: #f5a742;
+		fill: #fab387; /* Catppuccin peach */
 	}
 
 	.dimension-background {
-		fill: rgba(0, 0, 0, 0.7);
+		fill: rgba(17, 17, 27, 0.85); /* Catppuccin crust */
 		stroke: none;
 	}
 
 	.dimension-text {
-		fill: white;
+		fill: #cdd6f4; /* Catppuccin text */
 		font-family: system-ui, sans-serif;
 		pointer-events: none;
 	}
@@ -582,46 +582,46 @@
 	}
 
 	.ghost-instrument-body {
-		fill: rgba(66, 135, 245, 0.2);
-		stroke: #4287f5;
+		fill: rgba(137, 180, 250, 0.2); /* Catppuccin blue */
+		stroke: #89b4fa; /* Catppuccin blue */
 	}
 
 	.ghost-instrument.snapped .ghost-instrument-body {
-		fill: rgba(76, 175, 80, 0.2);
-		stroke: #4caf50;
+		fill: rgba(166, 227, 161, 0.2); /* Catppuccin green */
+		stroke: #a6e3a1; /* Catppuccin green */
 	}
 
 	.ghost-instrument.not-snapped .ghost-instrument-body {
-		fill: rgba(255, 152, 0, 0.2);
-		stroke: #ff9800;
+		fill: rgba(250, 179, 135, 0.2); /* Catppuccin peach */
+		stroke: #fab387; /* Catppuccin peach */
 	}
 
 	.ghost-instrument-detail {
-		stroke: #4287f5;
+		stroke: #89b4fa; /* Catppuccin blue */
 	}
 
 	.ghost-instrument.snapped .ghost-instrument-detail {
-		stroke: #4caf50;
+		stroke: #a6e3a1; /* Catppuccin green */
 	}
 
 	.ghost-instrument.not-snapped .ghost-instrument-detail {
-		stroke: #ff9800;
+		stroke: #fab387; /* Catppuccin peach */
 	}
 
 	.ghost-instrument-front {
-		fill: #4287f5;
+		fill: #89b4fa; /* Catppuccin blue */
 	}
 
 	.ghost-instrument.snapped .ghost-instrument-front {
-		fill: #4caf50;
+		fill: #a6e3a1; /* Catppuccin green */
 	}
 
 	.ghost-instrument.not-snapped .ghost-instrument-front {
-		fill: #ff9800;
+		fill: #fab387; /* Catppuccin peach */
 	}
 
 	.snap-indicator {
-		stroke: rgba(0, 0, 0, 0.3);
+		stroke: rgba(147, 153, 178, 0.5); /* Catppuccin overlay2 */
 		fill: none;
 	}
 </style>

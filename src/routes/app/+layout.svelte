@@ -44,7 +44,7 @@
 					class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-primary hover:text-text-primary"
 				>
 					<div
-						class="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-text-primary font-medium"
+						class="h-8 w-8 rounded-full bg-blue flex items-center justify-center text-crust font-medium"
 					>
 						{data.user?.name?.charAt(0).toUpperCase() || 'U'}
 					</div>

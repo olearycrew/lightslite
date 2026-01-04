@@ -30,14 +30,14 @@
 	// Highlight stroke width
 	const highlightStrokeWidth = $derived(8 / viewport.zoom);
 
-	// Colors based on position type
+	// Colors based on position type (Catppuccin Mocha palette)
 	const typeColors: Record<HangingPositionType, { stroke: string; fill: string }> = {
-		electric: { stroke: '#f5a742', fill: '#f5a742' },
-		truss: { stroke: '#8b4513', fill: '#d2691e' },
-		ladder: { stroke: '#4682b4', fill: '#4682b4' },
-		boom: { stroke: '#228b22', fill: '#228b22' },
-		'box-boom': { stroke: '#6b238e', fill: '#6b238e' },
-		'ground-row': { stroke: '#dc143c', fill: '#dc143c' }
+		electric: { stroke: '#fab387', fill: '#fab387' }, // peach
+		truss: { stroke: '#eba0ac', fill: '#eba0ac' }, // maroon
+		ladder: { stroke: '#89b4fa', fill: '#89b4fa' }, // blue
+		boom: { stroke: '#a6e3a1', fill: '#a6e3a1' }, // green
+		'box-boom': { stroke: '#cba6f7', fill: '#cba6f7' }, // mauve
+		'ground-row': { stroke: '#f38ba8', fill: '#f38ba8' } // red
 	};
 
 	const colors = $derived(typeColors[position.positionType]);
@@ -204,11 +204,11 @@
 	}
 
 	.highlight.selected {
-		stroke: #4287f5;
+		stroke: #89b4fa; /* Catppuccin Mocha blue */
 	}
 
 	.highlight.hovered {
-		stroke: rgba(0, 0, 0, 0.3);
+		stroke: rgba(147, 153, 178, 0.5); /* Catppuccin overlay2 */
 	}
 
 	.main-line {
@@ -223,20 +223,20 @@
 	}
 
 	.label-background {
-		fill: rgba(255, 255, 255, 0.9);
-		stroke: rgba(0, 0, 0, 0.2);
+		fill: rgba(49, 50, 68, 0.95); /* Catppuccin surface0 */
+		stroke: rgba(69, 71, 90, 0.8); /* Catppuccin surface1 */
 		stroke-width: 0.5;
 	}
 
 	.label-text {
-		fill: #333333;
+		fill: #cdd6f4; /* Catppuccin text */
 		font-family: system-ui, sans-serif;
 		font-weight: 500;
 		pointer-events: none;
 	}
 
 	.hanging-position.selected .label-background {
-		fill: rgba(66, 135, 245, 0.1);
-		stroke: #4287f5;
+		fill: rgba(137, 180, 250, 0.15); /* Catppuccin blue bg */
+		stroke: #89b4fa; /* Catppuccin blue */
 	}
 </style>

@@ -111,8 +111,8 @@
 		flex-direction: column;
 		width: 280px;
 		height: 100%;
-		background: var(--color-bg-secondary, #2d2d2d);
-		border-left: 1px solid var(--color-border, #444);
+		background: var(--color-mantle, #181825);
+		border-left: 1px solid var(--color-surface1, #45475a);
 		overflow: hidden;
 	}
 
@@ -121,15 +121,15 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 12px 16px;
-		border-bottom: 1px solid var(--color-border, #444);
-		background: var(--color-bg-tertiary, #252525);
+		border-bottom: 1px solid var(--color-surface1, #45475a);
+		background: var(--color-mantle, #181825);
 	}
 
 	.panel-title {
 		margin: 0;
 		font-size: 14px;
 		font-weight: 600;
-		color: var(--color-text-primary, #fff);
+		color: var(--color-text, #cdd6f4);
 	}
 
 	.deselect-btn {
@@ -142,14 +142,14 @@
 		background: none;
 		border: none;
 		border-radius: 4px;
-		color: var(--color-text-muted, #666);
+		color: var(--color-overlay0, #6c7086);
 		font-size: 12px;
 		cursor: pointer;
 	}
 
 	.deselect-btn:hover {
-		background: var(--color-bg-hover, rgba(255, 255, 255, 0.1));
-		color: var(--color-text-secondary, #999);
+		background: var(--color-surface0, #313244);
+		color: var(--color-subtext1, #bac2de);
 	}
 
 	.panel-content {
@@ -168,11 +168,11 @@
 	}
 
 	.panel-content::-webkit-scrollbar-thumb {
-		background: var(--color-border, #444);
+		background: var(--color-surface1, #45475a);
 		border-radius: 3px;
 	}
 
 	.panel-content::-webkit-scrollbar-thumb:hover {
-		background: var(--color-text-muted, #555);
+		background: var(--color-surface2, #585b70);
 	}
 </style>

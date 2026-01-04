@@ -52,6 +52,9 @@
 	// Drawing state - managed by ToolOverlay but we need to track if drawing is active
 	let isDrawing = $state(false);
 
+	// Track if viewport has been initialized (for centering origin)
+	let hasInitialized = $state(false);
+
 	// SVG element reference
 	let svgElement: SVGSVGElement;
 
@@ -407,6 +410,14 @@
 		};
 	});
 
+	// Initialize viewport with origin centered when dimensions are first available
+	$effect(() => {
+		if (!hasInitialized && viewportWidth > 0 && viewportHeight > 0) {
+			viewport.initializeWithCenter(viewportWidth, viewportHeight);
+			hasInitialized = true;
+		}
+	});
+
 	// Setup keyboard event listener
 	$effect(() => {
 		window.addEventListener('keydown', handleKeyDown);
@@ -476,6 +487,6 @@
 	}
 
 	.viewport-background {
-		fill: var(--color-bg-primary);
+		fill: var(--color-base, #1e1e2e); /* Catppuccin Mocha base */
 	}
 </style>

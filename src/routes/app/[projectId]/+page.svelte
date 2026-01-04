@@ -190,8 +190,8 @@
 		flex-direction: column;
 		align-items: center;
 		padding: 12px 8px;
-		background: var(--color-bg-primary, #1e1e1e);
-		border-right: 1px solid var(--color-border, #444);
+		background: var(--color-mantle, #181825);
+		border-right: 1px solid var(--color-surface1, #45475a);
 	}
 
 	.main-area {
@@ -208,8 +208,8 @@
 		gap: 8px;
 		height: 48px;
 		padding: 0 16px;
-		background: var(--color-bg-secondary, #2d2d2d);
-		border-bottom: 1px solid var(--color-border, #444);
+		background: var(--color-mantle, #181825);
+		border-bottom: 1px solid var(--color-surface1, #45475a);
 	}
 
 	.toolbar-section {
@@ -221,7 +221,7 @@
 	.toolbar-divider {
 		width: 1px;
 		height: 24px;
-		background: var(--color-border, #444);
+		background: var(--color-surface1, #45475a);
 		margin: 0 8px;
 	}
 
@@ -229,7 +229,7 @@
 		margin: 0;
 		font-size: 14px;
 		font-weight: 600;
-		color: var(--color-text-primary, #fff);
+		color: var(--color-text, #cdd6f4);
 	}
 
 	.toolbar-btn {
@@ -242,13 +242,13 @@
 		background: none;
 		border: none;
 		border-radius: 4px;
-		color: var(--color-text-secondary, #999);
+		color: var(--color-subtext0, #a6adc8);
 		cursor: pointer;
 	}
 
 	.toolbar-btn:hover {
-		background: var(--color-bg-hover, rgba(255, 255, 255, 0.1));
-		color: var(--color-text-primary, #fff);
+		background: var(--color-surface0, #313244);
+		color: var(--color-text, #cdd6f4);
 	}
 
 	.icon {
@@ -264,14 +264,14 @@
 		width: 48px;
 		text-align: center;
 		font-size: 12px;
-		color: var(--color-text-secondary, #999);
+		color: var(--color-subtext0, #a6adc8);
 	}
 
 	.canvas-area {
 		flex: 1;
 		position: relative;
 		overflow: hidden;
-		background: var(--color-bg-primary, #1e1e1e);
+		background: var(--color-base, #1e1e2e);
 	}
 
 	.status-bar {
@@ -280,10 +280,10 @@
 		justify-content: space-between;
 		height: 24px;
 		padding: 0 16px;
-		background: var(--color-bg-secondary, #2d2d2d);
-		border-top: 1px solid var(--color-border, #444);
+		background: var(--color-crust, #11111b);
+		border-top: 1px solid var(--color-surface1, #45475a);
 		font-size: 11px;
-		color: var(--color-text-muted, #666);
+		color: var(--color-subtext0, #a6adc8);
 	}
 
 	.status-left,
@@ -294,11 +294,11 @@
 	}
 
 	.status-separator {
-		color: var(--color-border, #444);
+		color: var(--color-surface2, #585b70);
 	}
 
 	.status-highlight {
-		color: var(--color-accent, #4287f5);
+		color: var(--color-blue, #89b4fa);
 	}
 
 	.flex-1 {

@@ -184,7 +184,7 @@ function createProjectStore() {
 			visible: options.visible ?? true,
 			geometry,
 			fill: options.fill ?? 'transparent',
-			stroke: options.stroke ?? '#000000',
+			stroke: options.stroke ?? '#cdd6f4', // Catppuccin Mocha text color - visible on dark bg
 			strokeWidth: options.strokeWidth ?? 2
 		};
 		shapes.set(shape.id, shape);

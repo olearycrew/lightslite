@@ -28,14 +28,10 @@
 		{ value: 'ground-row', label: 'Ground Row' }
 	];
 
-	// Local state for editing
-	let name = $state(position.name);
-	let positionType = $state(position.positionType);
-	let trimHeight = $state(position.trimHeight ?? null);
-	let height = $state(position.height ?? null);
+	// Local state for notes (not stored in position object)
 	let notes = $state<string | null>(null);
 
-	// Get instruments on this position
+	// Get instruments on this position - use $derived to track position.id properly
 	const instrumentsOnPosition = $derived(
 		project.instruments.filter((i) => i.hangingPositionId === position.id)
 	);
@@ -48,30 +44,24 @@
 		project.updateHangingPosition(position.id, { [key]: value });
 	}
 
-	// Watchers to update store when local state changes
-	$effect(() => {
-		if (name !== position.name) {
-			updatePosition('name', name);
+	// Handler functions to update store directly without $effect loops
+	function handleNameChange(value: string | null) {
+		if (value !== null) {
+			updatePosition('name', value);
 		}
-	});
+	}
 
-	$effect(() => {
-		if (positionType !== position.positionType) {
-			updatePosition('positionType', positionType);
-		}
-	});
+	function handlePositionTypeChange(value: HangingPositionType) {
+		updatePosition('positionType', value);
+	}
 
-	$effect(() => {
-		if (trimHeight !== position.trimHeight) {
-			updatePosition('trimHeight', trimHeight ?? undefined);
-		}
-	});
+	function handleTrimHeightChange(value: number | null) {
+		updatePosition('trimHeight', value ?? undefined);
+	}
 
-	$effect(() => {
-		if (height !== position.height) {
-			updatePosition('height', height ?? undefined);
-		}
-	});
+	function handleHeightChange(value: number | null) {
+		updatePosition('height', value ?? undefined);
+	}
 
 	/**
 	 * Select an instrument on this position
@@ -102,12 +92,13 @@
 <div class="position-properties">
 	<CollapsibleSection title="Position">
 		<FormField label="Name">
-			<TextInput bind:value={name} placeholder="Position name" />
+			<TextInput value={position.name} onchange={handleNameChange} placeholder="Position name" />
 		</FormField>
 
 		<FormField label="Type">
 			<SelectDropdown
-				bind:value={positionType}
+				value={position.positionType}
+				onchange={handlePositionTypeChange}
 				options={positionTypeOptions}
 				placeholder="Select type..."
 			/>
@@ -115,15 +106,29 @@
 	</CollapsibleSection>
 
 	<CollapsibleSection title="Dimensions">
-		{#if positionType === 'electric' || positionType === 'truss'}
+		{#if position.positionType === 'electric' || position.positionType === 'truss'}
 			<FormField label="Trim Height">
-				<NumberInput bind:value={trimHeight} placeholder="Height" unit="ft" min={0} step={0.5} />
+				<NumberInput
+					value={position.trimHeight ?? null}
+					onchange={handleTrimHeightChange}
+					placeholder="Height"
+					unit="ft"
+					min={0}
+					step={0.5}
+				/>
 			</FormField>
 		{/if}
 
-		{#if positionType === 'boom' || positionType === 'box-boom'}
+		{#if position.positionType === 'boom' || position.positionType === 'box-boom'}
 			<FormField label="Height">
-				<NumberInput bind:value={height} placeholder="Height" unit="ft" min={0} step={0.5} />
+				<NumberInput
+					value={position.height ?? null}
+					onchange={handleHeightChange}
+					placeholder="Height"
+					unit="ft"
+					min={0}
+					step={0.5}
+				/>
 			</FormField>
 		{/if}
 	</CollapsibleSection>

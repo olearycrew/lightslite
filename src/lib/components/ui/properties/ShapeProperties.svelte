@@ -22,89 +22,102 @@
 
 	let { shape }: Props = $props();
 
-	// Local state for editing
-	let name = $state(shape.name);
-	let stroke = $state(shape.stroke ?? '#000000');
-	let fill = $state(shape.fill ?? 'transparent');
-	let strokeWidth = $state(shape.strokeWidth ?? 2);
-
-	// Geometry-specific state
-	let x1 = $state(0);
-	let y1 = $state(0);
-	let x2 = $state(0);
-	let y2 = $state(0);
-	let x = $state(0);
-	let y = $state(0);
-	let width = $state(0);
-	let height = $state(0);
-	let cx = $state(0);
-	let cy = $state(0);
-	let radius = $state(0);
-
-	// Initialize geometry state based on shape type
-	$effect(() => {
-		const geo = shape.geometry;
-		if (geo.type === 'line') {
-			x1 = geo.x1;
-			y1 = geo.y1;
-			x2 = geo.x2;
-			y2 = geo.y2;
-		} else if (geo.type === 'rect') {
-			x = geo.x;
-			y = geo.y;
-			width = geo.width;
-			height = geo.height;
-		} else if (geo.type === 'circle') {
-			cx = geo.cx;
-			cy = geo.cy;
-			radius = geo.radius;
-		}
-	});
-
 	// Update shape when values change
 	function updateShape<K extends keyof ShapeObject>(key: K, value: ShapeObject[K]) {
 		project.updateShape(shape.id, { [key]: value });
 	}
 
-	function updateGeometry() {
-		const geo = shape.geometry;
-		let newGeometry = geo;
-
-		if (geo.type === 'line') {
-			newGeometry = { type: 'line', x1, y1, x2, y2 } as LineGeometry;
-		} else if (geo.type === 'rect') {
-			newGeometry = { type: 'rect', x, y, width, height } as RectGeometry;
-		} else if (geo.type === 'circle') {
-			newGeometry = { type: 'circle', cx, cy, radius } as CircleGeometry;
-		}
-
+	function updateGeometry(newGeometry: ShapeObject['geometry']) {
 		project.updateShape(shape.id, { geometry: newGeometry });
 	}
 
-	// Watchers for common properties
-	$effect(() => {
-		if (name !== shape.name) {
-			updateShape('name', name);
+	// Handler functions for direct updates
+	function handleNameChange(value: string | null) {
+		if (value !== null) {
+			updateShape('name', value);
 		}
-	});
+	}
 
-	$effect(() => {
-		if (stroke !== shape.stroke) {
-			updateShape('stroke', stroke ?? undefined);
-		}
-	});
+	function handleStrokeChange(value: string | null) {
+		updateShape('stroke', value ?? undefined);
+	}
 
-	$effect(() => {
-		if (fill !== shape.fill) {
-			updateShape('fill', fill ?? undefined);
-		}
-	});
+	function handleFillChange(value: string | null) {
+		updateShape('fill', value ?? undefined);
+	}
 
-	$effect(() => {
-		if (strokeWidth !== shape.strokeWidth) {
-			updateShape('strokeWidth', strokeWidth);
+	function handleStrokeWidthChange(value: number) {
+		updateShape('strokeWidth', value);
+	}
+
+	// Geometry update handlers for line
+	function handleX1Change(value: number | null) {
+		if (shape.geometry.type === 'line' && value !== null) {
+			updateGeometry({ ...shape.geometry, x1: value });
 		}
-	});
+	}
+
+	function handleY1Change(value: number | null) {
+		if (shape.geometry.type === 'line' && value !== null) {
+			updateGeometry({ ...shape.geometry, y1: value });
+		}
+	}
+
+	function handleX2Change(value: number | null) {
+		if (shape.geometry.type === 'line' && value !== null) {
+			updateGeometry({ ...shape.geometry, x2: value });
+		}
+	}
+
+	function handleY2Change(value: number | null) {
+		if (shape.geometry.type === 'line' && value !== null) {
+			updateGeometry({ ...shape.geometry, y2: value });
+		}
+	}
+
+	// Geometry update handlers for rect
+	function handleXChange(value: number | null) {
+		if (shape.geometry.type === 'rect' && value !== null) {
+			updateGeometry({ ...shape.geometry, x: value });
+		}
+	}
+
+	function handleYChange(value: number | null) {
+		if (shape.geometry.type === 'rect' && value !== null) {
+			updateGeometry({ ...shape.geometry, y: value });
+		}
+	}
+
+	function handleWidthChange(value: number | null) {
+		if (shape.geometry.type === 'rect' && value !== null) {
+			updateGeometry({ ...shape.geometry, width: value });
+		}
+	}
+
+	function handleHeightChange(value: number | null) {
+		if (shape.geometry.type === 'rect' && value !== null) {
+			updateGeometry({ ...shape.geometry, height: value });
+		}
+	}
+
+	// Geometry update handlers for circle
+	function handleCxChange(value: number | null) {
+		if (shape.geometry.type === 'circle' && value !== null) {
+			updateGeometry({ ...shape.geometry, cx: value });
+		}
+	}
+
+	function handleCyChange(value: number | null) {
+		if (shape.geometry.type === 'circle' && value !== null) {
+			updateGeometry({ ...shape.geometry, cy: value });
+		}
+	}
+
+	function handleRadiusChange(value: number | null) {
+		if (shape.geometry.type === 'circle' && value !== null) {
+			updateGeometry({ ...shape.geometry, radius: value });
+		}
+	}
 
 	/**
 	 * Delete this shape
@@ -114,8 +127,8 @@
 		project.deleteShape(shape.id);
 	}
 
-	// Shape type for display
-	const shapeTypeLabel = $derived(() => {
+	// Shape type for display - use a single derived
+	const shapeTypeLabel = $derived.by(() => {
 		switch (shape.geometry.type) {
 			case 'line':
 				return 'Line';
@@ -132,71 +145,89 @@
 <div class="shape-properties">
 	<CollapsibleSection title="Shape">
 		<FormField label="Name">
-			<TextInput bind:value={name} placeholder="Shape name" />
+			<TextInput value={shape.name} onchange={handleNameChange} placeholder="Shape name" />
 		</FormField>
 
 		<FormField label="Type">
-			<span class="shape-type-label">{shapeTypeLabel()}</span>
+			<span class="shape-type-label">{shapeTypeLabel}</span>
 		</FormField>
 	</CollapsibleSection>
 
 	<CollapsibleSection title="Style">
 		<FormField label="Stroke" layout="vertical">
-			<ColorInput bind:value={stroke} placeholder="Stroke color" />
+			<ColorInput
+				value={shape.stroke ?? null}
+				onchange={handleStrokeChange}
+				placeholder="Stroke color"
+			/>
 		</FormField>
 
 		{#if shape.geometry.type !== 'line'}
 			<FormField label="Fill" layout="vertical">
-				<ColorInput bind:value={fill} placeholder="Fill color" />
+				<ColorInput
+					value={shape.fill ?? null}
+					onchange={handleFillChange}
+					placeholder="Fill color"
+				/>
 			</FormField>
 		{/if}
 
 		<FormField label="Stroke Width">
-			<Slider bind:value={strokeWidth} min={0.5} max={10} step={0.5} unit="px" />
+			<Slider
+				value={shape.strokeWidth ?? 2}
+				onchange={handleStrokeWidthChange}
+				min={0.5}
+				max={10}
+				step={0.5}
+				unit="px"
+			/>
 		</FormField>
 	</CollapsibleSection>
 
 	<CollapsibleSection title="Position & Size">
 		{#if shape.geometry.type === 'line'}
+			{@const lineGeom = shape.geometry as LineGeometry}
 			<div class="position-grid">
 				<FormField label="X1">
-					<NumberInput bind:value={x1} onchange={updateGeometry} />
+					<NumberInput value={lineGeom.x1} onchange={handleX1Change} />
 				</FormField>
 				<FormField label="Y1">
-					<NumberInput bind:value={y1} onchange={updateGeometry} />
+					<NumberInput value={lineGeom.y1} onchange={handleY1Change} />
 				</FormField>
 				<FormField label="X2">
-					<NumberInput bind:value={x2} onchange={updateGeometry} />
+					<NumberInput value={lineGeom.x2} onchange={handleX2Change} />
 				</FormField>
 				<FormField label="Y2">
-					<NumberInput bind:value={y2} onchange={updateGeometry} />
+					<NumberInput value={lineGeom.y2} onchange={handleY2Change} />
 				</FormField>
 			</div>
 		{:else if shape.geometry.type === 'rect'}
+			{@const rectGeom = shape.geometry as RectGeometry}
 			<div class="position-grid">
 				<FormField label="X">
-					<NumberInput bind:value={x} onchange={updateGeometry} />
+					<NumberInput value={rectGeom.x} onchange={handleXChange} />
 				</FormField>
 				<FormField label="Y">
-					<NumberInput bind:value={y} onchange={updateGeometry} />
+					<NumberInput value={rectGeom.y} onchange={handleYChange} />
 				</FormField>
 				<FormField label="Width">
-					<NumberInput bind:value={width} onchange={updateGeometry} min={0} />
+					<NumberInput value={rectGeom.width} onchange={handleWidthChange} min={0} />
 				</FormField>
 				<FormField label="Height">
-					<NumberInput bind:value={height} onchange={updateGeometry} min={0} />
+					<NumberInput value={rectGeom.height} onchange={handleHeightChange} min={0} />
 				</FormField>
 			</div>
 		{:else if shape.geometry.type === 'circle'}
+			{@const circleGeom = shape.geometry as CircleGeometry}
 			<div class="position-grid">
 				<FormField label="Center X">
-					<NumberInput bind:value={cx} onchange={updateGeometry} />
+					<NumberInput value={circleGeom.cx} onchange={handleCxChange} />
 				</FormField>
 				<FormField label="Center Y">
-					<NumberInput bind:value={cy} onchange={updateGeometry} />
+					<NumberInput value={circleGeom.cy} onchange={handleCyChange} />
 				</FormField>
 				<FormField label="Radius">
-					<NumberInput bind:value={radius} onchange={updateGeometry} min={0} />
+					<NumberInput value={circleGeom.radius} onchange={handleRadiusChange} min={0} />
 				</FormField>
 			</div>
 		{/if}

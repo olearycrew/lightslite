@@ -23,7 +23,7 @@
 
 	let {
 		geometry,
-		stroke = '#000000',
+		stroke = '#cdd6f4', // Catppuccin Mocha text color
 		strokeWidth = 2,
 		isSelected = false,
 		isHovered = false
@@ -87,11 +87,11 @@
 	}
 
 	.highlight.selected {
-		stroke: #4287f5;
+		stroke: #89b4fa; /* Catppuccin Mocha blue */
 	}
 
 	.highlight.hovered {
-		stroke: #999999;
+		stroke: #9399b2; /* Catppuccin Mocha overlay2 */
 		stroke-dasharray: 4, 2;
 	}
 

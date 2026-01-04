@@ -61,10 +61,7 @@
 			<h1 class="text-2xl font-bold text-text-primary">Projects</h1>
 			<p class="text-text-secondary">Your lighting plots and designs</p>
 		</div>
-		<button
-			onclick={() => (showNewProjectModal = true)}
-			class="inline-flex items-center rounded bg-accent px-4 py-2 font-medium text-text-primary hover:bg-accent-hover"
-		>
+		<button onclick={() => (showNewProjectModal = true)} class="btn-primary">
 			<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
 			</svg>
@@ -95,10 +92,7 @@
 			</svg>
 			<h2 class="mb-2 text-xl font-medium text-text-primary">No projects yet</h2>
 			<p class="mb-4 text-text-secondary">Create your first lighting plot to get started</p>
-			<button
-				onclick={() => (showNewProjectModal = true)}
-				class="inline-flex items-center rounded bg-accent px-4 py-2 font-medium text-text-primary hover:bg-accent-hover"
-			>
+			<button onclick={() => (showNewProjectModal = true)} class="btn-primary">
 				<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
@@ -173,16 +167,11 @@
 							showNewProjectModal = false;
 							newProjectName = '';
 						}}
-						class="rounded border border-border px-4 py-2 text-text-secondary hover:bg-bg-secondary"
+						class="btn-secondary"
 					>
 						Cancel
 					</button>
-					<button
-						type="submit"
-						class="rounded bg-accent px-4 py-2 font-medium text-text-primary hover:bg-accent-hover"
-					>
-						Create
-					</button>
+					<button type="submit" class="btn-primary"> Create </button>
 				</div>
 			</form>
 		</div>

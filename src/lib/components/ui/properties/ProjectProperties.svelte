@@ -16,17 +16,8 @@
 		CollapsibleSection
 	} from '../forms';
 
-	// Local state for project settings
-	let projectName = $state(project.projectName);
+	// Local state for fields not stored in project
 	let venueName = $state<string | null>(null);
-
-	// Grid settings
-	let gridUnit = $state<GridUnit>(grid.unit);
-	let gridSpacing = $state(grid.spacing);
-	let showGrid = $state(grid.showGrid);
-	let snapToGrid = $state(grid.snapToGrid);
-	let showCenterLine = $state(grid.showCenterLine);
-	let showPlasterLine = $state(grid.showPlasterLine);
 
 	// Unit options
 	const unitOptions: Array<{ value: GridUnit; label: string }> = [
@@ -36,55 +27,58 @@
 
 	// Grid spacing preset options based on current unit
 	const spacingPresets = $derived(
-		GRID_SPACING_PRESETS.filter((p) => p.unit === gridUnit).map((p) => ({
+		GRID_SPACING_PRESETS.filter((p) => p.unit === grid.unit).map((p) => ({
 			value: p.value,
 			label: p.label
 		}))
 	);
 
-	// Update project name
-	$effect(() => {
-		if (projectName !== project.projectName) {
-			project.setProjectInfo(projectName, project.projectId ?? undefined);
+	// Handler functions for direct updates
+	function handleProjectNameChange(value: string | null) {
+		if (value !== null) {
+			project.setProjectInfo(value, project.projectId ?? undefined);
 		}
-	});
+	}
 
-	// Update grid settings
-	$effect(() => {
-		if (gridUnit !== grid.unit) {
-			grid.setUnit(gridUnit);
+	function handleGridUnitChange(value: GridUnit | null) {
+		if (value !== null) {
+			grid.setUnit(value);
 		}
-	});
+	}
 
-	$effect(() => {
-		if (gridSpacing !== grid.spacing) {
-			grid.setSpacing(gridSpacing);
+	function handleGridSpacingChange(value: number | null) {
+		if (value !== null) {
+			grid.setSpacing(value);
 		}
-	});
+	}
 
-	$effect(() => {
-		if (showGrid !== grid.showGrid) {
+	function handleShowGridChange(checked: boolean) {
+		if (checked !== grid.showGrid) {
 			grid.toggleGrid();
 		}
-	});
+	}
 
-	$effect(() => {
-		if (snapToGrid !== grid.snapToGrid) {
+	function handleSnapToGridChange(checked: boolean) {
+		if (checked !== grid.snapToGrid) {
 			grid.toggleSnap();
 		}
-	});
+	}
 
-	$effect(() => {
-		if (showCenterLine !== grid.showCenterLine) {
+	function handleShowCenterLineChange(checked: boolean) {
+		if (checked !== grid.showCenterLine) {
 			grid.toggleCenterLine();
 		}
-	});
+	}
 
-	$effect(() => {
-		if (showPlasterLine !== grid.showPlasterLine) {
+	function handleShowPlasterLineChange(checked: boolean) {
+		if (checked !== grid.showPlasterLine) {
 			grid.togglePlasterLine();
 		}
-	});
+	}
+
+	function setSpacingPreset(value: number) {
+		grid.setSpacing(value);
+	}
 
 	// Summary statistics
 	const stats = $derived({
@@ -97,7 +91,11 @@
 <div class="project-properties">
 	<CollapsibleSection title="Project">
 		<FormField label="Name">
-			<TextInput bind:value={projectName} placeholder="Project name" />
+			<TextInput
+				value={project.projectName}
+				onchange={handleProjectNameChange}
+				placeholder="Project name"
+			/>
 		</FormField>
 
 		<FormField label="Venue">
@@ -107,16 +105,17 @@
 
 	<CollapsibleSection title="Scale & Units">
 		<FormField label="Unit">
-			<SelectDropdown bind:value={gridUnit} options={unitOptions} />
+			<SelectDropdown value={grid.unit} onchange={handleGridUnitChange} options={unitOptions} />
 		</FormField>
 
 		<FormField label="Grid Spacing">
 			<NumberInput
-				bind:value={gridSpacing}
+				value={grid.spacing}
+				onchange={handleGridSpacingChange}
 				min={0.1}
 				max={10}
 				step={0.5}
-				unit={gridUnit === 'feet' ? 'ft' : 'm'}
+				unit={grid.unit === 'feet' ? 'ft' : 'm'}
 			/>
 		</FormField>
 
@@ -126,8 +125,8 @@
 				<button
 					type="button"
 					class="preset-btn"
-					class:active={gridSpacing === preset.value}
-					onclick={() => (gridSpacing = preset.value)}
+					class:active={grid.spacing === preset.value}
+					onclick={() => setSpacingPreset(preset.value)}
 				>
 					{preset.label}
 				</button>
@@ -137,10 +136,18 @@
 
 	<CollapsibleSection title="Grid Display">
 		<div class="checkbox-list">
-			<Checkbox bind:checked={showGrid} label="Show Grid" />
-			<Checkbox bind:checked={snapToGrid} label="Snap to Grid" />
-			<Checkbox bind:checked={showCenterLine} label="Show Center Line" />
-			<Checkbox bind:checked={showPlasterLine} label="Show Plaster Line" />
+			<Checkbox checked={grid.showGrid} onchange={handleShowGridChange} label="Show Grid" />
+			<Checkbox checked={grid.snapToGrid} onchange={handleSnapToGridChange} label="Snap to Grid" />
+			<Checkbox
+				checked={grid.showCenterLine}
+				onchange={handleShowCenterLineChange}
+				label="Show Center Line"
+			/>
+			<Checkbox
+				checked={grid.showPlasterLine}
+				onchange={handleShowPlasterLineChange}
+				label="Show Plaster Line"
+			/>
 		</div>
 	</CollapsibleSection>
 

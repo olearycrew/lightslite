@@ -33,8 +33,13 @@
 	function handleInput(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const newValue = input.value === '' ? null : parseFloat(input.value);
-		value = newValue;
-		onchange?.(newValue);
+		// Only update local value if using bind:value (no onchange callback)
+		// If onchange is provided, the parent controls state via prop
+		if (onchange) {
+			onchange(newValue);
+		} else {
+			value = newValue;
+		}
 	}
 </script>
 

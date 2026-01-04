@@ -1,40 +1,95 @@
 @import 'tailwindcss';
 
 /*
- * LightsLite - Base Theme Configuration
- * A CAD/technical application theme with precise, neutral styling
+ * LightsLite - Catppuccin Mocha Theme
+ * A CAD/technical application theme using Catppuccin Mocha palette
+ * https://catppuccin.com/
  */
 
-/* Custom theme tokens using Tailwind CSS 4's native CSS variables */
+/* Catppuccin Mocha CSS Custom Properties */
 @theme {
-	/* Colors optimized for CAD applications */
-	--color-canvas: #1a1a1a;
-	--color-canvas-light: #2d2d2d;
-	--color-panel: #242424;
-	--color-panel-hover: #2a2a2a;
-	--color-border: #3d3d3d;
-	--color-border-focus: #525252;
+	/* === Catppuccin Mocha Base Colors === */
+	/* Base/Background colors - darkest to lightest */
+	--color-crust: #11111b;
+	--color-mantle: #181825;
+	--color-base: #1e1e2e;
 
-	/* Accent colors for UI elements */
-	--color-accent: #3b82f6;
-	--color-accent-hover: #2563eb;
-	--color-accent-muted: #1d4ed8;
+	/* Surface colors - for elevated elements */
+	--color-surface0: #313244;
+	--color-surface1: #45475a;
+	--color-surface2: #585b70;
+
+	/* Overlay colors - for overlays and modals */
+	--color-overlay0: #6c7086;
+	--color-overlay1: #7f849c;
+	--color-overlay2: #9399b2;
+
+	/* Text colors - muted to bright */
+	--color-subtext0: #a6adc8;
+	--color-subtext1: #bac2de;
+	--color-text: #cdd6f4;
+
+	/* === Catppuccin Mocha Accent Colors === */
+	--color-rosewater: #f5e0dc;
+	--color-flamingo: #f2cdcd;
+	--color-pink: #f5c2e7;
+	--color-mauve: #cba6f7;
+	--color-red: #f38ba8;
+	--color-maroon: #eba0ac;
+	--color-peach: #fab387;
+	--color-yellow: #f9e2af;
+	--color-green: #a6e3a1;
+	--color-teal: #94e2d5;
+	--color-sky: #89dceb;
+	--color-sapphire: #74c7ec;
+	--color-blue: #89b4fa;
+	--color-lavender: #b4befe;
+
+	/* === Semantic Color Mappings === */
+	/* Canvas - main drawing area */
+	--color-canvas: #1e1e2e; /* base */
+	--color-canvas-dark: #181825; /* mantle - for depth */
+
+	/* Panel - UI panels and sidebars */
+	--color-panel: #181825; /* mantle */
+	--color-panel-hover: #313244; /* surface0 */
+
+	/* Background colors for layouts (aliases for compatibility) */
+	--color-bg-primary: #1e1e2e; /* base - main background */
+	--color-bg-secondary: #181825; /* mantle - elevated surfaces */
+	--color-bg-tertiary: #11111b; /* crust - highest elevation */
+	--color-bg-hover: #313244; /* surface0 - hover states */
+
+	/* Border colors */
+	--color-border: #45475a; /* surface1 */
+	--color-border-focus: #585b70; /* surface2 */
+
+	/* Primary accent - blue for selection/focus */
+	--color-accent: #89b4fa; /* blue */
+	--color-accent-hover: #74c7ec; /* sapphire - darker on hover */
+	--color-accent-muted: #7287fd; /* sapphire muted */
 
 	/* Status colors */
-	--color-success: #22c55e;
-	--color-warning: #eab308;
-	--color-error: #ef4444;
+	--color-success: #a6e3a1; /* green */
+	--color-warning: #f9e2af; /* yellow */
+	--color-error: #f38ba8; /* red */
+	--color-info: #89dceb; /* sky */
 
-	/* Text colors */
-	--color-text-primary: #f5f5f5;
-	--color-text-secondary: #a3a3a3;
-	--color-text-muted: #737373;
+	/* Text semantic colors */
+	--color-text-primary: #cdd6f4; /* text */
+	--color-text-secondary: #bac2de; /* subtext1 */
+	--color-text-muted: #a6adc8; /* subtext0 */
+	--color-text-subtle: #9399b2; /* overlay2 */
 
 	/* Grid and guide colors for CAD */
-	--color-grid-major: #404040;
-	--color-grid-minor: #2a2a2a;
-	--color-guide: #f59e0b;
-	--color-selection: #3b82f6;
+	--color-grid-major: #45475a; /* surface1 */
+	--color-grid-minor: #313244; /* surface0 */
+	--color-guide: #fab387; /* peach - for guides */
+	--color-selection: #89b4fa; /* blue - for selections */
+
+	/* Shape/drawing default colors - visible on dark background */
+	--color-stroke-default: #cdd6f4; /* text - white-ish for visibility */
+	--color-fill-default: transparent;
 
 	/* Spacing for precision UI */
 	--spacing-toolbar: 40px;
@@ -49,7 +104,7 @@
 @layer base {
 	html,
 	body {
-		@apply bg-canvas text-text-primary antialiased;
+		@apply bg-base text-text antialiased;
 		font-feature-settings:
 			'tnum' 1,
 			'kern' 1;
@@ -67,15 +122,15 @@
 	}
 
 	::-webkit-scrollbar-track {
-		@apply bg-panel;
+		@apply bg-mantle;
 	}
 
 	::-webkit-scrollbar-thumb {
-		@apply bg-border rounded-full;
+		@apply bg-surface1 rounded-full;
 	}
 
 	::-webkit-scrollbar-thumb:hover {
-		@apply bg-border-focus;
+		@apply bg-surface2;
 	}
 }
 
@@ -83,25 +138,65 @@
 @layer components {
 	/* Panel styling */
 	.panel {
-		@apply bg-panel border border-border rounded-sm;
+		@apply bg-mantle border border-surface1 rounded-sm;
+	}
+
+	/* Primary button - accent colored with dark text for contrast */
+	.btn-primary {
+		@apply inline-flex items-center justify-center px-4 py-2 rounded-md
+               bg-blue text-crust font-medium
+               hover:bg-sapphire transition-colors duration-150;
+	}
+
+	/* Secondary button - outlined */
+	.btn-secondary {
+		@apply inline-flex items-center justify-center px-4 py-2 rounded-md
+               border border-surface1 text-subtext1
+               hover:bg-surface0 hover:text-text transition-colors duration-150;
 	}
 
 	/* Toolbar button base */
 	.toolbar-btn {
 		@apply flex items-center justify-center w-8 h-8 rounded-sm
-               text-text-secondary hover:text-text-primary hover:bg-panel-hover
+               text-subtext1 hover:text-text hover:bg-surface0
                transition-colors duration-150;
 	}
 
 	.toolbar-btn.active {
-		@apply bg-accent text-text-primary;
+		@apply bg-blue text-crust;
 	}
 
 	/* Input styling for precision values */
 	.input-precision {
-		@apply bg-canvas border border-border rounded-sm px-2 py-1
-               font-mono text-sm text-text-primary
-               focus:outline-none focus:border-accent;
+		@apply bg-base border border-surface1 rounded-sm px-2 py-1
+               font-mono text-sm text-text
+               focus:outline-none focus:border-blue;
+	}
+
+	/* Card styling for panels */
+	.card {
+		@apply bg-surface0 border border-surface1 rounded-lg p-4;
+	}
+
+	/* Badge/tag styling */
+	.badge {
+		@apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+	}
+
+	.badge-blue {
+		@apply bg-blue/20 text-blue;
+	}
+
+	.badge-green {
+		@apply bg-green/20 text-green;
+	}
+
+	.badge-yellow {
+		@apply bg-yellow/20 text-yellow;
+	}
+
+	.badge-red {
+		@apply bg-red/20 text-red;
 	}
 }
 
@@ -118,5 +213,49 @@
 
 	.cursor-grabbing {
 		cursor: grabbing;
+	}
+
+	/* Catppuccin color utilities as text colors */
+	.text-ctp-rosewater {
+		color: var(--color-rosewater);
+	}
+	.text-ctp-flamingo {
+		color: var(--color-flamingo);
+	}
+	.text-ctp-pink {
+		color: var(--color-pink);
+	}
+	.text-ctp-mauve {
+		color: var(--color-mauve);
+	}
+	.text-ctp-red {
+		color: var(--color-red);
+	}
+	.text-ctp-maroon {
+		color: var(--color-maroon);
+	}
+	.text-ctp-peach {
+		color: var(--color-peach);
+	}
+	.text-ctp-yellow {
+		color: var(--color-yellow);
+	}
+	.text-ctp-green {
+		color: var(--color-green);
+	}
+	.text-ctp-teal {
+		color: var(--color-teal);
+	}
+	.text-ctp-sky {
+		color: var(--color-sky);
+	}
+	.text-ctp-sapphire {
+		color: var(--color-sapphire);
+	}
+	.text-ctp-blue {
+		color: var(--color-blue);
+	}
+	.text-ctp-lavender {
+		color: var(--color-lavender);
 	}
 }
