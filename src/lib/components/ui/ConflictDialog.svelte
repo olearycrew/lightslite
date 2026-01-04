@@ -9,7 +9,7 @@
 	 * - View diff between versions
 	 */
 
-	import type { ConflictInfo, ConflictResolution, ProjectDiff } from '$lib/sync/conflict';
+	import type { ConflictInfo, ConflictResolution, ProjectDiff } from '$lib/sync/conflict.svelte';
 	import { Button } from './button';
 
 	// Props
