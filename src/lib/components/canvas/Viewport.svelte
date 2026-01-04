@@ -487,6 +487,6 @@
 	}
 
 	.viewport-background {
-		fill: var(--color-base, #1e1e2e); /* Catppuccin Mocha base */
+		fill: var(--color-crust);
 	}
 </style>

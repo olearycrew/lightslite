@@ -125,7 +125,7 @@
 		flex-direction: column;
 		gap: 4px;
 		padding: 8px;
-		background: var(--color-mantle, #181825);
+		background: var(--color-crust, #11111b);
 		border-radius: 8px;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 		user-select: none;
@@ -167,12 +167,12 @@
 	}
 
 	.tool-button.active {
-		background: var(--color-blue, #89b4fa);
+		background: var(--color-brand, #b4befe);
 		color: var(--color-crust, #11111b);
 	}
 
 	.tool-button.active:hover {
-		background: var(--color-lavender, #b4befe);
+		background: var(--color-lavender, #e7cbff);
 	}
 
 	.tool-icon {

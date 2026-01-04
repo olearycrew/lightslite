@@ -8,6 +8,7 @@
 
 /* Catppuccin Mocha CSS Custom Properties */
 @theme {
+	--color-brand: #e7cbff;
 	/* === Catppuccin Mocha Base Colors === */
 	/* Base/Background colors - darkest to lightest */
 	--color-crust: #11111b;
@@ -65,7 +66,7 @@
 	--color-border-focus: #585b70; /* surface2 */
 
 	/* Primary accent - blue for selection/focus */
-	--color-accent: #89b4fa; /* blue */
+	--color-accent: #04a5e5; /* blue */
 	--color-accent-hover: #74c7ec; /* sapphire - darker on hover */
 	--color-accent-muted: #7287fd; /* sapphire muted */
 

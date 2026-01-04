@@ -28,13 +28,11 @@
 
 <div class="flex min-h-screen flex-col bg-bg-primary">
 	<!-- Header -->
-	<header class="relative z-50 border-b border-border bg-bg-secondary">
+	<header class="relative z-50 border-b border-border bg-surface0">
 		<div class="flex h-14 items-center justify-between px-4">
 			<!-- Logo / Brand -->
 			<div class="flex items-center gap-4">
-				<a href="/app" class="text-lg font-bold text-text-primary hover:text-accent">
-					LightsLite
-				</a>
+				<a href="/app" class="text-lg font-bold text-brand hover:text-fuchsia-300"> LightsLite </a>
 			</div>
 
 			<!-- User Menu -->
