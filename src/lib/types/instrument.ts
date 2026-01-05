@@ -17,6 +17,7 @@
  */
 export type InstrumentType =
 	// Ellipsoidal (ERS/Leko) - by beam angle
+	| 'ers-14'
 	| 'ers-19'
 	| 'ers-26'
 	| 'ers-36'
@@ -209,6 +210,7 @@ export function createInstrument(
  */
 export function getInstrumentCategory(type: InstrumentType): InstrumentCategory {
 	switch (type) {
+		case 'ers-14':
 		case 'ers-19':
 		case 'ers-26':
 		case 'ers-36':
@@ -242,6 +244,7 @@ export function getInstrumentCategory(type: InstrumentType): InstrumentCategory 
  * Human-readable names for instrument types
  */
 export const INSTRUMENT_TYPE_NAMES: Record<InstrumentType, string> = {
+	'ers-14': 'ERS 14°',
 	'ers-19': 'ERS 19°',
 	'ers-26': 'ERS 26°',
 	'ers-36': 'ERS 36°',

@@ -3,8 +3,8 @@
 	 * InstrumentLabel Component
 	 *
 	 * Displays information about an instrument (channel, unit number, color, purpose).
-	 * Configurable what to show based on LabelConfig.
-	 * Automatically positions to avoid overlaps with symbol.
+	 * The channel number is shown in a circle below the instrument (industry standard).
+	 * Other information is shown in a separate label area.
 	 */
 	import { viewport } from '$lib/stores/viewport.svelte';
 	import type { LabelConfig } from '$lib/types/instrument';
@@ -37,7 +37,7 @@
 		x,
 		y,
 		offsetX = 0,
-		offsetY = 24,
+		offsetY = 28,
 		config,
 		channel = null,
 		unitNumber = null,
@@ -47,23 +47,19 @@
 		gobo = null
 	}: Props = $props();
 
-	// Build the label lines based on config
-	const labelLines = $derived.by(() => {
+	// Check if we should show the channel circle
+	const showChannelCircle = $derived(config.showChannel && channel !== null);
+
+	// Build the additional label lines based on config (excluding channel which gets the circle)
+	const additionalLines = $derived.by(() => {
 		const lines: string[] = [];
 
-		// Primary line: Channel / Unit Number
-		const primaryParts: string[] = [];
-		if (config.showChannel && channel !== null) {
-			primaryParts.push(`${channel}`);
-		}
+		// Unit number (if shown)
 		if (config.showUnitNumber && unitNumber !== null) {
-			primaryParts.push(`(${unitNumber})`);
-		}
-		if (primaryParts.length > 0) {
-			lines.push(primaryParts.join(' '));
+			lines.push(`#${unitNumber}`);
 		}
 
-		// Secondary line: Color and Dimmer
+		// Color and Dimmer
 		const secondaryParts: string[] = [];
 		if (config.showColor && color) {
 			secondaryParts.push(color);
@@ -75,12 +71,12 @@
 			lines.push(secondaryParts.join(' / '));
 		}
 
-		// Third line: Purpose
+		// Purpose
 		if (config.showPurpose && purpose) {
 			lines.push(purpose);
 		}
 
-		// Fourth line: Gobo
+		// Gobo
 		if (config.showGobo && gobo) {
 			lines.push(`gobo: ${gobo}`);
 		}
@@ -88,67 +84,104 @@
 		return lines;
 	});
 
-	// Check if we have anything to display
-	const hasContent = $derived(labelLines.length > 0);
+	// Check if we have additional content to display
+	const hasAdditionalContent = $derived(additionalLines.length > 0);
+
+	// Circle radius for channel number
+	const circleRadius = $derived(10 / viewport.zoom);
 
 	// Font sizes that scale with zoom
-	const primaryFontSize = $derived(11 / viewport.zoom);
-	const secondaryFontSize = $derived(9 / viewport.zoom);
-	const lineHeight = $derived(12 / viewport.zoom);
+	const channelFontSize = $derived(9 / viewport.zoom);
+	const secondaryFontSize = $derived(8 / viewport.zoom);
+	const lineHeight = $derived(10 / viewport.zoom);
 
-	// Background padding
-	const paddingX = $derived(4 / viewport.zoom);
+	// Background padding for additional info
+	const paddingX = $derived(3 / viewport.zoom);
 	const paddingY = $derived(2 / viewport.zoom);
 
-	// Calculate background dimensions
+	// Calculate background dimensions for additional info
 	const backgroundWidth = $derived.by(() => {
-		if (!hasContent) return 0;
-		const maxLength = Math.max(...labelLines.map((line) => line.length));
-		return (maxLength * 6) / viewport.zoom + paddingX * 2;
+		if (!hasAdditionalContent) return 0;
+		const maxLength = Math.max(...additionalLines.map((line) => line.length));
+		return (maxLength * 5.5) / viewport.zoom + paddingX * 2;
 	});
 
 	const backgroundHeight = $derived.by(() => {
-		if (!hasContent) return 0;
-		return labelLines.length * lineHeight + paddingY * 2;
+		if (!hasAdditionalContent) return 0;
+		return additionalLines.length * lineHeight + paddingY * 2;
 	});
 
 	// Position based on config.position preference
-	const labelPosition = $derived.by(() => {
+	const channelCirclePosition = $derived.by(() => {
 		let lx = x + offsetX;
-		let ly = y + offsetY;
+		let ly = y;
 
-		// Adjust based on position preference
+		// Channel circle is usually below the instrument
 		switch (config.position) {
 			case 'top':
-				ly = y - offsetY;
+				ly = y + Math.abs(offsetY) + circleRadius;
 				break;
 			case 'bottom':
-				ly = y + Math.abs(offsetY);
+				ly = y - Math.abs(offsetY) - circleRadius;
 				break;
 			case 'left':
-				lx = x - Math.abs(offsetX) - backgroundWidth / 2;
-				ly = y;
+				lx = x - Math.abs(offsetX) - circleRadius * 2;
 				break;
 			case 'right':
-				lx = x + Math.abs(offsetX) + backgroundWidth / 2;
-				ly = y;
+				lx = x + Math.abs(offsetX) + circleRadius * 2;
 				break;
 			case 'auto':
 			default:
-				// Default positioning (below the symbol)
+				// Default: below the instrument
+				ly = y - Math.abs(offsetY) - circleRadius;
 				break;
 		}
 
 		return { x: lx, y: ly };
 	});
+
+	// Additional info appears below the channel circle
+	const additionalInfoPosition = $derived.by(() => {
+		return {
+			x: channelCirclePosition.x,
+			y: channelCirclePosition.y - circleRadius - lineHeight
+		};
+	});
 </script>
 
-<!-- Note: scale(1, -1) counter-flips the label since the viewport Y axis is flipped -->
-{#if hasContent}
-	<g class="instrument-label" transform="translate({labelPosition.x}, {labelPosition.y}) scale(1, -1)">
+<!-- Channel number in a circle (industry standard) -->
+<!-- Note: scale(1, -1) counter-flips since the viewport Y axis is flipped -->
+{#if showChannelCircle}
+	<g
+		class="channel-circle"
+		transform="translate({channelCirclePosition.x}, {channelCirclePosition.y}) scale(1, -1)"
+	>
+		<!-- Circle background -->
+		<circle class="channel-circle-bg" cx={0} cy={0} r={circleRadius} />
+
+		<!-- Channel number text -->
+		<text
+			class="channel-text"
+			x={0}
+			y={1 / viewport.zoom}
+			text-anchor="middle"
+			dominant-baseline="middle"
+			font-size={channelFontSize}
+		>
+			{channel}
+		</text>
+	</g>
+{/if}
+
+<!-- Additional information (unit number, color, purpose, etc.) -->
+{#if hasAdditionalContent}
+	<g
+		class="additional-info"
+		transform="translate({additionalInfoPosition.x}, {additionalInfoPosition.y}) scale(1, -1)"
+	>
 		<!-- Background -->
 		<rect
-			class="label-background"
+			class="info-background"
 			x={-backgroundWidth / 2}
 			y={-paddingY}
 			width={backgroundWidth}
@@ -156,17 +189,15 @@
 			rx={2 / viewport.zoom}
 		/>
 
-		<!-- Label text lines -->
-		{#each labelLines as line, index (index)}
+		<!-- Info text lines -->
+		{#each additionalLines as line, index (index)}
 			<text
-				class="label-text"
-				class:primary={index === 0}
-				class:secondary={index > 0}
+				class="info-text"
 				x={0}
 				y={index * lineHeight + lineHeight / 2}
 				text-anchor="middle"
 				dominant-baseline="middle"
-				font-size={index === 0 ? primaryFontSize : secondaryFontSize}
+				font-size={secondaryFontSize}
 			>
 				{line}
 			</text>
@@ -175,25 +206,31 @@
 {/if}
 
 <style>
-	.label-background {
-		fill: rgba(255, 255, 255, 0.95);
-		stroke: rgba(0, 0, 0, 0.2);
-		stroke-width: 0.5;
+	.channel-circle-bg {
+		fill: #ffffff;
+		stroke: #000000;
+		stroke-width: 1;
 	}
 
-	.label-text {
+	.channel-text {
 		font-family: system-ui, sans-serif;
+		font-weight: 600;
+		fill: #000000;
 		pointer-events: none;
 		user-select: none;
 	}
 
-	.label-text.primary {
-		fill: #333333;
-		font-weight: 600;
+	.info-background {
+		fill: rgba(255, 255, 255, 0.9);
+		stroke: rgba(0, 0, 0, 0.15);
+		stroke-width: 0.5;
 	}
 
-	.label-text.secondary {
-		fill: #666666;
+	.info-text {
+		font-family: system-ui, sans-serif;
+		fill: #444444;
 		font-weight: 400;
+		pointer-events: none;
+		user-select: none;
 	}
 </style>

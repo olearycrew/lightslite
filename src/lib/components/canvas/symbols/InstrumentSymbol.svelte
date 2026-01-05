@@ -29,8 +29,8 @@
 		isSelected?: boolean;
 		/** Whether the instrument is hovered */
 		isHovered?: boolean;
-		/** Custom label to display (channel number, etc.) */
-		channelLabel?: string | number | null;
+		/** Custom label to display (unit number shown inside symbol) */
+		unitLabel?: string | number | null;
 	}
 
 	let {
@@ -43,11 +43,14 @@
 		stroke,
 		isSelected = false,
 		isHovered = false,
-		channelLabel = null
+		unitLabel = null
 	}: Props = $props();
 
 	// Get the symbol definition for this instrument type
 	const symbol = $derived(getSymbol(type));
+
+	// Check if this is a moving light (needs dashed pan/tilt circle)
+	const isMovingLight = $derived(type.startsWith('moving-'));
 
 	// Computed colors
 	const fillColor = $derived(fill ?? symbol.defaultFill);
@@ -59,7 +62,7 @@
 	// Selection/hover outline width
 	const highlightStrokeWidth = $derived(2 / viewport.zoom);
 
-	// Font size for channel label
+	// Font size for unit label
 	const fontSize = $derived(10 / viewport.zoom);
 
 	// Transform string for positioning
@@ -69,8 +72,9 @@
 	const halfWidth = $derived((symbol.width * scale) / 2);
 	const halfHeight = $derived((symbol.height * scale) / 2);
 
-	// Front indicator position (arrow showing beam direction)
-	const frontIndicatorY = $derived(symbol.frontIndicator?.y ?? -(symbol.height / 2 + 6));
+	// Dashed circle radius for moving lights (pan/tilt range indicator)
+	const movingLightCircleRadius = $derived(24 * scale);
+	const dashArray = $derived(`${4 / viewport.zoom} ${3 / viewport.zoom}`);
 </script>
 
 <g class="instrument-symbol" {transform} data-type={type}>
@@ -86,6 +90,21 @@
 			height={symbol.height * scale + 8 / viewport.zoom}
 			rx={4 / viewport.zoom}
 			stroke-width={highlightStrokeWidth}
+		/>
+	{/if}
+
+	<!-- Dashed pan/tilt range circle for moving lights (rendered behind the fixture) -->
+	{#if isMovingLight}
+		<circle
+			class="pan-tilt-range"
+			cx={0}
+			cy={0}
+			r={movingLightCircleRadius}
+			fill="none"
+			stroke={strokeColor}
+			stroke-width={baseStrokeWidth * 0.6}
+			stroke-dasharray={dashArray}
+			vector-effect="non-scaling-stroke"
 		/>
 	{/if}
 
@@ -113,24 +132,11 @@
 		{/each}
 	{/if}
 
-	<!-- Front direction indicator -->
-	{#if symbol.showFrontIndicator}
-		<g class="front-indicator" transform="translate(0, {frontIndicatorY})">
-			<!-- Small triangle pointing in the beam direction -->
-			<polygon
-				points="0,-4 -3,2 3,2"
-				fill={strokeColor}
-				stroke="none"
-				transform="scale({1 / viewport.zoom})"
-			/>
-		</g>
-	{/if}
-
-	<!-- Channel number label (shown inside or near the symbol) -->
+	<!-- Unit number label (shown inside the symbol body) -->
 	<!-- Note: scale(1, -1) counter-flips the text since the viewport Y axis is flipped -->
-	{#if channelLabel !== null && channelLabel !== undefined}
+	{#if unitLabel !== null && unitLabel !== undefined}
 		<text
-			class="channel-label"
+			class="unit-label"
 			x={0}
 			y={2 / viewport.zoom}
 			text-anchor="middle"
@@ -140,7 +146,7 @@
 			font-weight="bold"
 			transform="scale(1, -1)"
 		>
-			{channelLabel}
+			{unitLabel}
 		</text>
 	{/if}
 </g>
@@ -173,11 +179,12 @@
 		stroke-dasharray: 4 2;
 	}
 
-	.front-indicator {
+	.pan-tilt-range {
 		pointer-events: none;
+		opacity: 0.6;
 	}
 
-	.channel-label {
+	.unit-label {
 		pointer-events: none;
 		font-family: system-ui, sans-serif;
 		user-select: none;

@@ -144,30 +144,27 @@
 							fill={instrument.color ? undefined : undefined}
 							isSelected={selection.isSelected(instrument.id)}
 							isHovered={hoveredId === instrument.id}
-							channelLabel={instrument.channel}
 						/>
 
-						<!-- Render label if instrument has metadata -->
-						{#if instrument.channel || instrument.color || instrument.focus}
-							<InstrumentLabel
-								x={worldPos.x}
-								y={worldPos.y}
-								offsetY={getSymbol(instrument.instrumentType).labelOffset.y}
-								config={{
-									showChannel: true,
-									showUnitNumber: false,
-									showColor: !!instrument.color,
-									showPurpose: !!instrument.focus,
-									showDimmer: !!instrument.dimmer,
-									showGobo: false,
-									position: 'auto'
-								}}
-								channel={instrument.channel}
-								color={instrument.color}
-								purpose={instrument.focus}
-								dimmer={instrument.dimmer}
-							/>
-						{/if}
+						<!-- Render label with channel in circle below instrument -->
+						<InstrumentLabel
+							x={worldPos.x}
+							y={worldPos.y}
+							offsetY={getSymbol(instrument.instrumentType).labelOffset.y}
+							config={{
+								showChannel: true,
+								showUnitNumber: false,
+								showColor: !!instrument.color,
+								showPurpose: !!instrument.focus,
+								showDimmer: !!instrument.dimmer,
+								showGobo: false,
+								position: 'auto'
+							}}
+							channel={instrument.channel}
+							color={instrument.color}
+							purpose={instrument.focus}
+							dimmer={instrument.dimmer}
+						/>
 					</SelectableObject>
 				{/if}
 			{/each}
@@ -211,30 +208,27 @@
 						fill={instrument.color ? undefined : undefined}
 						isSelected={selection.isSelected(instrument.id)}
 						isHovered={hoveredId === instrument.id}
-						channelLabel={instrument.channel}
 					/>
 
-					<!-- Render label if instrument has metadata -->
-					{#if instrument.channel || instrument.color || instrument.focus}
-						<InstrumentLabel
-							x={instrument.x}
-							y={instrument.y}
-							offsetY={getSymbol(instrument.instrumentType).labelOffset.y}
-							config={{
-								showChannel: true,
-								showUnitNumber: false,
-								showColor: !!instrument.color,
-								showPurpose: !!instrument.focus,
-								showDimmer: !!instrument.dimmer,
-								showGobo: false,
-								position: 'auto'
-							}}
-							channel={instrument.channel}
-							color={instrument.color}
-							purpose={instrument.focus}
-							dimmer={instrument.dimmer}
-						/>
-					{/if}
+					<!-- Render label with channel in circle below instrument -->
+					<InstrumentLabel
+						x={instrument.x}
+						y={instrument.y}
+						offsetY={getSymbol(instrument.instrumentType).labelOffset.y}
+						config={{
+							showChannel: true,
+							showUnitNumber: false,
+							showColor: !!instrument.color,
+							showPurpose: !!instrument.focus,
+							showDimmer: !!instrument.dimmer,
+							showGobo: false,
+							position: 'auto'
+						}}
+						channel={instrument.channel}
+						color={instrument.color}
+						purpose={instrument.focus}
+						dimmer={instrument.dimmer}
+					/>
 				</SelectableObject>
 			{/if}
 		{/each}

@@ -3,110 +3,384 @@
  *
  * SVG path definitions for each lighting instrument type.
  * All symbols are centered at origin (0,0) for easy rotation.
- * Symbols are approximately 40-50 units wide for standard fixtures.
+ * Symbols are designed to match professional theatrical lighting plot standards.
  *
- * USITT standard symbol conventions are followed where possible:
- * - ERS: Rounded rectangle with lens indication, body tapers toward front
- * - PAR: Circle with internal parallel lines indicating lamp direction
- * - Fresnel: Circle with concentric rings
- * - Cyc Light: Asymmetric elongated shape, wider output at front
- * - Moving Light: Circle with yoke/base indication
- * - LED Par: Circle with LED dot pattern
- * - Followspot: Large elongated oval with stand indication
+ * USITT standard symbol conventions:
+ * - ERS: Tapered body (wider at lamp housing, narrower at lens), with lens-end indicators for beam angle
+ * - PAR: Rounded bucket/can shape
+ * - Fresnel: Similar to PAR but with concentric rings for fresnel lens
+ * - Moving Light: Circle with yoke arms and dashed pan/tilt range circle
  */
 
 import type { SymbolDefinition, SymbolRegistry } from './types';
 
+// =============================================================================
+// ERS (Ellipsoidal) Symbols - USITT Standard
+// Tapered body with specific lens-end indicators for each beam angle
+// =============================================================================
+
 /**
- * ERS (Ellipsoidal) symbol - Leko-style fixture
- * Rounded rectangle body that tapers toward the lens end
- * The front (lens) is at negative Y (pointing "up" when rotation=0)
- * Width: 40, Height: 32
+ * ERS 14° - Narrow beam, long "snoot" lens extension
+ * Very tight beam angle, represented by elongated lens barrel
  */
-const ERS_SYMBOL: Omit<SymbolDefinition, 'category'> = {
-	// Body shape: tapered body with rounded back, narrower lens housing at front
+const ERS_14_SYMBOL: Omit<SymbolDefinition, 'category'> = {
+	// Tapered body - wide at back (lamp), narrow at front (lens)
 	path: `
-		M -18 14
-		L -18 0
-		L -14 -8
-		L -8 -12
-		L 8 -12
-		L 14 -8
-		L 18 0
-		L 18 14
-		Q 18 18 14 18
-		L -14 18
-		Q -18 18 -18 14
+		M -15 16
+		L -15 4
+		L -10 -6
+		L -6 -10
+		L 6 -10
+		L 10 -6
+		L 15 4
+		L 15 16
+		Q 15 20 10 20
+		L -10 20
+		Q -15 20 -15 16
 		Z
 	`,
-	// Detail: lens barrel at front
+	// Long narrow lens barrel for 14° (very tight beam)
 	detailPaths: [
-		// Lens barrel opening (narrower)
-		'M -6 -12 L -6 -18 L 6 -18 L 6 -12',
-		// Focus knobs on sides
-		'M -18 6 L -22 6',
-		'M 18 6 L 22 6'
+		// Long lens barrel extension
+		'M -4 -10 L -4 -28 L 4 -28 L 4 -10',
+		// Lens cap line
+		'M -4 -28 L 4 -28',
+		// Focus knobs
+		'M -15 8 L -18 8',
+		'M 15 8 L 18 8'
 	],
-	width: 48,
-	height: 40,
+	width: 40,
+	height: 52,
 	origin: { x: 0, y: 0 },
-	labelOffset: { x: 0, y: 28 },
-	frontIndicator: { x: 0, y: -22 },
-	showFrontIndicator: true,
+	labelOffset: { x: 0, y: 30 },
+	frontIndicator: { x: 0, y: -32 },
+	showFrontIndicator: false,
 	defaultFill: '#ffffff',
 	defaultStroke: '#000000'
 };
 
 /**
- * PAR can symbol
- * Circle with parallel lines indicating lamp orientation
- * The lines span the full diameter to clearly show lamp direction
- * Width/Height: 40
+ * ERS 19° - Narrow beam with X pattern at lens end
  */
-const PAR_SYMBOL: Omit<SymbolDefinition, 'category'> = {
-	// Main circle
-	path: 'M 0 -18 A 18 18 0 1 1 0 18 A 18 18 0 1 1 0 -18 Z',
-	// Parallel lines spanning full diameter for lamp orientation
-	detailPaths: ['M -12 -14 L -12 14', 'M 0 -18 L 0 18', 'M 12 -14 L 12 14'],
+const ERS_19_SYMBOL: Omit<SymbolDefinition, 'category'> = {
+	path: `
+		M -15 16
+		L -15 4
+		L -10 -6
+		L -6 -10
+		L 6 -10
+		L 10 -6
+		L 15 4
+		L 15 16
+		Q 15 20 10 20
+		L -10 20
+		Q -15 20 -15 16
+		Z
+	`,
+	// X pattern at lens end for 19°
+	detailPaths: [
+		// Lens barrel
+		'M -5 -10 L -5 -16 L 5 -16 L 5 -10',
+		// X pattern inside lens
+		'M -4 -11 L 4 -15',
+		'M 4 -11 L -4 -15',
+		// Focus knobs
+		'M -15 8 L -18 8',
+		'M 15 8 L 18 8'
+	],
 	width: 40,
 	height: 40,
 	origin: { x: 0, y: 0 },
-	labelOffset: { x: 0, y: 26 },
-	frontIndicator: { x: 0, y: -22 },
-	showFrontIndicator: true,
+	labelOffset: { x: 0, y: 30 },
+	frontIndicator: { x: 0, y: -20 },
+	showFrontIndicator: false,
 	defaultFill: '#ffffff',
 	defaultStroke: '#000000'
 };
 
 /**
- * Fresnel symbol
- * Circle with concentric rings indicating lens type
- * Width/Height: 44
+ * ERS 26° - Medium beam with curved line indicators
  */
-const FRESNEL_SYMBOL: Omit<SymbolDefinition, 'category'> = {
-	// Outer circle
-	path: 'M 0 -20 A 20 20 0 1 1 0 20 A 20 20 0 1 1 0 -20 Z',
-	// Concentric rings (characteristic of Fresnel lens)
+const ERS_26_SYMBOL: Omit<SymbolDefinition, 'category'> = {
+	path: `
+		M -15 16
+		L -15 4
+		L -10 -6
+		L -6 -10
+		L 6 -10
+		L 10 -6
+		L 15 4
+		L 15 16
+		Q 15 20 10 20
+		L -10 20
+		Q -15 20 -15 16
+		Z
+	`,
+	// Curved lines at lens end for 26° (standard theatrical beam)
 	detailPaths: [
-		'M 0 -14 A 14 14 0 1 1 0 14 A 14 14 0 1 1 0 -14 Z',
-		'M 0 -8 A 8 8 0 1 1 0 8 A 8 8 0 1 1 0 -8 Z',
-		'M 0 -2 A 2 2 0 1 1 0 2 A 2 2 0 1 1 0 -2 Z'
+		// Lens barrel (shorter than 19°)
+		'M -6 -10 L -6 -14 L 6 -14 L 6 -10',
+		// Curved beam angle indicators
+		'M -5 -12 Q 0 -15 5 -12',
+		'M -5 -14 Q 0 -17 5 -14',
+		// Focus knobs
+		'M -15 8 L -18 8',
+		'M 15 8 L 18 8'
 	],
-	width: 44,
+	width: 40,
+	height: 38,
+	origin: { x: 0, y: 0 },
+	labelOffset: { x: 0, y: 30 },
+	frontIndicator: { x: 0, y: -18 },
+	showFrontIndicator: false,
+	defaultFill: '#ffffff',
+	defaultStroke: '#000000'
+};
+
+/**
+ * ERS 36° - Wide beam with small chevron indicator
+ */
+const ERS_36_SYMBOL: Omit<SymbolDefinition, 'category'> = {
+	path: `
+		M -15 16
+		L -15 4
+		L -10 -6
+		L -6 -10
+		L 6 -10
+		L 10 -6
+		L 15 4
+		L 15 16
+		Q 15 20 10 20
+		L -10 20
+		Q -15 20 -15 16
+		Z
+	`,
+	// Small chevron at lens end for 36°
+	detailPaths: [
+		// Short lens barrel
+		'M -6 -10 L -6 -13 L 6 -13 L 6 -10',
+		// Chevron indicator (pointing outward for wider beam)
+		'M -4 -12 L 0 -15 L 4 -12',
+		// Focus knobs
+		'M -15 8 L -18 8',
+		'M 15 8 L 18 8'
+	],
+	width: 40,
+	height: 36,
+	origin: { x: 0, y: 0 },
+	labelOffset: { x: 0, y: 30 },
+	frontIndicator: { x: 0, y: -17 },
+	showFrontIndicator: false,
+	defaultFill: '#ffffff',
+	defaultStroke: '#000000'
+};
+
+/**
+ * ERS 50° - Very wide beam with simple rounded lens end
+ */
+const ERS_50_SYMBOL: Omit<SymbolDefinition, 'category'> = {
+	path: `
+		M -15 16
+		L -15 4
+		L -10 -6
+		L -6 -10
+		L 6 -10
+		L 10 -6
+		L 15 4
+		L 15 16
+		Q 15 20 10 20
+		L -10 20
+		Q -15 20 -15 16
+		Z
+	`,
+	// Simple rounded end for 50° (widest beam)
+	detailPaths: [
+		// Short rounded lens cap
+		'M -6 -10 Q -6 -14 0 -14 Q 6 -14 6 -10',
+		// Focus knobs
+		'M -15 8 L -18 8',
+		'M 15 8 L 18 8'
+	],
+	width: 40,
+	height: 36,
+	origin: { x: 0, y: 0 },
+	labelOffset: { x: 0, y: 30 },
+	frontIndicator: { x: 0, y: -16 },
+	showFrontIndicator: false,
+	defaultFill: '#ffffff',
+	defaultStroke: '#000000'
+};
+
+// =============================================================================
+// PAR Symbol - USITT Standard
+// Rounded bucket/can shape (like a coffee can)
+// =============================================================================
+
+/**
+ * PAR can symbol - rounded bucket shape
+ * No internal lines needed - just a simple can outline
+ */
+const PAR_SYMBOL: Omit<SymbolDefinition, 'category'> = {
+	// Rounded rectangle (bucket/can shape)
+	path: `
+		M -12 -16
+		Q -12 -20 0 -20
+		Q 12 -20 12 -16
+		L 12 16
+		Q 12 20 0 20
+		Q -12 20 -12 16
+		Z
+	`,
+	// Simple internal lines showing lamp direction
+	detailPaths: [
+		// Top and bottom curves to emphasize the can shape
+		'M -10 -16 Q 0 -14 10 -16',
+		'M -10 16 Q 0 14 10 16'
+	],
+	width: 28,
 	height: 44,
 	origin: { x: 0, y: 0 },
 	labelOffset: { x: 0, y: 28 },
 	frontIndicator: { x: 0, y: -24 },
-	showFrontIndicator: true,
+	showFrontIndicator: false,
+	defaultFill: '#ffffff',
+	defaultStroke: '#000000'
+};
+
+// =============================================================================
+// Fresnel Symbol - USITT Standard
+// Similar to PAR but with concentric rings indicating fresnel lens
+// =============================================================================
+
+/**
+ * Fresnel symbol
+ * Bucket shape with concentric rings inside to indicate fresnel lens
+ */
+const FRESNEL_SYMBOL: Omit<SymbolDefinition, 'category'> = {
+	// Rounded bucket shape (similar to PAR)
+	path: `
+		M -14 -16
+		Q -14 -20 0 -20
+		Q 14 -20 14 -16
+		L 14 16
+		Q 14 20 0 20
+		Q -14 20 -14 16
+		Z
+	`,
+	// Concentric rings (characteristic of Fresnel lens)
+	detailPaths: [
+		// Three concentric rings
+		'M 0 -10 A 10 10 0 1 1 0 10 A 10 10 0 1 1 0 -10 Z',
+		'M 0 -6 A 6 6 0 1 1 0 6 A 6 6 0 1 1 0 -6 Z',
+		'M 0 -2 A 2 2 0 1 1 0 2 A 2 2 0 1 1 0 -2 Z'
+	],
+	width: 32,
+	height: 44,
+	origin: { x: 0, y: 0 },
+	labelOffset: { x: 0, y: 28 },
+	frontIndicator: { x: 0, y: -24 },
+	showFrontIndicator: false,
+	defaultFill: '#ffffff',
+	defaultStroke: '#000000'
+};
+
+// =============================================================================
+// Moving Light Symbols - USITT Standard
+// Circle with yoke indication and dashed pan/tilt range circle
+// =============================================================================
+
+/**
+ * Moving Light (Spot) symbol
+ * Circle representing the head with yoke arms on sides
+ * Small square in center, dashed circle around for pan/tilt range
+ */
+const MOVING_SPOT_SYMBOL: SymbolDefinition = {
+	// Main head (circle)
+	path: 'M 0 -14 A 14 14 0 1 1 0 14 A 14 14 0 1 1 0 -14 Z',
+	// Yoke arms and center indicator
+	detailPaths: [
+		// Left yoke arm (horizontal bar)
+		'M -14 0 L -22 0',
+		'M -22 -4 L -22 4',
+		// Right yoke arm (horizontal bar)
+		'M 14 0 L 22 0',
+		'M 22 -4 L 22 4',
+		// Small square in center
+		'M -4 -4 L 4 -4 L 4 4 L -4 4 Z'
+	],
+	// Additional element for dashed circle - will be handled specially in renderer
+	width: 52,
+	height: 36,
+	origin: { x: 0, y: 0 },
+	labelOffset: { x: 0, y: 32 },
+	frontIndicator: { x: 0, y: -20 },
+	showFrontIndicator: false,
+	category: 'moving',
 	defaultFill: '#ffffff',
 	defaultStroke: '#000000'
 };
 
 /**
+ * Moving Light (Wash) symbol
+ * Circle with yoke indication and "W" marking
+ */
+const MOVING_WASH_SYMBOL: SymbolDefinition = {
+	path: 'M 0 -14 A 14 14 0 1 1 0 14 A 14 14 0 1 1 0 -14 Z',
+	detailPaths: [
+		// Yoke arms
+		'M -14 0 L -22 0',
+		'M -22 -4 L -22 4',
+		'M 14 0 L 22 0',
+		'M 22 -4 L 22 4',
+		// "W" indicator in center
+		'M -6 -4 L -3 6 L 0 0 L 3 6 L 6 -4'
+	],
+	width: 52,
+	height: 36,
+	origin: { x: 0, y: 0 },
+	labelOffset: { x: 0, y: 32 },
+	frontIndicator: { x: 0, y: -20 },
+	showFrontIndicator: false,
+	category: 'moving',
+	defaultFill: '#ffffff',
+	defaultStroke: '#000000'
+};
+
+/**
+ * Moving Light (Beam) symbol
+ * Circle with yoke and "B" marking
+ */
+const MOVING_BEAM_SYMBOL: SymbolDefinition = {
+	path: 'M 0 -14 A 14 14 0 1 1 0 14 A 14 14 0 1 1 0 -14 Z',
+	detailPaths: [
+		// Yoke arms
+		'M -14 0 L -22 0',
+		'M -22 -4 L -22 4',
+		'M 14 0 L 22 0',
+		'M 22 -4 L 22 4',
+		// "B" indicator - vertical line with two bumps
+		'M -3 -6 L -3 6',
+		'M -3 -6 C 6 -6 6 0 -3 0',
+		'M -3 0 C 6 0 6 6 -3 6'
+	],
+	width: 52,
+	height: 36,
+	origin: { x: 0, y: 0 },
+	labelOffset: { x: 0, y: 32 },
+	frontIndicator: { x: 0, y: -20 },
+	showFrontIndicator: false,
+	category: 'moving',
+	defaultFill: '#ffffff',
+	defaultStroke: '#000000'
+};
+
+// =============================================================================
+// Cyc Light Symbol
+// =============================================================================
+
+/**
  * Cyc Light symbol
  * Asymmetric elongated shape - significantly wider at front (output) than back
- * The asymmetry indicates the broad beam spread
- * Width: 52, Height: 36
  */
 const CYC_LIGHT_SYMBOL: SymbolDefinition = {
 	// Asymmetric body - much wider at front (light output), narrow at back
@@ -128,95 +402,19 @@ const CYC_LIGHT_SYMBOL: SymbolDefinition = {
 	origin: { x: 0, y: 0 },
 	labelOffset: { x: 0, y: 28 },
 	frontIndicator: { x: 0, y: -20 },
-	showFrontIndicator: true,
+	showFrontIndicator: false,
 	category: 'cyc',
 	defaultFill: '#ffffff',
 	defaultStroke: '#000000'
 };
 
-/**
- * Moving Light (Spot) symbol
- * Circle representing the head with yoke arms on sides
- * "M" marking in center indicates Moving light
- * Width/Height: 48
- */
-const MOVING_SPOT_SYMBOL: SymbolDefinition = {
-	// Main head (circle)
-	path: 'M 0 -16 A 16 16 0 1 1 0 16 A 16 16 0 1 1 0 -16 Z',
-	// Yoke arms (distinctive for moving lights)
-	detailPaths: [
-		// Left yoke arm
-		'M -16 -8 L -24 -8 L -24 8 L -16 8',
-		// Right yoke arm
-		'M 16 -8 L 24 -8 L 24 8 L 16 8',
-		// "M" indicator in center
-		'M -7 7 L -7 -5 L 0 3 L 7 -5 L 7 7'
-	],
-	width: 52,
-	height: 36,
-	origin: { x: 0, y: 0 },
-	labelOffset: { x: 0, y: 28 },
-	frontIndicator: { x: 0, y: -20 },
-	showFrontIndicator: true,
-	category: 'moving',
-	defaultFill: '#e8e8e8',
-	defaultStroke: '#000000'
-};
-
-/**
- * Moving Light (Wash) symbol
- * Circle with yoke indication and "W" marking
- */
-const MOVING_WASH_SYMBOL: SymbolDefinition = {
-	path: 'M 0 -16 A 16 16 0 1 1 0 16 A 16 16 0 1 1 0 -16 Z',
-	detailPaths: [
-		// Yoke arms
-		'M -16 -8 L -24 -8 L -24 8 L -16 8',
-		'M 16 -8 L 24 -8 L 24 8 L 16 8',
-		// "W" indicator in center
-		'M -7 -5 L -4 7 L 0 0 L 4 7 L 7 -5'
-	],
-	width: 52,
-	height: 36,
-	origin: { x: 0, y: 0 },
-	labelOffset: { x: 0, y: 28 },
-	frontIndicator: { x: 0, y: -20 },
-	showFrontIndicator: true,
-	category: 'moving',
-	defaultFill: '#e8e8e8',
-	defaultStroke: '#000000'
-};
-
-/**
- * Moving Light (Beam) symbol
- * Circle with yoke and "B" marking
- */
-const MOVING_BEAM_SYMBOL: SymbolDefinition = {
-	path: 'M 0 -16 A 16 16 0 1 1 0 16 A 16 16 0 1 1 0 -16 Z',
-	detailPaths: [
-		// Yoke arms
-		'M -16 -8 L -24 -8 L -24 8 L -16 8',
-		'M 16 -8 L 24 -8 L 24 8 L 16 8',
-		// "B" indicator - vertical line with two bumps
-		'M -4 -7 L -4 7',
-		'M -4 -7 C 6 -7 6 0 -4 0',
-		'M -4 0 C 6 0 6 7 -4 7'
-	],
-	width: 52,
-	height: 36,
-	origin: { x: 0, y: 0 },
-	labelOffset: { x: 0, y: 28 },
-	frontIndicator: { x: 0, y: -20 },
-	showFrontIndicator: true,
-	category: 'moving',
-	defaultFill: '#e8e8e8',
-	defaultStroke: '#000000'
-};
+// =============================================================================
+// LED Fixtures
+// =============================================================================
 
 /**
  * LED PAR symbol
  * Circle with LED dot pattern (honeycomb-style arrangement)
- * Smaller filled circles represent individual LEDs
  */
 const LED_PAR_SYMBOL: SymbolDefinition = {
 	// Main circle
@@ -238,7 +436,7 @@ const LED_PAR_SYMBOL: SymbolDefinition = {
 	origin: { x: 0, y: 0 },
 	labelOffset: { x: 0, y: 26 },
 	frontIndicator: { x: 0, y: -22 },
-	showFrontIndicator: true,
+	showFrontIndicator: false,
 	category: 'led',
 	defaultFill: '#ffffff',
 	defaultStroke: '#000000'
@@ -278,7 +476,7 @@ const LED_WASH_SYMBOL: SymbolDefinition = {
 	origin: { x: 0, y: 0 },
 	labelOffset: { x: 0, y: 30 },
 	frontIndicator: { x: 0, y: -26 },
-	showFrontIndicator: true,
+	showFrontIndicator: false,
 	category: 'led',
 	defaultFill: '#ffffff',
 	defaultStroke: '#000000'
@@ -322,11 +520,13 @@ const LED_STRIP_SYMBOL: SymbolDefinition = {
 	defaultStroke: '#000000'
 };
 
+// =============================================================================
+// Special Fixtures
+// =============================================================================
+
 /**
  * Followspot symbol
  * Large elongated oval (barrel) with tripod stand indication
- * The shape should suggest a long barrel mounted on a stand
- * Width: 36, Height: 88
  */
 const FOLLOWSPOT_SYMBOL: SymbolDefinition = {
 	// Body: elongated oval/barrel shape
@@ -360,7 +560,7 @@ const FOLLOWSPOT_SYMBOL: SymbolDefinition = {
 	origin: { x: 0, y: 0 },
 	labelOffset: { x: 28, y: 0 },
 	frontIndicator: { x: 0, y: -54 },
-	showFrontIndicator: true,
+	showFrontIndicator: false,
 	category: 'other',
 	defaultFill: '#f0f0f0',
 	defaultStroke: '#000000'
@@ -412,7 +612,7 @@ const CUSTOM_SYMBOL: SymbolDefinition = {
 	origin: { x: 0, y: 0 },
 	labelOffset: { x: 0, y: 20 },
 	frontIndicator: { x: 0, y: -16 },
-	showFrontIndicator: true,
+	showFrontIndicator: false,
 	category: 'other',
 	defaultFill: '#ffffff',
 	defaultStroke: '#000000'
@@ -423,25 +623,26 @@ const CUSTOM_SYMBOL: SymbolDefinition = {
  * Maps each instrument type to its symbol definition
  */
 export const SYMBOLS: SymbolRegistry = {
-	// Ellipsoidals - all use the same base shape
-	'ers-19': { ...ERS_SYMBOL, category: 'ellipsoidal' },
-	'ers-26': { ...ERS_SYMBOL, category: 'ellipsoidal' },
-	'ers-36': { ...ERS_SYMBOL, category: 'ellipsoidal' },
-	'ers-50': { ...ERS_SYMBOL, category: 'ellipsoidal' },
+	// Ellipsoidals - each has unique lens-end indicator for beam angle
+	'ers-14': { ...ERS_14_SYMBOL, category: 'ellipsoidal' },
+	'ers-19': { ...ERS_19_SYMBOL, category: 'ellipsoidal' },
+	'ers-26': { ...ERS_26_SYMBOL, category: 'ellipsoidal' },
+	'ers-36': { ...ERS_36_SYMBOL, category: 'ellipsoidal' },
+	'ers-50': { ...ERS_50_SYMBOL, category: 'ellipsoidal' },
 
-	// PARs - same shape, could vary by size
+	// PARs - rounded bucket shape, same shape but can vary by size
 	'par-64': { ...PAR_SYMBOL, category: 'par' },
-	'par-56': { ...PAR_SYMBOL, category: 'par', width: 36, height: 36 },
-	'par-38': { ...PAR_SYMBOL, category: 'par', width: 30, height: 30 },
+	'par-56': { ...PAR_SYMBOL, category: 'par', width: 24, height: 38 },
+	'par-38': { ...PAR_SYMBOL, category: 'par', width: 20, height: 32 },
 
-	// Fresnels
+	// Fresnels - bucket with concentric rings
 	'fresnel-6': { ...FRESNEL_SYMBOL, category: 'fresnel' },
-	'fresnel-8': { ...FRESNEL_SYMBOL, category: 'fresnel', width: 50, height: 50 },
+	'fresnel-8': { ...FRESNEL_SYMBOL, category: 'fresnel', width: 38, height: 50 },
 
 	// Cyc light
 	'cyc-light': CYC_LIGHT_SYMBOL,
 
-	// Moving lights
+	// Moving lights - circle with yoke arms
 	'moving-spot': MOVING_SPOT_SYMBOL,
 	'moving-wash': MOVING_WASH_SYMBOL,
 	'moving-beam': MOVING_BEAM_SYMBOL,
