@@ -155,10 +155,12 @@ function createLayersDerivedStore() {
 
 	// Layers with object counts
 	const layersWithCounts = $derived.by((): LayerWithCounts[] => {
-		return layers.map((layer) => ({
-			...layer,
-			objectCount: getObjectCountForLayer(layer)
-		}));
+		return layers
+			.map((layer) => ({
+				...layer,
+				objectCount: getObjectCountForLayer(layer)
+			}))
+			.reverse();
 	});
 
 	// ========================================================================

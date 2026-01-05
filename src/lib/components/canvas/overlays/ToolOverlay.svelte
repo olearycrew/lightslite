@@ -368,7 +368,7 @@
 		switch (tool.activeTool) {
 			case 'draw-line':
 				if (dx > minSize || dy > minSize) {
-					project.addLine(x1, y1, x2, y2);
+					project.addSetPieceLine(x1, y1, x2, y2);
 					objectCreated = true;
 				}
 				break;
@@ -376,14 +376,14 @@
 				if (dx > minSize && dy > minSize) {
 					const x = Math.min(x1, x2);
 					const y = Math.min(y1, y2);
-					project.addRectangle(x, y, dx, dy);
+					project.addSetPieceRectangle(x, y, dx, dy);
 					objectCreated = true;
 				}
 				break;
 			case 'draw-circle': {
 				const radius = Math.sqrt(dx * dx + dy * dy);
 				if (radius > minSize) {
-					project.addCircle(x1, y1, radius);
+					project.addSetPieceCircle(x1, y1, radius);
 					objectCreated = true;
 				}
 				break;

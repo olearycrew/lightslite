@@ -14,7 +14,6 @@
 	import LockOpen from '@lucide/svelte/icons/lock-open';
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import Info from '@lucide/svelte/icons/info';
 
 	// Get all layers with counts for display
 	const layersWithCounts = $derived(layers.withCounts);
@@ -315,9 +314,9 @@
 	.layer-actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 8px;
-		margin-top: 8px;
-		padding-top: 16px;
+		gap: 4px;
+		margin-top: 4px;
+		padding-top: 8px;
 		border-top: 1px solid hsl(var(--border));
 	}
 
@@ -325,7 +324,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 6px;
+		gap: 2px;
 		font-size: 13px;
 		padding: 8px 12px;
 		background: transparent;
@@ -346,9 +345,9 @@
 
 	.layer-info-section {
 		display: flex;
-		gap: 10px;
-		padding: 16px;
-		margin-top: 8px;
+		gap: 4px;
+		padding: 8px;
+		margin-top: 2px;
 		background: hsl(var(--muted) / 0.5);
 		border-radius: 8px;
 	}
@@ -363,7 +362,7 @@
 	}
 
 	.info-text {
-		font-size: 13px;
+		font-size: 11px;
 		color: hsl(var(--muted-foreground));
 		line-height: 1.5;
 		margin: 0;

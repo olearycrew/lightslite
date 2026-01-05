@@ -522,13 +522,60 @@ function createProjectStore() {
 			locked: options.locked ?? false,
 			visible: options.visible ?? true,
 			geometry,
-			fill: options.fill ?? '#cccccc',
-			stroke: options.stroke ?? '#666666',
-			strokeWidth: options.strokeWidth ?? 1,
+			fill: options.fill ?? 'transparent',
+			stroke: options.stroke ?? '#cdd6f4', // Catppuccin Mocha text color - visible on dark bg
+			strokeWidth: options.strokeWidth ?? 2,
 			layer: options.layer
 		};
 		setPieces.set(setPiece.id, setPiece);
+		console.log('[ProjectStore] addSetPiece called', {
+			setPieceId: setPiece.id,
+			projectId,
+			totalSetPieces: setPieces.size,
+			geometry: setPiece.geometry
+		});
 		return setPiece;
+	}
+
+	/**
+	 * Add a line set piece (drawn with line tool)
+	 */
+	function addSetPieceLine(
+		x1: number,
+		y1: number,
+		x2: number,
+		y2: number,
+		options: Partial<Omit<SetPieceObject, 'id' | 'objectType' | 'geometry'>> = {}
+	): SetPieceObject {
+		const geometry: LineGeometry = { type: 'line', x1, y1, x2, y2 };
+		return addSetPiece(geometry, { name: 'Line', ...options });
+	}
+
+	/**
+	 * Add a rectangle set piece (drawn with rectangle tool)
+	 */
+	function addSetPieceRectangle(
+		x: number,
+		y: number,
+		width: number,
+		height: number,
+		options: Partial<Omit<SetPieceObject, 'id' | 'objectType' | 'geometry'>> = {}
+	): SetPieceObject {
+		const geometry: RectGeometry = { type: 'rect', x, y, width, height };
+		return addSetPiece(geometry, { name: 'Rectangle', ...options });
+	}
+
+	/**
+	 * Add a circle set piece (drawn with circle tool)
+	 */
+	function addSetPieceCircle(
+		cx: number,
+		cy: number,
+		radius: number,
+		options: Partial<Omit<SetPieceObject, 'id' | 'objectType' | 'geometry'>> = {}
+	): SetPieceObject {
+		const geometry: CircleGeometry = { type: 'circle', cx, cy, radius };
+		return addSetPiece(geometry, { name: 'Circle', ...options });
 	}
 
 	/**
@@ -878,6 +925,9 @@ function createProjectStore() {
 
 		// Set piece operations
 		addSetPiece,
+		addSetPieceLine,
+		addSetPieceRectangle,
+		addSetPieceCircle,
 		updateSetPiece,
 		deleteSetPiece,
 
