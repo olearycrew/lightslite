@@ -7,10 +7,11 @@
 	 */
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
-	import { NewProjectDialog, DeleteProjectDialog } from '$lib/components/ui';
+	import { NewProjectDialog, DeleteProjectDialog, CloneProjectDialog } from '$lib/components/ui';
 	import FileText from '@lucide/svelte/icons/file-text';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Copy from '@lucide/svelte/icons/copy';
 	import Lightbulb from '@lucide/svelte/icons/lightbulb';
 	import Grid2x2 from '@lucide/svelte/icons/grid-2x2';
 	import FolderOpen from '@lucide/svelte/icons/folder-open';
@@ -41,7 +42,9 @@
 	});
 	let showNewProjectDialog = $state(false);
 	let showDeleteDialog = $state(false);
+	let showCloneDialog = $state(false);
 	let projectToDelete = $state<{ id: string; name: string } | null>(null);
+	let projectToClone = $state<{ id: string; name: string } | null>(null);
 
 	// Handle new project creation
 	function handleProjectCreated(project: {
@@ -73,6 +76,33 @@
 	// Handle project deletion
 	function handleProjectDeleted(projectId: string) {
 		projects = projects.filter((p) => p.id !== projectId);
+	}
+
+	// Open clone dialog
+	function handleCloneClick(e: MouseEvent, project: { id: string; name: string }) {
+		e.preventDefault();
+		e.stopPropagation();
+		projectToClone = project;
+		showCloneDialog = true;
+	}
+
+	// Handle project cloned
+	function handleProjectCloned(project: {
+		id: string;
+		name: string;
+		updatedAt: string;
+		createdAt: string;
+		instrumentCount: number;
+		positionCount: number;
+	}) {
+		projects = [
+			{
+				...project,
+				scale: null,
+				venue: null
+			},
+			...projects
+		];
 	}
 
 	// Format relative time
@@ -135,14 +165,27 @@
 						<Card.Root
 							class="relative h-full transition-all hover:border-primary/50 hover:shadow-lg hover:bg-secondary/20"
 						>
-							<!-- Delete Button -->
-							<button
-								onclick={(e) => handleDeleteClick(e, project)}
-								class="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-md opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-								title="Delete project"
+							<!-- Action Buttons -->
+							<div
+								class="absolute right-2 top-2 z-10 flex gap-1 opacity-0 transition-all group-hover:opacity-100"
 							>
-								<Trash2 class="h-4 w-4" />
-							</button>
+								<!-- Clone Button -->
+								<button
+									onclick={(e) => handleCloneClick(e, project)}
+									class="flex h-8 w-8 items-center justify-center rounded-md transition-all hover:bg-primary/10 hover:text-primary"
+									title="Clone project"
+								>
+									<Copy class="h-4 w-4" />
+								</button>
+								<!-- Delete Button -->
+								<button
+									onclick={(e) => handleDeleteClick(e, project)}
+									class="flex h-8 w-8 items-center justify-center rounded-md transition-all hover:bg-destructive/10 hover:text-destructive"
+									title="Delete project"
+								>
+									<Trash2 class="h-4 w-4" />
+								</button>
+							</div>
 
 							<!-- Project Thumbnail/Icon Area -->
 							<Card.Header class="pb-3">
@@ -209,4 +252,15 @@
 		projectToDelete = null;
 	}}
 	onDelete={handleProjectDeleted}
+/>
+
+<!-- Clone Project Dialog -->
+<CloneProjectDialog
+	open={showCloneDialog}
+	project={projectToClone}
+	onClose={() => {
+		showCloneDialog = false;
+		projectToClone = null;
+	}}
+	onClone={handleProjectCloned}
 />

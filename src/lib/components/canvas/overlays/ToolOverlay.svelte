@@ -141,7 +141,7 @@
 			case 'draw-rect': {
 				const width = Math.abs(drawCurrentX - drawStartX) / pixelsPerUnit;
 				const height = Math.abs(drawCurrentY - drawStartY) / pixelsPerUnit;
-				return `${height.toFixed(1)}${unit} × ${width.toFixed(1)}${unit}`;
+				return `${width.toFixed(1)}${unit} × ${height.toFixed(1)}${unit}`;
 			}
 			case 'draw-circle': {
 				const dx = drawCurrentX - drawStartX;

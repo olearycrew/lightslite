@@ -109,13 +109,14 @@ function createViewportStore() {
 	 * @param viewportHeight - Height of the viewport (optional, for centering origin)
 	 */
 	function resetView(viewportWidth?: number, viewportHeight?: number) {
-		panX = 0;
-		panY = 0;
 		zoom = DEFAULT_ZOOM;
 
-		// Center origin if dimensions provided
+		// Center origin if dimensions provided, otherwise reset to 0,0
 		if (viewportWidth !== undefined && viewportHeight !== undefined) {
 			centerOrigin(viewportWidth, viewportHeight);
+		} else {
+			panX = 0;
+			panY = 0;
 		}
 	}
 
