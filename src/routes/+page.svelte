@@ -77,9 +77,14 @@
 
 		<!-- Footer -->
 		<footer class="mt-12 border-t border-border pt-6">
-			<div class="flex flex-col items-center justify-between gap-4 sm:flex-row sm:text-sm">
-				<p class="text-xs text-text-muted">Open source lighting design tool</p>
-				<nav class="flex gap-4">
+			<div class="flex flex-col items-center gap-6">
+				<!-- Made with Love -->
+				<p class="text-sm text-text-secondary">
+					Made with <span class="text-yellow-500">❤️</span><span class="text-black">🖤</span> in Maryland
+				</p>
+
+				<!-- Links -->
+				<nav class="flex flex-wrap justify-center gap-4">
 					<a
 						href="https://github.com/olearycrew/lightslite"
 						target="_blank"
@@ -88,8 +93,25 @@
 					>
 						GitHub
 					</a>
-					<a href="/docs" class="text-xs text-text-muted hover:text-text-primary transition-colors">
-						Documentation
+					<a
+						href="https://buymeacoffee.com/olearycrew"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-xs text-accent hover:text-accent-hover transition-colors"
+					>
+						Buy Me a Coffee ☕
+					</a>
+					<a
+						href="/terms"
+						class="text-xs text-text-muted hover:text-text-primary transition-colors"
+					>
+						Terms
+					</a>
+					<a
+						href="/privacy"
+						class="text-xs text-text-muted hover:text-text-primary transition-colors"
+					>
+						Privacy
 					</a>
 					<a
 						href="https://github.com/olearycrew/lightslite/issues"
@@ -100,6 +122,15 @@
 						Feedback
 					</a>
 				</nav>
+
+				<!-- Copyright -->
+				<div class="text-center text-xs text-text-muted">
+					<p>Copyright © 2026 Liscio Apps, LLC</p>
+					<p class="mt-1">1296 Cronson Blvd Unit 3011, Crofton, MD 21114, United States</p>
+				</div>
+
+				<!-- Open Source -->
+				<p class="text-xs text-text-muted">Open source lighting design tool</p>
 			</div>
 		</footer>
 	</div>
