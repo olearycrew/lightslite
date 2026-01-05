@@ -602,10 +602,11 @@
 	{/if}
 
 	<!-- Dimension feedback -->
+	<!-- Note: scale(1, -1) counter-flips the text since the viewport Y axis is flipped -->
 	{#if dimensionText && dimensionPosition}
 		<g
 			class="dimension-feedback"
-			transform="translate({dimensionPosition.x}, {dimensionPosition.y})"
+			transform="translate({dimensionPosition.x}, {dimensionPosition.y}) scale(1, -1)"
 		>
 			<rect
 				class="dimension-background"

@@ -205,16 +205,19 @@
 							ondrag={(dx, dy) => handleDrag(annotation.id, dx, dy)}
 						>
 							<!-- Text annotation rendering -->
-							<text
-								class="annotation-text"
-								x={annotation.x}
-								y={annotation.y}
-								font-size={annotation.fontSize}
-								font-family={annotation.fontFamily}
-								fill={annotation.color}
-							>
-								{annotation.text}
-							</text>
+							<!-- Note: scale(1, -1) counter-flips the text since the viewport Y axis is flipped -->
+							<g transform="translate({annotation.x}, {annotation.y}) scale(1, -1)">
+								<text
+									class="annotation-text"
+									x={0}
+									y={0}
+									font-size={annotation.fontSize}
+									font-family={annotation.fontFamily}
+									fill={annotation.color}
+								>
+									{annotation.text}
+								</text>
+							</g>
 						</SelectableObject>
 					{/if}
 				{/if}

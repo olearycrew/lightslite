@@ -127,6 +127,7 @@
 	{/if}
 
 	<!-- Channel number label (shown inside or near the symbol) -->
+	<!-- Note: scale(1, -1) counter-flips the text since the viewport Y axis is flipped -->
 	{#if channelLabel !== null && channelLabel !== undefined}
 		<text
 			class="channel-label"
@@ -137,6 +138,7 @@
 			font-size={fontSize}
 			fill={strokeColor}
 			font-weight="bold"
+			transform="scale(1, -1)"
 		>
 			{channelLabel}
 		</text>

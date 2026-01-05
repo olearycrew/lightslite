@@ -143,8 +143,9 @@
 	});
 </script>
 
+<!-- Note: scale(1, -1) counter-flips the label since the viewport Y axis is flipped -->
 {#if hasContent}
-	<g class="instrument-label" transform="translate({labelPosition.x}, {labelPosition.y})">
+	<g class="instrument-label" transform="translate({labelPosition.x}, {labelPosition.y}) scale(1, -1)">
 		<!-- Background -->
 		<rect
 			class="label-background"

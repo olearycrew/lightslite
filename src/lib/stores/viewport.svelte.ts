@@ -42,7 +42,8 @@ function createViewportStore() {
 	let zoom = $state(DEFAULT_ZOOM);
 
 	// Derived transform string for SVG
-	const transform = $derived(`translate(${panX}, ${panY}) scale(${zoom})`);
+	// Note: scale(zoom, -zoom) flips the Y axis so positive Y goes "up"
+	const transform = $derived(`translate(${panX}, ${panY}) scale(${zoom}, ${-zoom})`);
 
 	// Derived zoom percentage for display
 	const zoomPercent = $derived(Math.round(zoom * 100));
@@ -182,6 +183,7 @@ function createViewportStore() {
 
 	/**
 	 * Convert screen coordinates to world coordinates
+	 * Note: Y is negated because the viewport uses scale(zoom, -zoom) to flip Y axis
 	 * @param screenX - X coordinate in screen space
 	 * @param screenY - Y coordinate in screen space
 	 * @returns World coordinates
@@ -189,12 +191,13 @@ function createViewportStore() {
 	function screenToWorld(screenX: number, screenY: number) {
 		return {
 			x: (screenX - panX) / zoom,
-			y: (screenY - panY) / zoom
+			y: -((screenY - panY) / zoom)
 		};
 	}
 
 	/**
 	 * Convert world coordinates to screen coordinates
+	 * Note: Y is negated because the viewport uses scale(zoom, -zoom) to flip Y axis
 	 * @param worldX - X coordinate in world space
 	 * @param worldY - Y coordinate in world space
 	 * @returns Screen coordinates
@@ -202,7 +205,7 @@ function createViewportStore() {
 	function worldToScreen(worldX: number, worldY: number) {
 		return {
 			x: worldX * zoom + panX,
-			y: worldY * zoom + panY
+			y: -worldY * zoom + panY
 		};
 	}
 

@@ -168,8 +168,9 @@
 	{/if}
 
 	<!-- Label -->
+	<!-- Note: scale(1, -1) counter-flips the label since the viewport Y axis is flipped -->
 	{#if position.visible}
-		<g class="label-group" transform="translate({midX}, {midY})">
+		<g class="label-group" transform="translate({midX}, {midY}) scale(1, -1)">
 			<rect
 				class="label-background"
 				x={-50 / viewport.zoom}
