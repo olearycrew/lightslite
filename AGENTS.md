@@ -2,6 +2,8 @@
 
 ## Testing the app
 
+You should assume that the app is already running at http://localhost:5173. You don't need to run it yourself. If you find it is not running, ask the user before you start it.
+
 Much of the app is behind a login, so to test use these credentials:
 
 - Username: `demo@olearycrew.com`
