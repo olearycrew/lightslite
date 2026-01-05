@@ -1,176 +1,206 @@
 <script lang="ts">
 	/**
-	 * Project List Page
+	 * Project Dashboard Page
 	 *
-	 * Shows all user's projects with options to create new ones.
-	 * Uses shadcn-svelte components for consistent UI.
+	 * Displays all user's projects with options to create, open, and delete.
+	 * Uses shadcn-svelte components and server-side data loading.
 	 */
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+	import { NewProjectDialog, DeleteProjectDialog } from '$lib/components/ui';
 	import FileText from '@lucide/svelte/icons/file-text';
 	import Plus from '@lucide/svelte/icons/plus';
-	import X from '@lucide/svelte/icons/x';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Lightbulb from '@lucide/svelte/icons/lightbulb';
+	import Grid2x2 from '@lucide/svelte/icons/grid-2x2';
+	import FolderOpen from '@lucide/svelte/icons/folder-open';
 
-	// Placeholder projects for UI demonstration
-	let projects = $state<Array<{ id: string; name: string; updatedAt: string }>>([]);
-	let loading = $state(false);
-	let showNewProjectModal = $state(false);
-	let newProjectName = $state('');
-
-	async function loadProjects() {
-		loading = true;
-		try {
-			const response = await fetch('/api/projects');
-			if (response.ok) {
-				const result = await response.json();
-				projects = result.projects || [];
-			}
-		} catch (error) {
-			console.error('Failed to load projects:', error);
-		} finally {
-			loading = false;
-		}
+	// Server-loaded data
+	interface PageData {
+		projects: Array<{
+			id: string;
+			name: string;
+			updatedAt: string;
+			createdAt: string;
+			instrumentCount: number;
+			positionCount: number;
+			scale: { unit: string; pixelsPerUnit: number } | null;
+			venue: { name?: string } | null;
+		}>;
 	}
 
-	async function createProject() {
-		if (!newProjectName.trim()) return;
+	let { data }: { data: PageData } = $props();
 
-		try {
-			const response = await fetch('/api/projects', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: newProjectName })
-			});
+	// Local state
+	let projects = $state(data.projects);
+	let showNewProjectDialog = $state(false);
+	let showDeleteDialog = $state(false);
+	let projectToDelete = $state<{ id: string; name: string } | null>(null);
 
-			if (response.ok) {
-				const result = await response.json();
-				projects = [result.project, ...projects];
-				showNewProjectModal = false;
-				newProjectName = '';
-			}
-		} catch (error) {
-			console.error('Failed to create project:', error);
-		}
+	// Handle new project creation
+	function handleProjectCreated(project: {
+		id: string;
+		name: string;
+		updatedAt: string;
+		createdAt: string;
+		instrumentCount: number;
+		positionCount: number;
+	}) {
+		projects = [
+			{
+				...project,
+				scale: null,
+				venue: null
+			},
+			...projects
+		];
 	}
 
-	// Load projects on mount
-	$effect(() => {
-		loadProjects();
-	});
+	// Open delete confirmation
+	function handleDeleteClick(e: MouseEvent, project: { id: string; name: string }) {
+		e.preventDefault();
+		e.stopPropagation();
+		projectToDelete = project;
+		showDeleteDialog = true;
+	}
+
+	// Handle project deletion
+	function handleProjectDeleted(projectId: string) {
+		projects = projects.filter((p) => p.id !== projectId);
+	}
+
+	// Format relative time
+	function formatRelativeTime(dateStr: string): string {
+		const date = new Date(dateStr);
+		const now = new Date();
+		const diffMs = now.getTime() - date.getTime();
+		const diffMins = Math.floor(diffMs / 60000);
+		const diffHours = Math.floor(diffMs / 3600000);
+		const diffDays = Math.floor(diffMs / 86400000);
+
+		if (diffMins < 1) return 'Just now';
+		if (diffMins < 60) return `${diffMins}m ago`;
+		if (diffHours < 24) return `${diffHours}h ago`;
+		if (diffDays < 7) return `${diffDays}d ago`;
+		return date.toLocaleDateString();
+	}
 </script>
 
-<div class="p-6">
+<div class="min-h-screen bg-background p-6">
 	<!-- Page Header -->
-	<div class="mb-6 flex items-center justify-between">
-		<div>
-			<h1 class="text-2xl font-bold text-foreground">Projects</h1>
-			<p class="text-muted-foreground">Your lighting plots and designs</p>
+	<div class="mx-auto mb-8 max-w-6xl">
+		<div class="flex items-center justify-between">
+			<div>
+				<h1 class="text-3xl font-bold text-foreground">Projects</h1>
+				<p class="mt-1 text-muted-foreground">Your lighting plots and designs</p>
+			</div>
+			<Button size="lg" onclick={() => (showNewProjectDialog = true)}>
+				<Plus class="mr-2 h-5 w-5" />
+				New Project
+			</Button>
 		</div>
-		<Button onclick={() => (showNewProjectModal = true)}>
-			<Plus class="mr-2 h-4 w-4" />
-			New Project
-		</Button>
 	</div>
 
-	<!-- Projects Grid -->
-	{#if loading}
-		<div class="flex items-center justify-center py-12">
-			<div class="text-muted-foreground">Loading projects...</div>
-		</div>
-	{:else if projects.length === 0}
-		<!-- Empty State -->
-		<Card.Root class="flex flex-col items-center justify-center py-12 text-center">
-			<Card.Content class="flex flex-col items-center">
-				<FileText class="mb-4 h-16 w-16 text-muted-foreground" strokeWidth={1.5} />
-				<h2 class="mb-2 text-xl font-medium text-foreground">No projects yet</h2>
-				<p class="mb-4 text-muted-foreground">Create your first lighting plot to get started</p>
-				<Button onclick={() => (showNewProjectModal = true)}>
-					<Plus class="mr-2 h-4 w-4" />
-					Create Project
-				</Button>
-			</Card.Content>
-		</Card.Root>
-	{:else}
-		<!-- Project Cards -->
-		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			{#each projects as project (project.id)}
-				<a href={`/app/${project.id}`} class="block group">
-					<Card.Root
-						class="h-full transition-all hover:border-primary/50 hover:shadow-md hover:bg-secondary/30"
-					>
-						<Card.Header class="pb-2">
-							<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-								<FileText class="h-5 w-5 text-muted-foreground" />
-							</div>
-						</Card.Header>
-						<Card.Content class="pt-0">
-							<Card.Title class="group-hover:text-primary transition-colors">
-								{project.name}
-							</Card.Title>
-							<Card.Description>
-								Updated {new Date(project.updatedAt).toLocaleDateString()}
-							</Card.Description>
-						</Card.Content>
-					</Card.Root>
-				</a>
-			{/each}
-		</div>
-	{/if}
+	<!-- Main Content -->
+	<div class="mx-auto max-w-6xl">
+		{#if projects.length === 0}
+			<!-- Empty State -->
+			<Card.Root class="border-dashed">
+				<Card.Content class="flex flex-col items-center justify-center py-16 text-center">
+					<div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+						<FolderOpen class="h-10 w-10 text-primary" strokeWidth={1.5} />
+					</div>
+					<h2 class="mb-2 text-2xl font-semibold text-foreground">No projects yet</h2>
+					<p class="mb-6 max-w-md text-muted-foreground">
+						Create your first lighting plot to get started. You can design venues, place
+						instruments, and generate professional reports.
+					</p>
+					<Button size="lg" onclick={() => (showNewProjectDialog = true)}>
+						<Plus class="mr-2 h-5 w-5" />
+						Create Your First Project
+					</Button>
+				</Card.Content>
+			</Card.Root>
+		{:else}
+			<!-- Project Grid -->
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				{#each projects as project (project.id)}
+					<a href={`/app/${project.id}`} class="group block">
+						<Card.Root
+							class="relative h-full transition-all hover:border-primary/50 hover:shadow-lg hover:bg-secondary/20"
+						>
+							<!-- Delete Button -->
+							<button
+								onclick={(e) => handleDeleteClick(e, project)}
+								class="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-md opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+								title="Delete project"
+							>
+								<Trash2 class="h-4 w-4" />
+							</button>
+
+							<!-- Project Thumbnail/Icon Area -->
+							<Card.Header class="pb-3">
+								<div
+									class="flex h-24 w-full items-center justify-center rounded-lg bg-gradient-to-br from-secondary/50 to-secondary"
+								>
+									<FileText class="h-10 w-10 text-muted-foreground/50" strokeWidth={1.5} />
+								</div>
+							</Card.Header>
+
+							<!-- Project Info -->
+							<Card.Content class="pt-0">
+								<Card.Title
+									class="mb-1 line-clamp-1 text-lg transition-colors group-hover:text-primary"
+								>
+									{project.name}
+								</Card.Title>
+
+								<!-- Venue if set -->
+								{#if project.venue?.name}
+									<p class="mb-2 text-sm text-muted-foreground">{project.venue.name}</p>
+								{/if}
+
+								<!-- Stats Row -->
+								<div class="flex items-center gap-4 text-xs text-muted-foreground">
+									<div class="flex items-center gap-1" title="Instruments">
+										<Lightbulb class="h-3.5 w-3.5" />
+										<span>{project.instrumentCount}</span>
+									</div>
+									<div class="flex items-center gap-1" title="Hanging Positions">
+										<Grid2x2 class="h-3.5 w-3.5" />
+										<span>{project.positionCount}</span>
+									</div>
+								</div>
+							</Card.Content>
+
+							<!-- Footer with timestamp -->
+							<Card.Footer class="border-t border-border/50 pt-3">
+								<span class="text-xs text-muted-foreground">
+									Updated {formatRelativeTime(project.updatedAt)}
+								</span>
+							</Card.Footer>
+						</Card.Root>
+					</a>
+				{/each}
+			</div>
+		{/if}
+	</div>
 </div>
 
-<!-- New Project Modal -->
-{#if showNewProjectModal}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-		<Card.Root class="w-full max-w-md">
-			<Card.Header>
-				<div class="flex items-center justify-between">
-					<Card.Title class="text-xl">New Project</Card.Title>
-					<Button
-						variant="ghost"
-						size="icon-sm"
-						onclick={() => {
-							showNewProjectModal = false;
-							newProjectName = '';
-						}}
-					>
-						<X class="h-4 w-4" />
-					</Button>
-				</div>
-			</Card.Header>
-			<Card.Content>
-				<form
-					onsubmit={(e) => {
-						e.preventDefault();
-						createProject();
-					}}
-				>
-					<div class="mb-4">
-						<Label for="projectName" class="mb-2 block">Project Name</Label>
-						<Input
-							type="text"
-							id="projectName"
-							bind:value={newProjectName}
-							required
-							placeholder="My Lighting Plot"
-						/>
-					</div>
-					<div class="flex justify-end gap-3">
-						<Button
-							type="button"
-							variant="outline"
-							onclick={() => {
-								showNewProjectModal = false;
-								newProjectName = '';
-							}}
-						>
-							Cancel
-						</Button>
-						<Button type="submit">Create</Button>
-					</div>
-				</form>
-			</Card.Content>
-		</Card.Root>
-	</div>
-{/if}
+<!-- New Project Dialog -->
+<NewProjectDialog
+	open={showNewProjectDialog}
+	onClose={() => (showNewProjectDialog = false)}
+	onCreate={handleProjectCreated}
+/>
+
+<!-- Delete Project Dialog -->
+<DeleteProjectDialog
+	open={showDeleteDialog}
+	project={projectToDelete}
+	onClose={() => {
+		showDeleteDialog = false;
+		projectToDelete = null;
+	}}
+	onDelete={handleProjectDeleted}
+/>

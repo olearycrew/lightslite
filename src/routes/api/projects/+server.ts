@@ -61,15 +61,23 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return json({ error: 'Project name must be between 1 and 255 characters' }, { status: 400 });
 		}
 
+		// Extract optional fields
+		const venue = body.venue ?? null;
+		const scale = body.scale ?? { unit: 'feet', pixelsPerUnit: 10 };
+
 		// Create the project
 		const [newProject] = await db
 			.insert(projects)
 			.values({
 				userId: locals.user.id,
 				name,
-				venue: null,
-				scale: { unit: 'feet', pixelsPerUnit: 10 },
-				layers: [],
+				venue,
+				scale,
+				layers: {
+					instruments: [],
+					hangingPositions: [],
+					shapes: []
+				},
 				metadata: { createdWith: 'LightsLite' }
 			})
 			.returning({
