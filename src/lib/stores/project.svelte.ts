@@ -19,6 +19,40 @@ import type { SelectionType } from './selection.svelte';
 // Types
 // ============================================================================
 
+/** Venue configuration - defines the stage/venue space */
+export interface Venue {
+	/** Venue name */
+	name: string;
+	/** Stage boundary rectangle (in world coordinates, pixels) */
+	stageBounds: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	} | null;
+	/** Proscenium width in feet (null if no proscenium) */
+	prosceniumWidth: number | null;
+	/** Proscenium height in feet (null if no proscenium) */
+	prosceniumHeight: number | null;
+	/** Y coordinate of plaster line (reference point) - typically 0 */
+	plasterLine: number;
+	/** X coordinate of center line - typically 0 */
+	centerLine: number;
+	/** Whether to show the stage bounds rectangle */
+	showStageBounds: boolean;
+}
+
+/** Default venue configuration */
+const DEFAULT_VENUE: Venue = {
+	name: '',
+	stageBounds: null,
+	prosceniumWidth: null,
+	prosceniumHeight: null,
+	plasterLine: 0,
+	centerLine: 0,
+	showStageBounds: true
+};
+
 /** Hanging position types */
 export type HangingPositionType =
 	| 'electric'
@@ -156,6 +190,9 @@ function createProjectStore() {
 	// Project metadata
 	let projectName = $state('Untitled Project');
 	let projectId = $state<string | null>(null);
+
+	// Venue configuration
+	let venue = $state<Venue>({ ...DEFAULT_VENUE });
 
 	// ========================================================================
 	// ID Generation
@@ -714,6 +751,40 @@ function createProjectStore() {
 	}
 
 	// ========================================================================
+	// Venue Operations
+	// ========================================================================
+
+	/**
+	 * Update venue configuration
+	 */
+	function updateVenue(updates: Partial<Venue>): void {
+		venue = { ...venue, ...updates };
+	}
+
+	/**
+	 * Set stage bounds
+	 */
+	function setStageBounds(
+		bounds: { x: number; y: number; width: number; height: number } | null
+	): void {
+		venue = { ...venue, stageBounds: bounds };
+	}
+
+	/**
+	 * Set proscenium dimensions
+	 */
+	function setProscenium(width: number | null, height: number | null): void {
+		venue = { ...venue, prosceniumWidth: width, prosceniumHeight: height };
+	}
+
+	/**
+	 * Toggle stage bounds visibility
+	 */
+	function toggleStageBounds(): void {
+		venue = { ...venue, showStageBounds: !venue.showStageBounds };
+	}
+
+	// ========================================================================
 	// Project Operations
 	// ========================================================================
 
@@ -733,6 +804,7 @@ function createProjectStore() {
 		setPieces.clear();
 		annotations.clear();
 		idCounter = 0;
+		venue = { ...DEFAULT_VENUE };
 	}
 
 	/**
@@ -778,6 +850,11 @@ function createProjectStore() {
 			return projectId;
 		},
 
+		// Venue configuration
+		get venue() {
+			return venue;
+		},
+
 		// Shape operations
 		addShape,
 		addLine,
@@ -808,6 +885,12 @@ function createProjectStore() {
 		addAnnotation,
 		updateAnnotation,
 		deleteAnnotation,
+
+		// Venue operations
+		updateVenue,
+		setStageBounds,
+		setProscenium,
+		toggleStageBounds,
 
 		// Generic operations
 		getObject,

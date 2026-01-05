@@ -12,7 +12,7 @@
 	import { project } from '$lib/stores/project.svelte';
 	import Grid from './Grid.svelte';
 	import { SelectionOverlay, ToolOverlay } from './overlays';
-	import { DrawingLayer } from './layers';
+	import { DrawingLayer, StageLayer } from './layers';
 
 	interface Props {
 		/** Whether spacebar pan mode is active (controlled by parent) */
@@ -457,6 +457,9 @@
 	<g transform={viewport.transform}>
 		<!-- Grid component - renders based on viewport bounds -->
 		<Grid {viewportWidth} {viewportHeight} />
+
+		<!-- Stage layer - renders venue/stage boundaries -->
+		<StageLayer />
 
 		<!-- Drawing layer - renders all shapes from project store -->
 		{#if showDrawingLayer}
