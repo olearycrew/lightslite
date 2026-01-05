@@ -10,3 +10,10 @@ export {
 	type ChannelHookupRow,
 	type ProjectLayers
 } from './generators/channel-hookup';
+
+export {
+	generateInstrumentSchedule,
+	type InstrumentScheduleReport,
+	type InstrumentSchedulePosition,
+	type InstrumentScheduleRow
+} from './generators/instrument-schedule';
