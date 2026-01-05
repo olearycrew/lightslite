@@ -1,7 +1,8 @@
 /**
  * Reports Module
  *
- * Exports report generators for creating various reports from project data.
+ * Exports report generators for creating various reports from project data,
+ * as well as PDF export utilities.
  */
 
 export {
@@ -24,3 +25,15 @@ export {
 	type DimmerScheduleRow,
 	type DimmerGroup
 } from './generators/dimmer-schedule';
+
+// PDF export utilities
+export {
+	exportToPDF,
+	prepareForPrint,
+	getReportUrl,
+	getReportInfo,
+	REPORTS,
+	type PDFExportOptions,
+	type ReportType,
+	type ReportInfo
+} from './pdf';
