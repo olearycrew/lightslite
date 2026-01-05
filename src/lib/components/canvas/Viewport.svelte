@@ -5,14 +5,20 @@
 	 * Full-width/height SVG container with pan/zoom functionality.
 	 * Handles mouse and touch events for canvas navigation.
 	 * Includes selection handling, marquee selection, and drawing tool support.
+	 * Respects layer visibility settings from the layers store.
 	 */
 	import { viewport, type Bounds } from '$lib/stores/viewport.svelte';
 	import { selection } from '$lib/stores/selection.svelte';
 	import { tool } from '$lib/stores/tool.svelte';
 	import { project } from '$lib/stores/project.svelte';
+	import { layers } from '$lib/stores/derived/layers.svelte';
 	import Grid from './Grid.svelte';
 	import { SelectionOverlay, ToolOverlay } from './overlays';
 	import { DrawingLayer, StageLayer } from './layers';
+
+	// Get layer states for grid and stage
+	const gridLayer = $derived(layers.getById('layer-grid'));
+	const stageLayer = $derived(layers.getById('layer-stage'));
 
 	interface Props {
 		/** Whether spacebar pan mode is active (controlled by parent) */
@@ -455,11 +461,19 @@
 
 	<!-- Transform group - all content goes here -->
 	<g transform={viewport.transform}>
-		<!-- Grid component - renders based on viewport bounds -->
-		<Grid {viewportWidth} {viewportHeight} />
+		<!-- Grid component - renders based on viewport bounds, respects layer visibility -->
+		{#if gridLayer?.visible}
+			<g style:opacity={gridLayer?.opacity ?? 1}>
+				<Grid {viewportWidth} {viewportHeight} />
+			</g>
+		{/if}
 
-		<!-- Stage layer - renders venue/stage boundaries -->
-		<StageLayer />
+		<!-- Stage layer - renders venue/stage boundaries, respects layer visibility -->
+		{#if stageLayer?.visible}
+			<g style:opacity={stageLayer?.opacity ?? 1}>
+				<StageLayer />
+			</g>
+		{/if}
 
 		<!-- Drawing layer - renders all shapes from project store -->
 		{#if showDrawingLayer}

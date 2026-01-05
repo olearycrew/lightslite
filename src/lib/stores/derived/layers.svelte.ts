@@ -32,6 +32,8 @@ export interface Layer {
 	color: string;
 	/** Layer type for default behavior */
 	type: LayerType;
+	/** Opacity level (0-1), for "dimmed" state visualization */
+	opacity: number;
 }
 
 /**
@@ -66,7 +68,8 @@ const DEFAULT_LAYERS: Layer[] = [
 		locked: true,
 		order: 0,
 		color: '#4a5568',
-		type: 'grid'
+		type: 'grid',
+		opacity: 1
 	},
 	{
 		id: 'layer-stage',
@@ -75,7 +78,8 @@ const DEFAULT_LAYERS: Layer[] = [
 		locked: false,
 		order: 10,
 		color: '#805ad5',
-		type: 'stage'
+		type: 'stage',
+		opacity: 1
 	},
 	{
 		id: 'layer-set-pieces',
@@ -84,7 +88,8 @@ const DEFAULT_LAYERS: Layer[] = [
 		locked: false,
 		order: 20,
 		color: '#38a169',
-		type: 'set-pieces'
+		type: 'set-pieces',
+		opacity: 1
 	},
 	{
 		id: 'layer-positions',
@@ -93,7 +98,8 @@ const DEFAULT_LAYERS: Layer[] = [
 		locked: false,
 		order: 30,
 		color: '#3182ce',
-		type: 'hanging-positions'
+		type: 'hanging-positions',
+		opacity: 1
 	},
 	{
 		id: 'layer-instruments',
@@ -102,7 +108,8 @@ const DEFAULT_LAYERS: Layer[] = [
 		locked: false,
 		order: 40,
 		color: '#dd6b20',
-		type: 'instruments'
+		type: 'instruments',
+		opacity: 1
 	},
 	{
 		id: 'layer-annotations',
@@ -111,7 +118,8 @@ const DEFAULT_LAYERS: Layer[] = [
 		locked: false,
 		order: 50,
 		color: '#e53e3e',
-		type: 'annotations'
+		type: 'annotations',
+		opacity: 1
 	}
 ];
 
@@ -231,7 +239,8 @@ function createLayersDerivedStore() {
 			visible: options.visible ?? true,
 			locked: options.locked ?? false,
 			order: options.order ?? maxOrder + 10,
-			color: options.color ?? '#718096'
+			color: options.color ?? '#718096',
+			opacity: options.opacity ?? 1
 		};
 
 		layerMap.set(id, layer);
@@ -307,6 +316,16 @@ function createLayersDerivedStore() {
 			if (layer.type !== 'grid') {
 				layerMap.set(id, { ...layer, locked: false });
 			}
+		}
+	}
+
+	/**
+	 * Set layer opacity (0-1)
+	 */
+	function setOpacity(id: string, opacity: number): void {
+		const layer = layerMap.get(id);
+		if (layer) {
+			layerMap.set(id, { ...layer, opacity: Math.max(0, Math.min(1, opacity)) });
 		}
 	}
 
@@ -407,6 +426,7 @@ function createLayersDerivedStore() {
 		deleteLayer,
 		toggleVisibility,
 		toggleLock,
+		setOpacity,
 		showAll,
 		hideAll,
 		unlockAll,

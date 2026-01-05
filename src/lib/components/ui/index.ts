@@ -14,6 +14,7 @@
 export { default as ToolPalette } from './ToolPalette.svelte';
 export { default as PropertiesPanel } from './PropertiesPanel.svelte';
 export { default as ConflictDialog } from './ConflictDialog.svelte';
+export { default as LayersPanel } from './LayersPanel.svelte';
 
 // Re-export form components (wrapper components with app-specific APIs)
 export * from './forms';

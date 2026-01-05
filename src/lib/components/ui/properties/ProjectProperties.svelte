@@ -15,6 +15,7 @@
 		Checkbox,
 		CollapsibleSection
 	} from '../forms';
+	import LayersPanel from '../LayersPanel.svelte';
 
 	// Unit options
 	const unitOptions: Array<{ value: GridUnit; label: string }> = [
@@ -325,6 +326,9 @@
 			</div>
 		</div>
 	</CollapsibleSection>
+
+	<!-- Layers Section -->
+	<LayersPanel />
 </div>
 
 <style>

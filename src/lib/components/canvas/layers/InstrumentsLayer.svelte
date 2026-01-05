@@ -5,6 +5,7 @@
 	 * Renders all instruments from the project store.
 	 * Groups instruments by hanging position for organization.
 	 * Handles selection, hover states, and drag operations.
+	 * Respects layer lock state passed from parent.
 	 */
 	import { SvelteMap } from 'svelte/reactivity';
 	import { project } from '$lib/stores/project.svelte';
@@ -13,6 +14,13 @@
 	import { InstrumentSymbol, InstrumentLabel } from '../symbols';
 	import { getSymbol, getSymbolBounds } from '$lib/symbols';
 	import type { InstrumentType } from '$lib/types/instrument';
+
+	interface Props {
+		/** Whether the instruments layer is locked */
+		layerLocked?: boolean;
+	}
+
+	let { layerLocked = false }: Props = $props();
 
 	// Local hover tracking
 	let hoveredId = $state<string | null>(null);
@@ -124,7 +132,7 @@
 						y={bounds.y}
 						width={bounds.width}
 						height={bounds.height}
-						locked={instrument.locked}
+						locked={instrument.locked || layerLocked}
 						visible={instrument.visible}
 						ondrag={(dx, dy) => handleDrag(instrument.id, dx, dy)}
 					>
@@ -183,7 +191,7 @@
 					y={bounds.y}
 					width={bounds.width}
 					height={bounds.height}
-					locked={instrument.locked}
+					locked={instrument.locked || layerLocked}
 					visible={instrument.visible}
 					ondrag={(dx, dy) => {
 						// Free instruments can be moved freely
