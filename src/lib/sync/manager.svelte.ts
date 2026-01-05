@@ -32,6 +32,7 @@ import {
 	type ConflictResolution
 } from './conflict.svelte';
 import { project } from '$lib/stores/project.svelte';
+import { connection } from '$lib/stores/connection.svelte';
 import type {
 	ShapeObject,
 	HangingPositionObject,
@@ -140,6 +141,21 @@ export class SyncManager {
 
 	/** Conflict manager for handling version conflicts */
 	private _conflictManager: ConflictManager = createConflictManager();
+
+	// ========================================================================
+	// Connection Store Integration
+	// ========================================================================
+
+	/** Notify the connection store of state changes */
+	private notifyConnectionStore(): void {
+		connection.updateFromSyncManager({
+			isOnline: this._isOnline,
+			syncStatus: this._syncStatus,
+			isDirty: this._isDirty,
+			lastSyncTime: this._lastSyncTime,
+			lastError: this._lastError
+		});
+	}
 
 	// ========================================================================
 	// Reactive Getters
@@ -261,6 +277,7 @@ export class SyncManager {
 
 		this._syncStatus = 'syncing';
 		this._lastError = null;
+		this.notifyConnectionStore();
 
 		try {
 			const projectState = this.getProjectState();
@@ -300,6 +317,9 @@ export class SyncManager {
 			// Also save to IndexedDB with updated version
 			await this.saveToIndexedDB();
 
+			// Notify connection store of successful sync
+			this.notifyConnectionStore();
+
 			return {
 				success: true,
 				localVersion: this._localVersion,
@@ -309,6 +329,9 @@ export class SyncManager {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown sync error';
 			this._lastError = errorMessage;
 			this._syncStatus = 'error';
+
+			// Notify connection store of error
+			this.notifyConnectionStore();
 
 			// Schedule retry if we haven't exceeded attempts
 			if (this.retryAttempts < MAX_RETRY_ATTEMPTS) {
@@ -437,6 +460,9 @@ export class SyncManager {
 		this._isDirty = true;
 		this._localVersion++;
 
+		// Notify connection store of dirty state
+		this.notifyConnectionStore();
+
 		// Save to IndexedDB immediately
 		this.saveToIndexedDBDebounced();
 
@@ -454,9 +480,11 @@ export class SyncManager {
 		if (offline) {
 			this._syncStatus = 'offline';
 			this.cancelServerSync();
+			this.notifyConnectionStore();
 		} else if (wasOffline && !offline) {
 			// Coming back online
 			this._syncStatus = 'idle';
+			this.notifyConnectionStore();
 			if (this.pendingServerSync || this._isDirty) {
 				this.scheduleServerSync();
 			}

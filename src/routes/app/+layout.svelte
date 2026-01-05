@@ -11,10 +11,19 @@
 	import type { LayoutData } from './$types';
 	import { authClient } from '$lib/auth/client';
 	import { goto } from '$app/navigation';
+	import { connection } from '$lib/stores/connection.svelte';
+	import OfflineIndicator from '$lib/components/ui/OfflineIndicator.svelte';
+	import { onMount } from 'svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	let showUserMenu = $state(false);
+
+	// Initialize connection store
+	onMount(() => {
+		connection.initialize();
+		return () => connection.dispose();
+	});
 
 	async function handleSignOut() {
 		try {
@@ -89,4 +98,7 @@
 	<main class="flex-1">
 		{@render children()}
 	</main>
+
+	<!-- Offline Indicator -->
+	<OfflineIndicator />
 </div>
