@@ -15,6 +15,12 @@
 	import type { SyncManager } from '$lib/sync';
 	import type { InstrumentType } from '$lib/types/instrument';
 	import { onMount } from 'svelte';
+	import { InstrumentSymbol } from '../symbols';
+	import {
+		findNearestWithEndpoints,
+		DEFAULT_SNAP_THRESHOLD,
+		type HangingPositionSnapResult
+	} from '$lib/utils/snap';
 
 	// SyncManager reference - initialized asynchronously to avoid SSR issues
 	// The SyncManager uses $state runes which can't be instantiated during SSR
@@ -63,13 +69,10 @@
 	// Instrument placement state
 	let cursorX = $state(0);
 	let cursorY = $state(0);
-	let nearestHangingPosition = $state<{
-		id: string;
-		positionOnBar: number;
-		x: number;
-		y: number;
-		distance: number;
-	} | null>(null);
+	let snapResult = $state<HangingPositionSnapResult | null>(null);
+
+	// Snap threshold adjusted for zoom
+	const snapThreshold = $derived(DEFAULT_SNAP_THRESHOLD / viewport.zoom);
 
 	// Ghost shape preview dimensions (derived)
 	const ghostLine = $derived.by(() => {
@@ -164,16 +167,15 @@
 	const ghostInstrument = $derived.by(() => {
 		if (tool.activeTool !== 'add-instrument') return null;
 
-		// Snap to nearest hanging position if close enough
-		const snapDistance = 30 / viewport.zoom;
-
-		if (nearestHangingPosition && nearestHangingPosition.distance < snapDistance) {
+		// Use snap result if available and within threshold
+		if (snapResult && snapResult.distance < snapThreshold) {
 			return {
-				x: nearestHangingPosition.x,
-				y: nearestHangingPosition.y,
+				x: snapResult.x,
+				y: snapResult.y,
 				snappedToPosition: true,
-				hangingPositionId: nearestHangingPosition.id,
-				positionOnBar: nearestHangingPosition.positionOnBar
+				hangingPositionId: snapResult.id,
+				positionOnBar: snapResult.positionOnBar,
+				rotation: 0 // Default rotation (pointing upstage)
 			};
 		}
 
@@ -182,7 +184,8 @@
 			y: cursorY,
 			snappedToPosition: false,
 			hangingPositionId: null,
-			positionOnBar: 0.5
+			positionOnBar: 0.5,
+			rotation: 0
 		};
 	});
 
@@ -205,51 +208,14 @@
 	}
 
 	/**
-	 * Find the nearest hanging position to a point
+	 * Find the nearest hanging position to a point using snap utility
 	 */
-	function findNearestHangingPosition(
-		x: number,
-		y: number
-	): { id: string; positionOnBar: number; x: number; y: number; distance: number } | null {
-		let nearest: {
-			id: string;
-			positionOnBar: number;
-			x: number;
-			y: number;
-			distance: number;
-		} | null = null;
-
-		for (const hp of project.hangingPositions) {
-			// Calculate the closest point on the hanging position line segment
-			const dx = hp.x2 - hp.x1;
-			const dy = hp.y2 - hp.y1;
-			const lengthSq = dx * dx + dy * dy;
-
-			if (lengthSq === 0) continue;
-
-			// Project point onto line segment (clamped to 0-1)
-			const t = Math.max(0, Math.min(1, ((x - hp.x1) * dx + (y - hp.y1) * dy) / lengthSq));
-
-			// Calculate the closest point on the line
-			const closestX = hp.x1 + t * dx;
-			const closestY = hp.y1 + t * dy;
-
-			// Calculate distance
-			const distSq = (x - closestX) ** 2 + (y - closestY) ** 2;
-			const distance = Math.sqrt(distSq);
-
-			if (!nearest || distance < nearest.distance) {
-				nearest = {
-					id: hp.id,
-					positionOnBar: t,
-					x: closestX,
-					y: closestY,
-					distance
-				};
-			}
-		}
-
-		return nearest;
+	function updateSnapResult(x: number, y: number): void {
+		snapResult = findNearestWithEndpoints(x, y, project.hangingPositions, snapThreshold, {
+			snapToEndpoints: true,
+			snapToCenter: true,
+			endpointPriorityMultiplier: 0.5
+		});
 	}
 
 	/**
@@ -264,7 +230,7 @@
 			const coords = getWorldCoords(event);
 			cursorX = coords.x;
 			cursorY = coords.y;
-			nearestHangingPosition = findNearestHangingPosition(coords.x, coords.y);
+			updateSnapResult(coords.x, coords.y);
 			placeInstrument();
 			return true;
 		}
@@ -299,7 +265,7 @@
 		if (tool.activeTool === 'add-instrument') {
 			cursorX = coords.x;
 			cursorY = coords.y;
-			nearestHangingPosition = findNearestHangingPosition(coords.x, coords.y);
+			updateSnapResult(coords.x, coords.y);
 			return true;
 		}
 
@@ -339,14 +305,14 @@
 				ghostInstrument.positionOnBar,
 				selectedInstrumentType,
 				{
-					rotation: 0 // Default rotation (pointing upstage)
+					rotation: ghostInstrument.rotation
 				}
 			);
 		} else {
 			// Place as a free-floating instrument at the cursor position
 			const snapped = snapCoords(ghostInstrument.x, ghostInstrument.y);
 			project.addFreeInstrument(snapped.x, snapped.y, selectedInstrumentType, {
-				rotation: 0 // Default rotation (pointing upstage)
+				rotation: ghostInstrument.rotation
 			});
 		}
 
@@ -565,29 +531,74 @@
 		/>
 	{/if}
 
-	<!-- Instrument placement crosshair cursor -->
-	{#if ghostInstrument}
-		<g class="instrument-cursor" transform="translate({ghostInstrument.x}, {ghostInstrument.y})">
-			<!-- Simple crosshair -->
+	<!-- Snap indicator: highlight the target hanging position -->
+	{#if ghostInstrument?.snappedToPosition && snapResult}
+		{@const hp = snapResult.hangingPosition}
+		<g class="snap-indicator">
+			<!-- Highlight the entire hanging position line -->
 			<line
-				class="cursor-crosshair"
-				class:snapped={ghostInstrument.snappedToPosition}
-				x1={-10 / viewport.zoom}
-				y1={0}
-				x2={10 / viewport.zoom}
-				y2={0}
-				stroke-width={strokeWidth}
+				class="snap-highlight-line"
+				x1={hp.x1}
+				y1={hp.y1}
+				x2={hp.x2}
+				y2={hp.y2}
+				stroke-width={strokeWidth * 4}
 			/>
-			<line
-				class="cursor-crosshair"
-				class:snapped={ghostInstrument.snappedToPosition}
-				x1={0}
-				y1={-10 / viewport.zoom}
-				x2={0}
-				y2={10 / viewport.zoom}
-				stroke-width={strokeWidth}
+			<!-- Snap point indicator -->
+			<circle class="snap-point" cx={snapResult.x} cy={snapResult.y} r={8 / viewport.zoom} />
+			<!-- Small connecting line from cursor to snap point -->
+			{#if Math.abs(cursorX - snapResult.x) > 1 || Math.abs(cursorY - snapResult.y) > 1}
+				<line
+					class="snap-connector"
+					x1={cursorX}
+					y1={cursorY}
+					x2={snapResult.x}
+					y2={snapResult.y}
+					stroke-width={strokeWidth / 2}
+					stroke-dasharray={dashArray}
+				/>
+			{/if}
+		</g>
+	{/if}
+
+	<!-- Instrument preview with actual symbol -->
+	{#if ghostInstrument}
+		<g
+			class="ghost-instrument"
+			class:snapped={ghostInstrument.snappedToPosition}
+			style="opacity: 0.7;"
+		>
+			<InstrumentSymbol
+				type={selectedInstrumentType}
+				x={ghostInstrument.x}
+				y={ghostInstrument.y}
+				rotation={ghostInstrument.rotation}
+				isSelected={false}
+				isHovered={false}
 			/>
 		</g>
+
+		<!-- Crosshair at cursor position (when not snapped) -->
+		{#if !ghostInstrument.snappedToPosition}
+			<g class="instrument-cursor" transform="translate({cursorX}, {cursorY})">
+				<line
+					class="cursor-crosshair"
+					x1={-10 / viewport.zoom}
+					y1={0}
+					x2={10 / viewport.zoom}
+					y2={0}
+					stroke-width={strokeWidth}
+				/>
+				<line
+					class="cursor-crosshair"
+					x1={0}
+					y1={-10 / viewport.zoom}
+					x2={0}
+					y2={10 / viewport.zoom}
+					stroke-width={strokeWidth}
+				/>
+			</g>
+		{/if}
 	{/if}
 
 	<!-- Dimension feedback -->
@@ -674,7 +685,37 @@
 		fill: none;
 	}
 
-	.cursor-crosshair.snapped {
+	/* Ghost instrument preview */
+	.ghost-instrument {
+		pointer-events: none;
+	}
+
+	.ghost-instrument.snapped :global(.symbol-body) {
+		stroke: #a6e3a1; /* Catppuccin green when snapped */
+	}
+
+	/* Snap indicator styles */
+	.snap-indicator {
+		pointer-events: none;
+	}
+
+	.snap-highlight-line {
 		stroke: #a6e3a1; /* Catppuccin green */
+		stroke-opacity: 0.4;
+		fill: none;
+	}
+
+	.snap-point {
+		fill: #a6e3a1; /* Catppuccin green */
+		fill-opacity: 0.8;
+		stroke: #a6e3a1;
+		stroke-width: 2;
+		stroke-opacity: 0.4;
+	}
+
+	.snap-connector {
+		stroke: #a6e3a1; /* Catppuccin green */
+		stroke-opacity: 0.6;
+		fill: none;
 	}
 </style>
