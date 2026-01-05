@@ -7,6 +7,7 @@
 	 * Includes selection handling, marquee selection, and drawing tool support.
 	 * Respects layer visibility settings from the layers store.
 	 */
+	import { untrack } from 'svelte';
 	import { viewport, type Bounds } from '$lib/stores/viewport.svelte';
 	import { selection } from '$lib/stores/selection.svelte';
 	import { tool } from '$lib/stores/tool.svelte';
@@ -61,8 +62,8 @@
 	// Track if viewport has been initialized (for centering origin)
 	let hasInitialized = $state(false);
 
-	// SVG element reference
-	let svgElement: SVGSVGElement;
+	// SVG element reference - using plain let, not $state, to avoid reaction cycles with bind:this
+	let svgElement: SVGSVGElement | undefined;
 
 	// ToolOverlay reference for delegating events
 	let toolOverlayRef:
@@ -403,10 +404,11 @@
 
 	// Update viewport dimensions when SVG is bound or resized
 	$effect(() => {
-		if (!svgElement) return;
+		const element = svgElement;
+		if (!element) return;
 
 		const updateDimensions = () => {
-			const rect = svgElement.getBoundingClientRect();
+			const rect = element.getBoundingClientRect();
 			viewportWidth = rect.width;
 			viewportHeight = rect.height;
 		};
@@ -416,7 +418,7 @@
 
 		// Watch for resize
 		const resizeObserver = new ResizeObserver(updateDimensions);
-		resizeObserver.observe(svgElement);
+		resizeObserver.observe(element);
 
 		return () => {
 			resizeObserver.disconnect();
@@ -425,7 +427,9 @@
 
 	// Initialize viewport with origin centered when dimensions are first available
 	$effect(() => {
-		if (!hasInitialized && viewportWidth > 0 && viewportHeight > 0) {
+		// Read hasInitialized without tracking to prevent infinite loop when we write to it
+		const alreadyInitialized = untrack(() => hasInitialized);
+		if (!alreadyInitialized && viewportWidth > 0 && viewportHeight > 0) {
 			viewport.initializeWithCenter(viewportWidth, viewportHeight);
 			hasInitialized = true;
 		}
@@ -440,12 +444,14 @@
 	});
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <svg
 	bind:this={svgElement}
 	class="viewport-svg"
 	style:cursor={cursorStyle}
 	role="img"
-	aria-label="Canvas viewport"
+	aria-label="Canvas viewport - interactive drawing area"
+	tabindex="-1"
 	onwheel={handleWheel}
 	onmousedown={handleMouseDown}
 	onmousemove={handleMouseMove}

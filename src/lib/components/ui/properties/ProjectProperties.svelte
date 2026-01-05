@@ -194,7 +194,7 @@
 
 	<CollapsibleSection title="Stage Configuration">
 		<div class="stage-bounds-row">
-			<FormField label="Stage Width">
+			<FormField label="Stage Width" layout="vertical">
 				<NumberInput
 					value={stageBoundsWidthFeet}
 					onchange={handleStageBoundsWidthChange}
@@ -206,7 +206,7 @@
 				/>
 			</FormField>
 
-			<FormField label="Stage Depth">
+			<FormField label="Stage Depth" layout="vertical">
 				<NumberInput
 					value={stageBoundsDepthFeet}
 					onchange={handleStageBoundsDepthChange}
@@ -228,7 +228,7 @@
 		<div class="divider"></div>
 
 		<div class="proscenium-row">
-			<FormField label="Proscenium Width">
+			<FormField label="Proscenium Width" layout="vertical">
 				<NumberInput
 					value={project.venue.prosceniumWidth}
 					onchange={handleProsceniumWidthChange}
@@ -240,7 +240,7 @@
 				/>
 			</FormField>
 
-			<FormField label="Proscenium Height">
+			<FormField label="Proscenium Height" layout="vertical">
 				<NumberInput
 					value={project.venue.prosceniumHeight}
 					onchange={handleProsceniumHeightChange}
