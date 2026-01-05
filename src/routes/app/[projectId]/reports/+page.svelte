@@ -3,13 +3,59 @@
 	 * Reports Index Page
 	 *
 	 * Lists all available reports for a project with links to view each report
-	 * and quick export buttons for PDF generation.
+	 * and quick export buttons for PDF and CSV generation.
 	 */
 	import type { PageData } from './$types';
 	import { Button } from '$lib/components/ui/button';
-	import { REPORTS, getReportUrl } from '$lib/reports';
+	import {
+		REPORTS,
+		getReportUrl,
+		downloadChannelHookupCSV,
+		downloadInstrumentScheduleCSV,
+		downloadDimmerScheduleCSV
+	} from '$lib/reports';
+	import type { ReportType } from '$lib/reports';
 
 	let { data }: { data: PageData } = $props();
+
+	/**
+	 * Handle CSV export for a specific report type
+	 */
+	function handleExportCSV(reportType: ReportType) {
+		switch (reportType) {
+			case 'channel-hookup':
+				if (data.reports.channelHookup) {
+					downloadChannelHookupCSV(data.reports.channelHookup);
+				}
+				break;
+			case 'instrument-schedule':
+				if (data.reports.instrumentSchedule) {
+					downloadInstrumentScheduleCSV(data.reports.instrumentSchedule);
+				}
+				break;
+			case 'dimmer-schedule':
+				if (data.reports.dimmerSchedule) {
+					downloadDimmerScheduleCSV(data.reports.dimmerSchedule);
+				}
+				break;
+		}
+	}
+
+	/**
+	 * Check if CSV export is available for a report type
+	 */
+	function isCSVAvailable(reportType: ReportType): boolean {
+		switch (reportType) {
+			case 'channel-hookup':
+				return data.reports.channelHookup !== null;
+			case 'instrument-schedule':
+				return data.reports.instrumentSchedule !== null;
+			case 'dimmer-schedule':
+				return data.reports.dimmerSchedule !== null;
+			default:
+				return false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -128,6 +174,29 @@
 								<circle cx="12" cy="12" r="3" />
 							</svg>
 							View Report
+						</Button>
+						<Button
+							variant="outline"
+							onclick={() => handleExportCSV(report.type)}
+							disabled={!isCSVAvailable(report.type)}
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+								<polyline points="14 2 14 8 20 8" />
+								<line x1="12" y1="18" x2="12" y2="12" />
+								<path d="M9 15l3 3 3-3" />
+							</svg>
+							CSV
 						</Button>
 					</div>
 				</div>

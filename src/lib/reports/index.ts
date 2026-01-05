@@ -2,7 +2,7 @@
  * Reports Module
  *
  * Exports report generators for creating various reports from project data,
- * as well as PDF export utilities.
+ * as well as PDF and CSV export utilities.
  */
 
 export {
@@ -37,3 +37,17 @@ export {
 	type ReportType,
 	type ReportInfo
 } from './pdf';
+
+// CSV export utilities
+export {
+	generateCSV,
+	downloadCSV,
+	escapeCSVValue,
+	generateFilename,
+	exportChannelHookupCSV,
+	downloadChannelHookupCSV,
+	exportInstrumentScheduleCSV,
+	downloadInstrumentScheduleCSV,
+	exportDimmerScheduleCSV,
+	downloadDimmerScheduleCSV
+} from './csv';
