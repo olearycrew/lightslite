@@ -17,3 +17,10 @@ export {
 	type InstrumentSchedulePosition,
 	type InstrumentScheduleRow
 } from './generators/instrument-schedule';
+
+export {
+	generateDimmerSchedule,
+	type DimmerScheduleReport,
+	type DimmerScheduleRow,
+	type DimmerGroup
+} from './generators/dimmer-schedule';
