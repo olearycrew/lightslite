@@ -3,11 +3,14 @@
 	 * Canvas Container Component
 	 *
 	 * Wrapper that provides the full editor layout for the canvas.
-	 * Manages keyboard listeners for spacebar pan mode and cursor feedback.
+	 * Provides cursor feedback based on tool state.
+	 *
+	 * Note: Keyboard shortcuts including spacebar pan are handled globally
+	 * by KeyboardShortcuts.svelte
 	 */
-	import { onMount } from 'svelte';
 	import Viewport from './Viewport.svelte';
 	import { viewport } from '$lib/stores/viewport.svelte';
+	import { tool } from '$lib/stores/tool.svelte';
 
 	interface Props {
 		/** Slot content to render inside the viewport */
@@ -18,77 +21,22 @@
 
 	let { children, coords }: Props = $props();
 
-	// Spacebar state for pan mode
-	let spacebarHeld = $state(false);
-
 	// Container element reference for focus management
 	let containerElement: HTMLDivElement;
 
-	/**
-	 * Handle keydown events for spacebar pan mode
-	 */
-	function handleKeyDown(event: KeyboardEvent) {
-		// Only handle spacebar when not in an input field
-		if (event.code === 'Space' && !isInputFocused()) {
-			event.preventDefault();
-			spacebarHeld = true;
-		}
-	}
-
-	/**
-	 * Handle keyup events to release spacebar pan mode
-	 */
-	function handleKeyUp(event: KeyboardEvent) {
-		if (event.code === 'Space') {
-			spacebarHeld = false;
-		}
-	}
-
-	/**
-	 * Check if an input element is currently focused
-	 */
-	function isInputFocused(): boolean {
-		const active = document.activeElement;
-		if (!active) return false;
-		const tagName = active.tagName.toLowerCase();
-		return (
-			tagName === 'input' ||
-			tagName === 'textarea' ||
-			tagName === 'select' ||
-			active.hasAttribute('contenteditable')
-		);
-	}
-
-	/**
-	 * Handle window blur - release spacebar if window loses focus
-	 */
-	function handleWindowBlur() {
-		spacebarHeld = false;
-	}
-
-	// Setup global keyboard listeners
-	onMount(() => {
-		window.addEventListener('keydown', handleKeyDown);
-		window.addEventListener('keyup', handleKeyUp);
-		window.addEventListener('blur', handleWindowBlur);
-
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
-			window.removeEventListener('keyup', handleKeyUp);
-			window.removeEventListener('blur', handleWindowBlur);
-		};
-	});
+	// Check if we're in pan mode (either permanent or temporary via spacebar)
+	const isPanning = $derived(tool.isPanTool);
 </script>
 
 <div
 	bind:this={containerElement}
 	class="canvas-container"
-	class:panning={spacebarHeld}
+	class:panning={isPanning}
 	role="application"
 	aria-label="Canvas viewport"
 	tabindex="-1"
 >
-	<Viewport {spacebarHeld}>
+	<Viewport spacebarHeld={isPanning}>
 		{#if children}
 			{@render children()}
 		{/if}

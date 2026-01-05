@@ -5,6 +5,8 @@
 	 * Vertical toolbar for selecting drawing tools.
 	 * Shows active tool indicator and keyboard shortcuts.
 	 * Built with shadcn-svelte Button and Tooltip components.
+	 *
+	 * Note: Keyboard shortcuts are handled globally by KeyboardShortcuts.svelte
 	 */
 	import { tool, TOOL_NAMES, type ToolType } from '$lib/stores/tool.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -34,38 +36,6 @@
 	function selectTool(toolId: ToolType) {
 		tool.setTool(toolId);
 	}
-
-	/**
-	 * Handle keyboard shortcuts
-	 */
-	function handleKeyDown(event: KeyboardEvent) {
-		// Don't capture if typing in an input
-		const target = event.target as HTMLElement;
-		if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-			return;
-		}
-
-		// Don't capture if modifier keys are held (except shift for some)
-		if (event.ctrlKey || event.metaKey || event.altKey) {
-			return;
-		}
-
-		const key = event.key.toUpperCase();
-		const toolDef = tools.find((t) => t.shortcut === key);
-
-		if (toolDef) {
-			event.preventDefault();
-			selectTool(toolDef.id);
-		}
-	}
-
-	// Setup keyboard listener
-	$effect(() => {
-		window.addEventListener('keydown', handleKeyDown);
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
-		};
-	});
 
 	// Group tools for rendering with separators
 	const mainTools = $derived(tools.filter((t) => t.group === 'main'));

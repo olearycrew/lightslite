@@ -13,6 +13,7 @@
 	import type { PageData } from './$types';
 	import { CanvasContainer } from '$lib/components/canvas';
 	import { ToolPalette, PropertiesPanel } from '$lib/components/ui';
+	import KeyboardShortcuts from '$lib/components/KeyboardShortcuts.svelte';
 	import { viewport, selection, project, tool } from '$lib/stores';
 	import { grid } from '$lib/stores/grid.svelte';
 	import { onMount, onDestroy } from 'svelte';
@@ -141,7 +142,20 @@
 
 	// Current tool name for status bar
 	const currentToolName = $derived(tool.TOOL_NAMES[tool.activeTool]);
+
+	/**
+	 * Handle manual save triggered by Ctrl+S
+	 */
+	async function handleSave() {
+		if (syncManager) {
+			console.log('[EditorPage] Manual save triggered');
+			await syncManager.syncToServer();
+		}
+	}
 </script>
+
+<!-- Global keyboard shortcuts handler -->
+<KeyboardShortcuts onSave={handleSave} />
 
 <div class="editor-layout">
 	<!-- Left Sidebar: Tool Palette -->
