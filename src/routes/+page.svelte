@@ -75,9 +75,32 @@
 			{/if}
 		</div>
 
-		<!-- Footer info -->
-		<div class="mt-12 text-xs text-text-muted">
-			<p>Open source lighting design tool</p>
-		</div>
+		<!-- Footer -->
+		<footer class="mt-12 border-t border-border pt-6">
+			<div class="flex flex-col items-center justify-between gap-4 sm:flex-row sm:text-sm">
+				<p class="text-xs text-text-muted">Open source lighting design tool</p>
+				<nav class="flex gap-4">
+					<a
+						href="https://github.com/olearycrew/lightslite"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-xs text-text-muted hover:text-text-primary transition-colors"
+					>
+						GitHub
+					</a>
+					<a href="/docs" class="text-xs text-text-muted hover:text-text-primary transition-colors">
+						Documentation
+					</a>
+					<a
+						href="https://github.com/olearycrew/lightslite/issues"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-xs text-text-muted hover:text-text-primary transition-colors"
+					>
+						Feedback
+					</a>
+				</nav>
+			</div>
+		</footer>
 	</div>
 </div>

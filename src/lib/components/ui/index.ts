@@ -17,6 +17,7 @@ export { default as ConflictDialog } from './ConflictDialog.svelte';
 export { default as RecoveryDialog } from './RecoveryDialog.svelte';
 export { default as LayersPanel } from './LayersPanel.svelte';
 export { default as NewProjectDialog } from './NewProjectDialog.svelte';
+export { default as CloneProjectDialog } from './CloneProjectDialog.svelte';
 export { default as DeleteProjectDialog } from './DeleteProjectDialog.svelte';
 export { default as OfflineIndicator } from './OfflineIndicator.svelte';
 

@@ -11,6 +11,7 @@
 	import type { Snippet } from 'svelte';
 	import { selection, type SelectionType } from '$lib/stores';
 	import { viewport } from '$lib/stores/viewport.svelte';
+	import { tool } from '$lib/stores/tool.svelte';
 
 	interface Props {
 		/** Unique ID of this object */

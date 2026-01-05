@@ -13,6 +13,8 @@
 		geometry: RectGeometry;
 		/** Fill color */
 		fill?: string;
+		/** Fill opacity (0-1) */
+		fillOpacity?: number;
 		/** Stroke color */
 		stroke?: string;
 		/** Stroke width */
@@ -26,6 +28,7 @@
 	let {
 		geometry,
 		fill = 'transparent',
+		fillOpacity = 1,
 		stroke = '#cdd6f4', // Catppuccin Mocha text color
 		strokeWidth = 2,
 		isSelected = false,

@@ -62,8 +62,9 @@
 	// Track if viewport has been initialized (for centering origin)
 	let hasInitialized = $state(false);
 
-	// SVG element reference - using plain let, not $state, to avoid reaction cycles with bind:this
-	let svgElement: SVGSVGElement | undefined;
+	// SVG element reference - using $state for reactivity with bind:this
+	// The comment said to avoid reaction cycles, but we need reactivity for resize observer
+	let svgElement: SVGSVGElement | undefined = $state();
 
 	// ToolOverlay reference for delegating events
 	let toolOverlayRef:

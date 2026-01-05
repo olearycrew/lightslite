@@ -75,6 +75,7 @@ export interface ShapeObject extends BaseCanvasObject {
 	objectType: 'shape';
 	geometry: Geometry;
 	fill?: string;
+	fillOpacity?: number; // 0-1, default 1.0
 	stroke?: string;
 	strokeWidth?: number;
 }

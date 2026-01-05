@@ -37,7 +37,8 @@
 		ladder: { stroke: '#89b4fa', fill: '#89b4fa' }, // blue
 		boom: { stroke: '#a6e3a1', fill: '#a6e3a1' }, // green
 		'box-boom': { stroke: '#cba6f7', fill: '#cba6f7' }, // mauve
-		'ground-row': { stroke: '#f38ba8', fill: '#f38ba8' } // red
+		'ground-row': { stroke: '#f38ba8', fill: '#f38ba8' }, // red
+		custom: { stroke: '#6c7086', fill: '#6c7086' } // overlay0
 	};
 
 	const colors = $derived(typeColors[position.positionType]);
@@ -170,7 +171,11 @@
 	<!-- Label -->
 	<!-- Note: scale(1, -1) counter-flips the label since the viewport Y axis is flipped -->
 	{#if position.visible}
-		<g class="label-group" transform="translate({midX}, {midY}) scale(1, -1)">
+		<g
+			class="label-group"
+			transform="translate({midX + (position.labelOffsetX ?? 0)}, {midY +
+				(position.labelOffsetY ?? 0)}) scale(1, -1)"
+		>
 			<rect
 				class="label-background"
 				x={-50 / viewport.zoom}

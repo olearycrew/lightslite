@@ -17,6 +17,7 @@
 
 	let { title, defaultOpen = true, class: className = '', children }: Props = $props();
 
+	// svelte-ignore state_referenced_locally - defaultOpen is a prop that shouldn't change after init
 	let isOpen = $state(defaultOpen);
 </script>
 

@@ -65,6 +65,14 @@
 		updatePosition('height', value ?? undefined);
 	}
 
+	function handleLabelOffsetXChange(value: number | null) {
+		updatePosition('labelOffsetX', value ?? undefined);
+	}
+
+	function handleLabelOffsetYChange(value: number | null) {
+		updatePosition('labelOffsetY', value ?? undefined);
+	}
+
 	/**
 	 * Select an instrument on this position
 	 */
@@ -133,6 +141,28 @@
 				/>
 			</FormField>
 		{/if}
+	</CollapsibleSection>
+
+	<CollapsibleSection title="Label Position" defaultOpen={false}>
+		<FormField label="X Offset">
+			<NumberInput
+				value={position.labelOffsetX ?? null}
+				onchange={handleLabelOffsetXChange}
+				placeholder="0"
+				unit="px"
+				step={1}
+			/>
+		</FormField>
+
+		<FormField label="Y Offset">
+			<NumberInput
+				value={position.labelOffsetY ?? null}
+				onchange={handleLabelOffsetYChange}
+				placeholder="0"
+				unit="px"
+				step={1}
+			/>
+		</FormField>
 	</CollapsibleSection>
 
 	<CollapsibleSection title="Notes" defaultOpen={false}>

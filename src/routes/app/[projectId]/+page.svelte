@@ -13,7 +13,12 @@
 	 */
 	import type { PageData } from './$types';
 	import { CanvasContainer } from '$lib/components/canvas';
-	import { ToolPalette, PropertiesPanel, RecoveryDialog } from '$lib/components/ui';
+	import {
+		ToolPalette,
+		PropertiesPanel,
+		RecoveryDialog,
+		OfflineIndicator
+	} from '$lib/components/ui';
 	import KeyboardShortcuts from '$lib/components/KeyboardShortcuts.svelte';
 	import { viewport, selection, project, tool } from '$lib/stores';
 	import { grid } from '$lib/stores/grid.svelte';
@@ -34,6 +39,66 @@
 	let showRecoveryDialog = $state(false);
 	let recoveryInfo = $state<RecoveryInfo | null>(null);
 	let isRecovering = $state(false);
+
+	// Save viewport timeout for debouncing
+	let viewportSaveTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	// Restore viewport from project metadata on initialization
+	$effect(() => {
+		if (data.project?.metadata && isInitialized) {
+			const metadata = data.project.metadata as Record<string, unknown>;
+			const viewportSettings = metadata?.viewport as
+				| { panX?: number; panY?: number; zoom?: number }
+				| undefined;
+			if (viewportSettings) {
+				viewport.setState(viewportSettings);
+				console.log('[EditorPage] Restored viewport from metadata:', viewportSettings);
+			}
+		}
+	});
+
+	// Effect to save viewport when it changes (debounced)
+	$effect(() => {
+		// Track viewport state
+		const _panX = viewport.panX;
+		const _panY = viewport.panY;
+		const _zoom = viewport.zoom;
+
+		if (!isInitialized || !syncManager || !data.project?.id) return;
+
+		// Debounce the save to avoid excessive API calls
+		if (viewportSaveTimeout) {
+			clearTimeout(viewportSaveTimeout);
+		}
+
+		viewportSaveTimeout = setTimeout(async () => {
+			const viewportState = viewport.getState();
+			try {
+				// Get current metadata and update viewport
+				const currentMetadata = (data.project?.metadata as Record<string, unknown>) || {};
+				const newMetadata = {
+					...currentMetadata,
+					viewport: viewportState
+				};
+
+				// Update project via API (this will be debounced by SyncManager)
+				await fetch(`/api/projects/${data.project.id}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ metadata: newMetadata })
+				});
+				console.log('[EditorPage] Saved viewport to metadata:', viewportState);
+			} catch (error) {
+				console.error('[EditorPage] Failed to save viewport:', error);
+			}
+		}, 1000); // 1 second debounce
+
+		return () => {
+			if (viewportSaveTimeout) {
+				clearTimeout(viewportSaveTimeout);
+			}
+		};
+	});
 
 	// Initialize SyncManager and check for recovery data on mount (client-side only)
 	onMount(async () => {
@@ -215,7 +280,7 @@
 	 * Handle reset view
 	 */
 	function handleResetView() {
-		viewport.resetView();
+		viewport.resetView(containerWidth, containerHeight);
 	}
 
 	// Total object count for status bar
@@ -309,6 +374,9 @@
 				</button>
 			</div>
 		</div>
+
+		<!-- Offline Indicator -->
+		<OfflineIndicator />
 
 		<!-- Canvas Area -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->

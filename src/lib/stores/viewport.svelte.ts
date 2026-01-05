@@ -105,11 +105,36 @@ function createViewportStore() {
 
 	/**
 	 * Reset the viewport to default state (100% zoom, centered)
+	 * @param viewportWidth - Width of the viewport (optional, for centering origin)
+	 * @param viewportHeight - Height of the viewport (optional, for centering origin)
 	 */
-	function resetView() {
+	function resetView(viewportWidth?: number, viewportHeight?: number) {
 		panX = 0;
 		panY = 0;
 		zoom = DEFAULT_ZOOM;
+
+		// Center origin if dimensions provided
+		if (viewportWidth !== undefined && viewportHeight !== undefined) {
+			centerOrigin(viewportWidth, viewportHeight);
+		}
+	}
+
+	/**
+	 * Get the current viewport state for persistence
+	 * @returns Object with panX, panY, and zoom
+	 */
+	function getState(): { panX: number; panY: number; zoom: number } {
+		return { panX, panY, zoom };
+	}
+
+	/**
+	 * Set the viewport state from persisted data
+	 * @param state - Viewport state to restore
+	 */
+	function setState(state: { panX?: number; panY?: number; zoom?: number }) {
+		if (state.panX !== undefined) panX = state.panX;
+		if (state.panY !== undefined) panY = state.panY;
+		if (state.zoom !== undefined) zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, state.zoom));
 	}
 
 	/**
@@ -236,6 +261,10 @@ function createViewportStore() {
 		fitToContent,
 		centerOrigin,
 		initializeWithCenter,
+
+		// State persistence
+		getState,
+		setState,
 
 		// Coordinate conversion utilities
 		screenToWorld,

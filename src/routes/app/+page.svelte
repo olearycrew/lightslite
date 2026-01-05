@@ -32,7 +32,13 @@
 	let { data }: { data: PageData } = $props();
 
 	// Local state
-	let projects = $state(data.projects);
+	// Initialize empty and populate from data in effect
+	let projects = $state<typeof data.projects>([]);
+
+	// Effect to sync projects from server data (runs once and when data changes)
+	$effect(() => {
+		projects = data.projects;
+	});
 	let showNewProjectDialog = $state(false);
 	let showDeleteDialog = $state(false);
 	let projectToDelete = $state<{ id: string; name: string } | null>(null);

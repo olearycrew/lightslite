@@ -141,8 +141,8 @@
 		},
 		'view-fit-all': () => {
 			const { width, height } = getViewportDimensions();
-			// Fit to a reasonable default bounds (project content bounds would be better)
-			viewport.fitToContent({ x: -100, y: -100, width: 200, height: 200 }, width, height);
+			// Reset to default zoom and center on origin (0,0)
+			viewport.resetView(width, height);
 		},
 
 		// ====================================================================
