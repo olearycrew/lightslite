@@ -9,16 +9,17 @@
 	 * - Loading project data from IndexedDB/server into store
 	 * - Automatic syncing of changes to IndexedDB and server
 	 * - Offline support and conflict resolution
+	 * - Crash recovery with RecoveryDialog
 	 */
 	import type { PageData } from './$types';
 	import { CanvasContainer } from '$lib/components/canvas';
-	import { ToolPalette, PropertiesPanel } from '$lib/components/ui';
+	import { ToolPalette, PropertiesPanel, RecoveryDialog } from '$lib/components/ui';
 	import KeyboardShortcuts from '$lib/components/KeyboardShortcuts.svelte';
 	import { viewport, selection, project, tool } from '$lib/stores';
 	import { grid } from '$lib/stores/grid.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	// Only import types at top level - actual getSyncManager must be called in onMount
-	import type { SyncManager } from '$lib/sync';
+	import type { SyncManager, RecoveryInfo } from '$lib/sync';
 
 	let { data }: { data: PageData } = $props();
 
@@ -29,7 +30,12 @@
 	let isInitialized = $state(false);
 	let initError = $state<string | null>(null);
 
-	// Initialize SyncManager and load project data on mount (client-side only)
+	// Recovery dialog state
+	let showRecoveryDialog = $state(false);
+	let recoveryInfo = $state<RecoveryInfo | null>(null);
+	let isRecovering = $state(false);
+
+	// Initialize SyncManager and check for recovery data on mount (client-side only)
 	onMount(async () => {
 		console.log('[EditorPage] onMount - initializing SyncManager', {
 			projectId: data.project?.id,
@@ -47,22 +53,102 @@
 			const { getSyncManager } = await import('$lib/sync');
 			syncManager = getSyncManager();
 
-			// Initialize SyncManager - this loads data from IndexedDB/server into the store
-			await syncManager.initialize(data.project.id);
-			syncManager.start();
-			isInitialized = true;
+			// Check for recovery data BEFORE initializing
+			// This compares local IndexedDB cache with server data
+			const serverVersion = data.project.version ?? 0;
+			const serverUpdatedAt = data.project.updatedAt
+				? new Date(data.project.updatedAt).getTime()
+				: 0;
 
-			console.log('[EditorPage] SyncManager initialized', {
-				storeProjectId: project.projectId,
-				storeShapesCount: project.shapes.length,
-				storeHangingPositionsCount: project.hangingPositions.length,
-				syncStatus: syncManager.syncStatus
-			});
+			const recoveryData = await syncManager.checkForRecoveryData(
+				data.project.id,
+				serverVersion,
+				serverUpdatedAt
+			);
+
+			if (recoveryData) {
+				console.log('[EditorPage] Recovery data found:', {
+					localVersion: recoveryData.localVersion,
+					serverVersion,
+					localUpdatedAt: recoveryData.localUpdatedAt,
+					serverUpdatedAt
+				});
+
+				// Show recovery dialog instead of auto-initializing
+				recoveryInfo = recoveryData;
+				showRecoveryDialog = true;
+
+				// Still initialize but with server data for now
+				await syncManager.initialize(data.project.id);
+				syncManager.start();
+				isInitialized = true;
+			} else {
+				// No recovery needed - normal initialization
+				await syncManager.initialize(data.project.id);
+				syncManager.start();
+				isInitialized = true;
+
+				console.log('[EditorPage] SyncManager initialized (no recovery needed)', {
+					storeProjectId: project.projectId,
+					storeShapesCount: project.shapes.length,
+					storeHangingPositionsCount: project.hangingPositions.length,
+					syncStatus: syncManager.syncStatus
+				});
+			}
 		} catch (error) {
 			console.error('[EditorPage] Failed to initialize SyncManager:', error);
 			initError = error instanceof Error ? error.message : 'Failed to initialize';
 		}
 	});
+
+	// Handle recovery restore
+	async function handleRecoveryRestore() {
+		if (!syncManager || !recoveryInfo) return;
+
+		isRecovering = true;
+		try {
+			console.log('[EditorPage] Restoring from cache');
+			const success = await syncManager.restoreFromCache(recoveryInfo.projectId);
+			if (success) {
+				console.log('[EditorPage] Recovery successful');
+				showRecoveryDialog = false;
+				recoveryInfo = null;
+			} else {
+				console.error('[EditorPage] Recovery failed');
+				initError = 'Failed to restore from cache';
+			}
+		} catch (error) {
+			console.error('[EditorPage] Recovery error:', error);
+			initError = error instanceof Error ? error.message : 'Recovery failed';
+		} finally {
+			isRecovering = false;
+		}
+	}
+
+	// Handle recovery discard
+	async function handleRecoveryDiscard() {
+		if (!syncManager || !recoveryInfo) return;
+
+		isRecovering = true;
+		try {
+			console.log('[EditorPage] Discarding local cache');
+			await syncManager.discardCache(recoveryInfo.projectId);
+			showRecoveryDialog = false;
+			recoveryInfo = null;
+			console.log('[EditorPage] Cache discarded, using server version');
+		} catch (error) {
+			console.error('[EditorPage] Discard error:', error);
+			initError = error instanceof Error ? error.message : 'Failed to discard cache';
+		} finally {
+			isRecovering = false;
+		}
+	}
+
+	// Handle recovery dialog close (decide later)
+	function handleRecoveryClose() {
+		showRecoveryDialog = false;
+		// Keep recoveryInfo in case they want to recover later
+	}
 
 	// Cleanup on destroy
 	onDestroy(async () => {
@@ -258,6 +344,16 @@
 	<!-- Right Sidebar: Properties Panel -->
 	<PropertiesPanel />
 </div>
+
+<!-- Recovery Dialog for crash recovery -->
+<RecoveryDialog
+	open={showRecoveryDialog}
+	{recoveryInfo}
+	{isRecovering}
+	onRestore={handleRecoveryRestore}
+	onDiscard={handleRecoveryDiscard}
+	onClose={handleRecoveryClose}
+/>
 
 <style>
 	.editor-layout {

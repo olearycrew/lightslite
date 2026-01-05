@@ -16,8 +16,14 @@ import {
 	createEmptyProject,
 	type Project,
 	type ProjectMetadata,
+	type RecoveryInfo,
 	markSessionActive,
-	markSessionClean
+	markSessionClean,
+	getProjectRecoveryInfo,
+	clearProjectCache,
+	markSessionUnloadSync,
+	markSessionCleanSync,
+	updateSessionActivitySync
 } from './indexeddb';
 import {
 	createConflictManager,
@@ -203,7 +209,8 @@ export class SyncManager {
 		this._lastError = null;
 		this.retryAttempts = 0;
 
-		// Mark session as active for crash recovery
+		// Mark session as active for crash recovery (both sync and async)
+		updateSessionActivitySync(projectId);
 		await markSessionActive(projectId);
 
 		// Try to load from IndexedDB first (faster, works offline)
@@ -528,6 +535,77 @@ export class SyncManager {
 	}
 
 	// ========================================================================
+	// Crash Recovery
+	// ========================================================================
+
+	/**
+	 * Check if there is recoverable data for a project
+	 * Call this before initialize() to detect crash scenarios
+	 *
+	 * @param projectId - The project ID to check
+	 * @param serverVersion - The current server version
+	 * @param serverUpdatedAt - The server's last updated timestamp
+	 * @returns RecoveryInfo if local data is newer than server, null otherwise
+	 */
+	async checkForRecoveryData(
+		projectId: string,
+		serverVersion: number,
+		serverUpdatedAt: number
+	): Promise<RecoveryInfo | null> {
+		return await getProjectRecoveryInfo(projectId, serverVersion, serverUpdatedAt);
+	}
+
+	/**
+	 * Restore project from cached IndexedDB data
+	 * Use this when user chooses to recover from a crash
+	 *
+	 * @param projectId - The project ID to restore
+	 * @returns True if restoration succeeded
+	 */
+	async restoreFromCache(projectId: string): Promise<boolean> {
+		try {
+			const localProject = await loadProject(projectId);
+			if (!localProject) {
+				return false;
+			}
+
+			// Load the cached project into the store
+			this.loadProjectIntoStore(localProject);
+			this._localVersion = localProject.version;
+			this._projectId = projectId;
+
+			// Mark as dirty so it syncs to server
+			this._isDirty = true;
+
+			// Save to IndexedDB to ensure consistency
+			await this.saveToIndexedDB();
+
+			// Schedule server sync
+			this.scheduleServerSync();
+
+			return true;
+		} catch (error) {
+			console.error('[SyncManager] Failed to restore from cache:', error);
+			return false;
+		}
+	}
+
+	/**
+	 * Discard cached data and use server version
+	 * Use this when user chooses to discard local changes after crash
+	 *
+	 * @param projectId - The project ID to discard cache for
+	 */
+	async discardCache(projectId: string): Promise<void> {
+		// Clear the cached project data
+		await clearProjectCache(projectId);
+
+		// Reset local state
+		this._isDirty = false;
+		this._localVersion = 0;
+	}
+
+	// ========================================================================
 	// Lifecycle
 	// ========================================================================
 
@@ -576,7 +654,8 @@ export class SyncManager {
 			await this.saveToIndexedDB();
 		}
 
-		// Mark session as clean
+		// Mark session as clean (both sync and async)
+		markSessionCleanSync();
 		await markSessionClean();
 
 		// Clear state
@@ -614,10 +693,15 @@ export class SyncManager {
 		this.cancelServerSync();
 	};
 
-	/** Handler for beforeunload - save any dirty data */
-	private handleBeforeUnload = async (): Promise<void> => {
+	/** Handler for beforeunload - save any dirty data synchronously */
+	private handleBeforeUnload = (): void => {
+		// Use synchronous localStorage to mark session state
+		// because async IndexedDB won't complete before page unloads
+		markSessionUnloadSync(this._projectId);
+
+		// Still try to save to IndexedDB (may or may not complete)
 		if (this._isDirty) {
-			await this.saveToIndexedDB();
+			this.saveToIndexedDB();
 		}
 	};
 

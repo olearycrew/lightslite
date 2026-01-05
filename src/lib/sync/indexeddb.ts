@@ -161,6 +161,7 @@ const DB_NAME = 'lightslite';
 const DB_VERSION = 1;
 const MAX_RECOVERY_SNAPSHOTS = 50;
 const AUTO_SAVE_DEBOUNCE_MS = 500;
+const SESSION_STATE_KEY = 'lightslite_session_state';
 
 // Generate a unique session ID for this browser session
 let currentSessionId: string | null = null;
@@ -609,4 +610,212 @@ export async function setLastProjectId(projectId: string): Promise<void> {
 		...metadata,
 		lastProjectId: projectId
 	});
+}
+
+// ============================================================================
+// Recovery Data Operations
+// ============================================================================
+
+/**
+ * Recovery information for crash detection
+ */
+export interface RecoveryInfo {
+	/** Project ID */
+	projectId: string;
+	/** Project name */
+	projectName: string;
+	/** Cached local version */
+	localVersion: number;
+	/** Cached updated timestamp */
+	localUpdatedAt: number;
+	/** Session that created the cache */
+	sessionId: string;
+	/** Whether local data is newer than server */
+	hasNewerData: boolean;
+	/** The cached project state */
+	cachedState: Project;
+}
+
+/**
+ * Get cached project metadata for recovery detection
+ * Compares local IndexedDB data with server data
+ */
+export async function getProjectRecoveryInfo(
+	projectId: string,
+	serverVersion: number,
+	serverUpdatedAt: number
+): Promise<RecoveryInfo | null> {
+	const db = await initDB();
+
+	// Get the cached project from IndexedDB
+	const localProject = await db.get('projects', projectId);
+	if (!localProject) {
+		return null;
+	}
+
+	// Get the most recent recovery snapshot to check session info
+	const snapshots = await getRecoverySnapshots(projectId);
+	const latestSnapshot = snapshots[0];
+
+	// Check if local data is newer than server
+	// Consider it newer if:
+	// 1. Local version > server version, OR
+	// 2. Local updatedAt > server updatedAt (timestamps match or local is ahead)
+	const hasNewerData =
+		localProject.version > serverVersion || localProject.updatedAt > serverUpdatedAt;
+
+	if (!hasNewerData) {
+		return null;
+	}
+
+	return {
+		projectId: localProject.id,
+		projectName: localProject.name,
+		localVersion: localProject.version,
+		localUpdatedAt: localProject.updatedAt,
+		sessionId: latestSnapshot?.sessionId ?? 'unknown',
+		hasNewerData: true,
+		cachedState: localProject
+	};
+}
+
+/**
+ * Clear the project cache for a specific project
+ * Used when user chooses to discard cached changes
+ */
+export async function clearProjectCache(projectId: string): Promise<void> {
+	const db = await initDB();
+
+	// Delete the cached project
+	await db.delete('projects', projectId);
+
+	// Also clear recovery snapshots for this project
+	await clearRecoveryData(projectId);
+}
+
+/**
+ * Get the latest snapshot for a project
+ */
+export async function getLatestRecoverySnapshot(
+	projectId: string
+): Promise<RecoverySnapshot | null> {
+	const snapshots = await getRecoverySnapshots(projectId);
+	return snapshots[0] ?? null;
+}
+
+// ============================================================================
+// Synchronous Session State (localStorage)
+// ============================================================================
+
+/**
+ * Session state stored in localStorage for synchronous crash detection
+ * This is used because beforeunload doesn't wait for async IndexedDB operations
+ */
+interface SessionState {
+	sessionId: string;
+	projectId: string | null;
+	startedAt: number;
+	lastActivity: number;
+	exitType: 'active' | 'clean' | 'unload';
+}
+
+/**
+ * Mark session as potentially crashed (synchronous, for beforeunload)
+ * Uses localStorage because it's synchronous and survives page unload
+ */
+export function markSessionUnloadSync(projectId: string | null): void {
+	if (typeof localStorage === 'undefined') return;
+
+	try {
+		const state: SessionState = {
+			sessionId: getSessionId(),
+			projectId,
+			startedAt: Date.now(),
+			lastActivity: Date.now(),
+			exitType: 'unload'
+		};
+		localStorage.setItem(SESSION_STATE_KEY, JSON.stringify(state));
+	} catch {
+		// localStorage might be full or disabled
+		console.warn('[IndexedDB] Failed to save session state to localStorage');
+	}
+}
+
+/**
+ * Mark session as cleanly exited (synchronous)
+ */
+export function markSessionCleanSync(): void {
+	if (typeof localStorage === 'undefined') return;
+
+	try {
+		const existing = localStorage.getItem(SESSION_STATE_KEY);
+		if (existing) {
+			const state = JSON.parse(existing) as SessionState;
+			state.exitType = 'clean';
+			state.lastActivity = Date.now();
+			localStorage.setItem(SESSION_STATE_KEY, JSON.stringify(state));
+		}
+	} catch {
+		// Ignore errors
+	}
+}
+
+/**
+ * Check if there was an unclean session exit (potential crash)
+ * Returns the project ID if there was a crash, null otherwise
+ */
+export function checkForCrashedSessionSync(): { projectId: string; sessionId: string } | null {
+	if (typeof localStorage === 'undefined') return null;
+
+	try {
+		const existing = localStorage.getItem(SESSION_STATE_KEY);
+		if (existing) {
+			const state = JSON.parse(existing) as SessionState;
+
+			// If the exit type was 'unload' and it's a different session, there was a crash
+			if (state.exitType === 'unload' && state.sessionId !== getSessionId() && state.projectId) {
+				return {
+					projectId: state.projectId,
+					sessionId: state.sessionId
+				};
+			}
+		}
+	} catch {
+		// Ignore errors
+	}
+
+	return null;
+}
+
+/**
+ * Clear the session state from localStorage
+ */
+export function clearSessionStateSync(): void {
+	if (typeof localStorage === 'undefined') return;
+
+	try {
+		localStorage.removeItem(SESSION_STATE_KEY);
+	} catch {
+		// Ignore errors
+	}
+}
+
+/**
+ * Update session activity timestamp
+ */
+export function updateSessionActivitySync(projectId: string | null): void {
+	if (typeof localStorage === 'undefined') return;
+
+	try {
+		const state: SessionState = {
+			sessionId: getSessionId(),
+			projectId,
+			startedAt: Date.now(),
+			lastActivity: Date.now(),
+			exitType: 'active'
+		};
+		localStorage.setItem(SESSION_STATE_KEY, JSON.stringify(state));
+	} catch {
+		// Ignore errors
+	}
 }

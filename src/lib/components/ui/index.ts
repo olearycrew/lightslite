@@ -14,6 +14,7 @@
 export { default as ToolPalette } from './ToolPalette.svelte';
 export { default as PropertiesPanel } from './PropertiesPanel.svelte';
 export { default as ConflictDialog } from './ConflictDialog.svelte';
+export { default as RecoveryDialog } from './RecoveryDialog.svelte';
 export { default as LayersPanel } from './LayersPanel.svelte';
 export { default as NewProjectDialog } from './NewProjectDialog.svelte';
 export { default as DeleteProjectDialog } from './DeleteProjectDialog.svelte';

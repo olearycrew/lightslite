@@ -16,6 +16,7 @@ export {
 	type RecoverySnapshot,
 	type CrashedSession,
 	type AppMetadata,
+	type RecoveryInfo,
 	// Database initialization
 	initDB,
 	closeDB,
@@ -35,6 +36,15 @@ export {
 	markSessionActive,
 	markSessionClean,
 	recoverFromSnapshot,
+	getProjectRecoveryInfo,
+	clearProjectCache,
+	getLatestRecoverySnapshot,
+	// Synchronous session tracking (for beforeunload)
+	markSessionUnloadSync,
+	markSessionCleanSync,
+	checkForCrashedSessionSync,
+	clearSessionStateSync,
+	updateSessionActivitySync,
 	// Export/Import
 	exportProjectAsJSON,
 	importProjectFromJSON,
