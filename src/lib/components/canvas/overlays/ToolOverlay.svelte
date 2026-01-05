@@ -109,6 +109,16 @@
 		};
 	});
 
+	const ghostBoom = $derived.by(() => {
+		if (!isDrawing || tool.activeTool !== 'add-boom') return null;
+		return {
+			x1: drawStartX,
+			y1: drawStartY,
+			x2: drawCurrentX,
+			y2: drawCurrentY
+		};
+	});
+
 	// Dimension feedback during drawing
 	const dimensionText = $derived.by(() => {
 		if (!isDrawing) return null;
@@ -118,7 +128,8 @@
 
 		switch (tool.activeTool) {
 			case 'draw-line':
-			case 'add-electric': {
+			case 'add-electric':
+			case 'add-boom': {
 				const dx = drawCurrentX - drawStartX;
 				const dy = drawCurrentY - drawStartY;
 				const length = Math.sqrt(dx * dx + dy * dy) / pixelsPerUnit;
@@ -258,8 +269,8 @@
 			return true;
 		}
 
-		// Only handle if a drawing tool is active
-		if (!tool.isDrawingTool && tool.activeTool !== 'add-electric') {
+		// Only handle if a drawing tool or hanging position tool is active
+		if (!tool.isDrawingTool && !tool.isHangingPositionTool) {
 			return false;
 		}
 
@@ -417,6 +428,12 @@
 					objectCreated = true;
 				}
 				break;
+			case 'add-boom':
+				if (dx > minSize || dy > minSize) {
+					project.addBoom(x1, y1, x2, y2);
+					objectCreated = true;
+				}
+				break;
 		}
 
 		// Mark project as dirty to trigger sync
@@ -507,8 +524,45 @@
 			stroke-dasharray={dashArray}
 		/>
 		<!-- End caps -->
-		<circle class="ghost-point" cx={ghostElectric.x1} cy={ghostElectric.y1} r={6 / viewport.zoom} />
-		<circle class="ghost-point" cx={ghostElectric.x2} cy={ghostElectric.y2} r={6 / viewport.zoom} />
+		<circle
+			class="ghost-point ghost-electric-point"
+			cx={ghostElectric.x1}
+			cy={ghostElectric.y1}
+			r={6 / viewport.zoom}
+		/>
+		<circle
+			class="ghost-point ghost-electric-point"
+			cx={ghostElectric.x2}
+			cy={ghostElectric.y2}
+			r={6 / viewport.zoom}
+		/>
+	{/if}
+
+	<!-- Ghost boom preview -->
+	{#if ghostBoom}
+		<line
+			class="ghost-shape ghost-boom"
+			x1={ghostBoom.x1}
+			y1={ghostBoom.y1}
+			x2={ghostBoom.x2}
+			y2={ghostBoom.y2}
+			stroke-width={strokeWidth * 2}
+			stroke-dasharray={dashArray}
+		/>
+		<!-- Base plate at start, small circle at top -->
+		<rect
+			class="ghost-point ghost-boom-base"
+			x={ghostBoom.x1 - 6 / viewport.zoom}
+			y={ghostBoom.y1 - 6 / viewport.zoom}
+			width={12 / viewport.zoom}
+			height={12 / viewport.zoom}
+		/>
+		<circle
+			class="ghost-point ghost-boom-point"
+			cx={ghostBoom.x2}
+			cy={ghostBoom.y2}
+			r={4 / viewport.zoom}
+		/>
 	{/if}
 
 	<!-- Instrument placement crosshair cursor -->
@@ -579,15 +633,24 @@
 		stroke: #fab387; /* Catppuccin peach */
 	}
 
+	.ghost-boom {
+		fill: none;
+		stroke: #a6e3a1; /* Catppuccin green */
+	}
+
 	.ghost-point {
 		fill: #89b4fa; /* Catppuccin blue */
 		stroke: none;
 		pointer-events: none;
 	}
 
-	.ghost-electric + .ghost-point,
-	.ghost-electric ~ .ghost-point {
+	.ghost-electric-point {
 		fill: #fab387; /* Catppuccin peach */
+	}
+
+	.ghost-boom-base,
+	.ghost-boom-point {
+		fill: #a6e3a1; /* Catppuccin green */
 	}
 
 	.dimension-background {

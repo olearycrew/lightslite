@@ -14,6 +14,7 @@ export type ToolType =
 	| 'draw-rect'
 	| 'draw-circle'
 	| 'add-electric'
+	| 'add-boom'
 	| 'add-instrument';
 
 // Default tool
@@ -28,7 +29,8 @@ const TOOL_CURSORS: Record<ToolType, string> = {
 	'draw-line': 'crosshair',
 	'draw-rect': 'crosshair',
 	'draw-circle': 'crosshair',
-	'add-electric': 'copy',
+	'add-electric': 'crosshair',
+	'add-boom': 'crosshair',
 	'add-instrument': 'copy'
 };
 
@@ -42,6 +44,7 @@ export const TOOL_NAMES: Record<ToolType, string> = {
 	'draw-rect': 'Draw Rectangle',
 	'draw-circle': 'Draw Circle',
 	'add-electric': 'Add Electric',
+	'add-boom': 'Add Boom',
 	'add-instrument': 'Add Instrument'
 };
 
@@ -63,9 +66,14 @@ function createToolStore() {
 		activeTool === 'draw-line' || activeTool === 'draw-rect' || activeTool === 'draw-circle'
 	);
 
+	// Derived: whether the current tool is a hanging position tool (electric, boom)
+	const isHangingPositionTool = $derived(
+		activeTool === 'add-electric' || activeTool === 'add-boom'
+	);
+
 	// Derived: whether the current tool is an object placement tool
 	const isPlacementTool = $derived(
-		activeTool === 'add-electric' || activeTool === 'add-instrument'
+		activeTool === 'add-electric' || activeTool === 'add-boom' || activeTool === 'add-instrument'
 	);
 
 	// Derived: whether the current tool is the select tool
@@ -130,6 +138,9 @@ function createToolStore() {
 		},
 		get isDrawingTool() {
 			return isDrawingTool;
+		},
+		get isHangingPositionTool() {
+			return isHangingPositionTool;
 		},
 		get isPlacementTool() {
 			return isPlacementTool;

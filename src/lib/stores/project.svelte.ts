@@ -312,6 +312,21 @@ function createProjectStore() {
 	}
 
 	/**
+	 * Add a boom (vertical stand)
+	 */
+	function addBoom(
+		x1: number,
+		y1: number,
+		x2: number,
+		y2: number,
+		options: Partial<
+			Omit<HangingPositionObject, 'id' | 'objectType' | 'positionType' | 'x1' | 'y1' | 'x2' | 'y2'>
+		> = {}
+	): HangingPositionObject {
+		return addHangingPosition('boom', x1, y1, x2, y2, { name: 'Boom', ...options });
+	}
+
+	/**
 	 * Get a default name for a hanging position type
 	 */
 	function getDefaultHangingPositionName(positionType: HangingPositionType): string {
@@ -774,6 +789,7 @@ function createProjectStore() {
 		// Hanging position operations
 		addHangingPosition,
 		addElectric,
+		addBoom,
 		updateHangingPosition,
 		deleteHangingPosition,
 

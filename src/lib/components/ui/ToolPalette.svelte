@@ -23,7 +23,8 @@
 		{ id: 'draw-line', icon: '╱', shortcut: 'L', group: 'draw' },
 		{ id: 'draw-rect', icon: '▢', shortcut: 'R', group: 'draw' },
 		{ id: 'draw-circle', icon: '○', shortcut: 'C', group: 'draw' },
-		{ id: 'add-electric', icon: '⚡', shortcut: 'E', group: 'place' },
+		{ id: 'add-electric', icon: '═', shortcut: 'E', group: 'place' },
+		{ id: 'add-boom', icon: '║', shortcut: 'B', group: 'place' },
 		{ id: 'add-instrument', icon: '💡', shortcut: 'I', group: 'place' }
 	];
 
