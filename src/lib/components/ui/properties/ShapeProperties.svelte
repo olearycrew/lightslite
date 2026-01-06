@@ -46,6 +46,10 @@
 		updateShape('fill', value ?? undefined);
 	}
 
+	function handleFillOpacityChange(value: number) {
+		updateShape('fillOpacity', value);
+	}
+
 	function handleStrokeWidthChange(value: number) {
 		updateShape('strokeWidth', value);
 	}
@@ -168,6 +172,17 @@
 					value={shape.fill ?? null}
 					onchange={handleFillChange}
 					placeholder="Fill color"
+				/>
+			</FormField>
+
+			<FormField label="Fill Opacity">
+				<Slider
+					value={shape.fillOpacity ?? 100}
+					onchange={handleFillOpacityChange}
+					min={0}
+					max={100}
+					step={1}
+					unit="%"
 				/>
 			</FormField>
 		{/if}

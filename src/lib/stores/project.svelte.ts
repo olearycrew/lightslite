@@ -80,6 +80,9 @@ export interface ShapeObject extends BaseCanvasObject {
 	strokeWidth?: number;
 }
 
+/** Label position options for hanging positions */
+export type LabelPosition = 'left' | 'right' | 'above' | 'below';
+
 /** A hanging position (electric, truss, ladder, boom, etc.) */
 export interface HangingPositionObject extends BaseCanvasObject {
 	objectType: 'hanging-position';
@@ -94,7 +97,9 @@ export interface HangingPositionObject extends BaseCanvasObject {
 	trimHeight?: number;
 	/** For booms: height above floor */
 	height?: number;
-	/** Label position offset */
+	/** Label position relative to the line (left, right, above, below) */
+	labelPosition?: LabelPosition;
+	/** Label position offset (additional adjustment) */
 	labelOffsetX?: number;
 	labelOffsetY?: number;
 }
@@ -129,6 +134,7 @@ export interface SetPieceObject extends BaseCanvasObject {
 	objectType: 'set-piece';
 	geometry: Geometry;
 	fill?: string;
+	fillOpacity?: number; // 0-1, default 1.0
 	stroke?: string;
 	strokeWidth?: number;
 	/** Optional layer for organization */
@@ -405,6 +411,33 @@ function createProjectStore() {
 			}
 		}
 		hangingPositions.delete(id);
+	}
+
+	/**
+	 * Resize a hanging position by dragging one end
+	 */
+	function resizeHangingPosition(
+		id: string,
+		end: 'start' | 'end',
+		deltaX: number,
+		deltaY: number
+	): void {
+		const position = hangingPositions.get(id);
+		if (position) {
+			if (end === 'start') {
+				hangingPositions.set(id, {
+					...position,
+					x1: position.x1 + deltaX,
+					y1: position.y1 + deltaY
+				});
+			} else {
+				hangingPositions.set(id, {
+					...position,
+					x2: position.x2 + deltaX,
+					y2: position.y2 + deltaY
+				});
+			}
+		}
 	}
 
 	// ========================================================================

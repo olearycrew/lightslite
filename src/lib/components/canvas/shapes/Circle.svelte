@@ -13,6 +13,8 @@
 		geometry: CircleGeometry;
 		/** Fill color */
 		fill?: string;
+		/** Fill opacity (0-1) */
+		fillOpacity?: number;
 		/** Stroke color */
 		stroke?: string;
 		/** Stroke width */
@@ -26,6 +28,7 @@
 	let {
 		geometry,
 		fill = 'transparent',
+		fillOpacity = 1,
 		stroke = '#cdd6f4', // Catppuccin Mocha text color
 		strokeWidth = 2,
 		isSelected = false,
@@ -66,6 +69,7 @@
 		cy={geometry.cy}
 		r={geometry.radius}
 		{fill}
+		fill-opacity={fillOpacity}
 		{stroke}
 		stroke-width={scaledStrokeWidth}
 	/>

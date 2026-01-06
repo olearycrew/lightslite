@@ -5,7 +5,11 @@
 	 * Renders a hanging position (electric, truss, ladder, boom, etc.) on the canvas.
 	 * Shows position name label and can display instrument attachment points.
 	 */
-	import type { HangingPositionObject, HangingPositionType } from '$lib/stores/project.svelte';
+	import type {
+		HangingPositionObject,
+		HangingPositionType,
+		LabelPosition
+	} from '$lib/stores/project.svelte';
 	import { viewport } from '$lib/stores/viewport.svelte';
 	import { grid } from '$lib/stores/grid.svelte';
 
@@ -16,9 +20,21 @@
 		isSelected?: boolean;
 		/** Whether this position is hovered */
 		isHovered?: boolean;
+		/** Callback when resize handle is dragged (end: 'start' | 'end', deltaX: number, deltaY: number) */
+		onresize?: (end: 'start' | 'end', deltaX: number, deltaY: number) => void;
 	}
 
-	let { position, isSelected = false, isHovered = false }: Props = $props();
+	let { position, isSelected = false, isHovered = false, onresize }: Props = $props();
+
+	// Resize handle state
+	let isResizingStart = $state(false);
+	let isResizingEnd = $state(false);
+	let resizeStartX = $state(0);
+	let resizeStartY = $state(0);
+	let resizeOriginalX1 = $state(0);
+	let resizeOriginalY1 = $state(0);
+	let resizeOriginalX2 = $state(0);
+	let resizeOriginalY2 = $state(0);
 
 	// Scale factors based on zoom
 	const strokeWidth = $derived(4 / viewport.zoom);
@@ -37,15 +53,50 @@
 		ladder: { stroke: '#89b4fa', fill: '#89b4fa' }, // blue
 		boom: { stroke: '#a6e3a1', fill: '#a6e3a1' }, // green
 		'box-boom': { stroke: '#cba6f7', fill: '#cba6f7' }, // mauve
-		'ground-row': { stroke: '#f38ba8', fill: '#f38ba8' }, // red
-		custom: { stroke: '#6c7086', fill: '#6c7086' } // overlay0
+		'ground-row': { stroke: '#f38ba8', fill: '#f38ba8' } // red
 	};
 
 	const colors = $derived(typeColors[position.positionType]);
 
+	// Default label position offset based on position type
+	const defaultLabelOffset = $derived.by(() => {
+		const labelPos = position.labelPosition ?? 'left';
+		switch (labelPos) {
+			case 'left':
+				return { x: -60, y: 0 };
+			case 'right':
+				return { x: 60, y: 0 };
+			case 'above':
+				return { x: 0, y: -30 };
+			case 'below':
+				return { x: 0, y: 30 };
+			default:
+				return { x: -60, y: 0 };
+		}
+	});
+
 	// Calculate midpoint for label placement
-	const midX = $derived((position.x1 + position.x2) / 2 + (position.labelOffsetX ?? 0));
-	const midY = $derived((position.y1 + position.y2) / 2 + (position.labelOffsetY ?? -20));
+	const midX = $derived(
+		(position.x1 + position.x2) / 2 + defaultLabelOffset.x + (position.labelOffsetX ?? 0)
+	);
+	const midY = $derived(
+		(position.y1 + position.y2) / 2 + defaultLabelOffset.y + (position.labelOffsetY ?? 0)
+	);
+
+	// Determine text-anchor based on label position
+	const labelTextAnchor = $derived.by(() => {
+		const labelPos = position.labelPosition ?? 'left';
+		switch (labelPos) {
+			case 'left':
+			case 'above':
+			case 'below':
+				return 'middle';
+			case 'right':
+				return 'middle';
+			default:
+				return 'middle';
+		}
+	});
 
 	// Calculate length in display units (reserved for future dimension display)
 	// const lengthPixels = $derived(
@@ -68,6 +119,64 @@
 	// const isVertical = $derived(
 	// 	position.positionType === 'boom' || position.positionType === 'ladder'
 	// );
+
+	// Resize handle functions
+	function handleResizeStartMouseDown(event: MouseEvent) {
+		if (!onresize || position.locked) return;
+		event.stopPropagation();
+		isResizingStart = true;
+		resizeOriginalX1 = position.x1;
+		resizeOriginalY1 = position.y1;
+		const worldCoords = viewport.screenToWorld(event.clientX, event.clientY);
+		resizeStartX = worldCoords.x;
+		resizeStartY = worldCoords.y;
+		window.addEventListener('mousemove', handleResizeStartMove);
+		window.addEventListener('mouseup', handleResizeStartUp);
+	}
+
+	function handleResizeStartMove(event: MouseEvent) {
+		if (!isResizingStart || !onresize) return;
+		const worldCoords = viewport.screenToWorld(event.clientX, event.clientY);
+		const deltaX = worldCoords.x - resizeStartX;
+		const deltaY = worldCoords.y - resizeStartY;
+		onresize('start', deltaX, deltaY);
+	}
+
+	function handleResizeStartUp() {
+		isResizingStart = false;
+		window.removeEventListener('mousemove', handleResizeStartMove);
+		window.removeEventListener('mouseup', handleResizeStartUp);
+	}
+
+	function handleResizeEndMouseDown(event: MouseEvent) {
+		if (!onresize || position.locked) return;
+		event.stopPropagation();
+		isResizingEnd = true;
+		resizeOriginalX2 = position.x2;
+		resizeOriginalY2 = position.y2;
+		const worldCoords = viewport.screenToWorld(event.clientX, event.clientY);
+		resizeStartX = worldCoords.x;
+		resizeStartY = worldCoords.y;
+		window.addEventListener('mousemove', handleResizeEndMove);
+		window.addEventListener('mouseup', handleResizeEndUp);
+	}
+
+	function handleResizeEndMove(event: MouseEvent) {
+		if (!isResizingEnd || !onresize) return;
+		const worldCoords = viewport.screenToWorld(event.clientX, event.clientY);
+		const deltaX = worldCoords.x - resizeStartX;
+		const deltaY = worldCoords.y - resizeStartY;
+		onresize('end', deltaX, deltaY);
+	}
+
+	function handleResizeEndUp() {
+		isResizingEnd = false;
+		window.removeEventListener('mousemove', handleResizeEndMove);
+		window.removeEventListener('mouseup', handleResizeEndUp);
+	}
+
+	// Resize handle size
+	const resizeHandleSize = $derived(10 / viewport.zoom);
 </script>
 
 <g
@@ -168,6 +277,28 @@
 		/>
 	{/if}
 
+	<!-- Resize handles (visible when selected) -->
+	{#if isSelected && onresize}
+		<!-- Start resize handle -->
+		<circle
+			class="resize-handle start-handle"
+			class:active={isResizingStart}
+			cx={position.x1}
+			cy={position.y1}
+			r={resizeHandleSize}
+			onmousedown={handleResizeStartMouseDown}
+		/>
+		<!-- End resize handle -->
+		<circle
+			class="resize-handle end-handle"
+			class:active={isResizingEnd}
+			cx={position.x2}
+			cy={position.y2}
+			r={resizeHandleSize}
+			onmousedown={handleResizeEndMouseDown}
+		/>
+	{/if}
+
 	<!-- Label -->
 	<!-- Note: scale(1, -1) counter-flips the label since the viewport Y axis is flipped -->
 	{#if position.visible}
@@ -244,5 +375,19 @@
 	.hanging-position.selected .label-background {
 		fill: rgba(137, 180, 250, 0.15); /* Catppuccin blue bg */
 		stroke: #89b4fa; /* Catppuccin blue */
+	}
+
+	.resize-handle {
+		fill: #ffffff;
+		stroke: #89b4fa;
+		stroke-width: 2px;
+		cursor: grab;
+		pointer-events: all;
+	}
+
+	.resize-handle:hover,
+	.resize-handle.active {
+		fill: #89b4fa;
+		cursor: grabbing;
 	}
 </style>

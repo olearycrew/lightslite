@@ -273,16 +273,26 @@
 
 		const snapped = snapCoords(coords.x, coords.y);
 
-		// Constrain to horizontal/vertical with shift key
+		// Constrain with shift key
 		if (event.shiftKey) {
-			const dx = Math.abs(snapped.x - drawStartX);
-			const dy = Math.abs(snapped.y - drawStartY);
-			if (dx > dy) {
-				drawCurrentX = snapped.x;
-				drawCurrentY = drawStartY;
+			// For rectangles, constrain to square (1:1 aspect ratio)
+			if (tool.activeTool === 'draw-rect') {
+				const dx = snapped.x - drawStartX;
+				const dy = snapped.y - drawStartY;
+				const size = Math.max(Math.abs(dx), Math.abs(dy));
+				drawCurrentX = drawStartX + (dx >= 0 ? size : -size);
+				drawCurrentY = drawStartY + (dy >= 0 ? size : -size);
 			} else {
-				drawCurrentX = drawStartX;
-				drawCurrentY = snapped.y;
+				// For lines, constrain to horizontal/vertical
+				const dx = Math.abs(snapped.x - drawStartX);
+				const dy = Math.abs(snapped.y - drawStartY);
+				if (dx > dy) {
+					drawCurrentX = snapped.x;
+					drawCurrentY = drawStartY;
+				} else {
+					drawCurrentX = drawStartX;
+					drawCurrentY = snapped.y;
+				}
 			}
 		} else {
 			drawCurrentX = snapped.x;
@@ -333,12 +343,22 @@
 		let finalX = snapped.x;
 		let finalY = snapped.y;
 		if (event.shiftKey) {
-			const dx = Math.abs(snapped.x - drawStartX);
-			const dy = Math.abs(snapped.y - drawStartY);
-			if (dx > dy) {
-				finalY = drawStartY;
+			// For rectangles, constrain to square (1:1 aspect ratio)
+			if (tool.activeTool === 'draw-rect') {
+				const dx = snapped.x - drawStartX;
+				const dy = snapped.y - drawStartY;
+				const size = Math.max(Math.abs(dx), Math.abs(dy));
+				finalX = drawStartX + (dx >= 0 ? size : -size);
+				finalY = drawStartY + (dy >= 0 ? size : -size);
 			} else {
-				finalX = drawStartX;
+				// For lines, constrain to horizontal/vertical
+				const dx = Math.abs(snapped.x - drawStartX);
+				const dy = Math.abs(snapped.y - drawStartY);
+				if (dx > dy) {
+					finalY = drawStartY;
+				} else {
+					finalX = drawStartX;
+				}
 			}
 		}
 

@@ -6,37 +6,79 @@
 	 * - Current zoom level
 	 * - Scale indicator
 	 * - Object count
-	 * - Sync status
+	 * - Sync status with visual indicator (yellow/green/red circle)
 	 * - Grid snap status
 	 */
-	import { viewportStore, projectStore, connectionStore } from '$lib/stores';
-	import { Tool } from '$lib/stores/tool.svelte';
+	import { viewport } from '$lib/stores/viewport.svelte';
+	import { project } from '$lib/stores/project.svelte';
+	import { connection } from '$lib/stores/connection.svelte';
+	import { grid } from '$lib/stores/grid.svelte';
 
-	let zoom = $derived($viewportStore.zoom * 100);
-	let scale = $derived($viewportStore.scale);
+	let zoom = $derived(viewport.zoom * 100);
 	let objectCount = $derived(
-		($projectStore.instruments?.length || 0) +
-			($projectStore.hangingPositions?.length || 0) +
-			($projectStore.setPieces?.length || 0)
+		(project.instruments?.length || 0) +
+			(project.hangingPositions?.length || 0) +
+			(project.setPieces?.length || 0)
 	);
-	let syncStatus = $derived($connectionStore.syncStatus);
-	let isDirty = $derived($connectionStore.isDirty);
-	let gridEnabled = $derived($viewportStore.snapToGrid);
+
+	// Connection status
+	let syncStatus = $derived(connection.connectionStatus);
+	let lastSyncTime = $derived(connection.lastSyncTime);
+	let lastError = $derived(connection.lastError);
+	let gridEnabled = $derived(grid.snapToGrid);
 
 	function formatZoom(z: number): string {
 		return Math.round(z) + '%';
+	}
+
+	function formatLastSyncTime(date: Date | null): string {
+		if (!date) return 'Never';
+		return date.toLocaleTimeString();
+	}
+
+	// Get color for sync status indicator
+	function getSyncIndicatorColor(): string {
+		switch (syncStatus) {
+			case 'online-synced':
+				return 'bg-emerald-500';
+			case 'online-syncing':
+				return 'bg-amber-500 animate-pulse';
+			case 'online-dirty':
+				return 'bg-amber-500';
+			case 'offline':
+				return 'bg-gray-400';
+			case 'error':
+				return 'bg-red-500';
+			default:
+				return 'bg-gray-400';
+		}
+	}
+
+	// Get tooltip text for sync status
+	function getSyncStatusText(): string {
+		switch (syncStatus) {
+			case 'online-synced':
+				return `All changes saved${lastSyncTime ? ` at ${formatLastSyncTime(lastSyncTime)}` : ''}`;
+			case 'online-syncing':
+				return 'Syncing with server...';
+			case 'online-dirty':
+				return 'Unsaved changes';
+			case 'offline':
+				return 'Offline - changes saved locally';
+			case 'error':
+				return `Sync error${lastError ? ': ' + lastError : ''}`;
+			default:
+				return 'Unknown status';
+		}
 	}
 </script>
 
 <footer
 	class="flex h-8 items-center justify-between border-t border-border bg-bg-secondary px-3 text-xs text-text-secondary"
 >
-	<!-- Left: Zoom & Scale -->
+	<!-- Left: Zoom -->
 	<div class="flex items-center gap-4">
 		<span>Zoom: {formatZoom(zoom)}</span>
-		{#if scale}
-			<span>Scale: {scale.label}</span>
-		{/if}
 	</div>
 
 	<!-- Center: Object count -->
@@ -47,7 +89,7 @@
 	<!-- Right: Status indicators -->
 	<div class="flex items-center gap-4">
 		{#if gridEnabled}
-			<span class="flex items-center gap-1">
+			<span class="flex items-center gap-1 text-muted-foreground">
 				<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
 					<path
 						fill-rule="evenodd"
@@ -59,71 +101,33 @@
 			</span>
 		{/if}
 
-		{#if isDirty}
-			<span class="flex items-center gap-1 text-amber-500">
-				<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-					<path
-						fill-rule="evenodd"
-						d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				Unsaved
-			</span>
-		{:else}
-			<span class="flex items-center gap-1 text-emerald-500">
-				<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-					<path
-						fill-rule="evenodd"
-						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				Saved
-			</span>
-		{/if}
+		<!-- Sync Status Indicator with tooltip -->
+		<div class="relative group">
+			<div class="flex items-center gap-1.5 cursor-help" title={getSyncStatusText()}>
+				<span class="w-2 h-2 rounded-full {getSyncIndicatorColor()}"></span>
+				<span class="text-muted-foreground">
+					{#if syncStatus === 'online-synced'}
+						Saved
+					{:else if syncStatus === 'online-syncing'}
+						Syncing...
+					{:else if syncStatus === 'online-dirty'}
+						Unsaved
+					{:else if syncStatus === 'offline'}
+						Offline
+					{:else if syncStatus === 'error'}
+						Sync Error
+					{:else}
+						Unknown
+					{/if}
+				</span>
+			</div>
 
-		{#if syncStatus === 'syncing'}
-			<span class="flex items-center gap-1 text-blue-500">
-				<svg class="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
-					<circle
-						class="opacity-25"
-						cx="12"
-						cy="12"
-						r="10"
-						stroke="currentColor"
-						stroke-width="4"
-					/>
-					<path
-						class="opacity-75"
-						fill="currentColor"
-						d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-					/>
-				</svg>
-				Syncing...
-			</span>
-		{:else if syncStatus === 'offline'}
-			<span class="flex items-center gap-1 text-amber-500">
-				<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-					<path
-						fill-rule="evenodd"
-						d="M5 9.293l-3 3V17a2 2 0 002 2h10a2 2 0 002-2v-4.707l-3-3a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				Offline
-			</span>
-		{:else if syncStatus === 'online'}
-			<span class="flex items-center gap-1 text-emerald-500">
-				<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-					<path
-						fill-rule="evenodd"
-						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-						clip-rule="evenodd"
-					/>
-				</svg>
-				Online
-			</span>
-		{/if}
+			<!-- Tooltip -->
+			<div
+				class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50"
+			>
+				{getSyncStatusText()}
+			</div>
+		</div>
 	</div>
 </footer>

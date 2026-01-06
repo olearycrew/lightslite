@@ -39,6 +39,13 @@
 		}
 	}
 
+	/**
+	 * Handle resize for a hanging position
+	 */
+	function handleResize(id: string, end: 'start' | 'end', deltaX: number, deltaY: number) {
+		project.resizeHangingPosition(id, end, deltaX, deltaY);
+	}
+
 	// Hover handlers reserved for future interactive features
 	// function handleMouseEnter(id: string) { hoveredId = id; }
 	// function handleMouseLeave() { hoveredId = null; }
@@ -67,6 +74,7 @@
 							<Rectangle
 								geometry={setPiece.geometry}
 								fill={setPiece.fill}
+								fillOpacity={setPiece.fillOpacity}
 								stroke={setPiece.stroke}
 								strokeWidth={setPiece.strokeWidth}
 								isSelected={selection.isSelected(setPiece.id)}
@@ -76,6 +84,7 @@
 							<Circle
 								geometry={setPiece.geometry as CircleGeometry}
 								fill={setPiece.fill}
+								fillOpacity={setPiece.fillOpacity}
 								stroke={setPiece.stroke}
 								strokeWidth={setPiece.strokeWidth}
 								isSelected={selection.isSelected(setPiece.id)}

@@ -48,31 +48,67 @@
 		const screenSpacing = baseSpacing * zoom;
 		const majorScreenSpacing = majorSpacing * zoom;
 
-		// Determine which grid levels to show based on screen density
-		// If lines would be too close together, skip minor lines
-		const showMinorLines = screenSpacing >= 8; // Minimum 8px between minor lines
-		const showMajorLines = majorScreenSpacing >= 20; // Show major even when dense
+		// Minimum spacing on screen (in pixels) before we need to skip lines
+		const MIN_SCREEN_SPACING = 15; // Show lines at least 15px apart
 
-		// If both would be too dense, increase the effective spacing
-		let effectiveMinorSpacing = baseSpacing;
-		let effectiveMajorSpacing = majorSpacing;
+		// Calculate grid level based on zoom
+		// At high zoom: show every line (level 1)
+		// At medium zoom: show every 2nd line (level 2)
+		// At low zoom: show every 5th line (level 5)
+		// At very low zoom: show every 10th line (level 10)
+		let minorLevel = 1;
+		let majorLevel = 1;
 
-		// Scale up spacing if too dense
-		if (screenSpacing < 8) {
-			const scaleFactor = Math.ceil(8 / screenSpacing);
-			effectiveMinorSpacing = baseSpacing * scaleFactor;
+		// For minor lines
+		if (screenSpacing < MIN_SCREEN_SPACING) {
+			// Calculate what multiple we need to show
+			const targetMultiple = Math.ceil(MIN_SCREEN_SPACING / screenSpacing);
+			// Round to nice numbers: 1, 2, 5, 10, 20, 50, 100, etc.
+			if (targetMultiple <= 2) {
+				minorLevel = 2;
+			} else if (targetMultiple <= 5) {
+				minorLevel = 5;
+			} else if (targetMultiple <= 10) {
+				minorLevel = 10;
+			} else if (targetMultiple <= 20) {
+				minorLevel = 20;
+			} else if (targetMultiple <= 50) {
+				minorLevel = 50;
+			} else {
+				minorLevel = 100;
+			}
 		}
 
-		if (majorScreenSpacing < 20) {
-			const scaleFactor = Math.ceil(20 / majorScreenSpacing);
-			effectiveMajorSpacing = majorSpacing * scaleFactor;
+		// For major lines, use similar logic but with higher threshold
+		if (majorScreenSpacing < MIN_SCREEN_SPACING) {
+			const targetMultiple = Math.ceil(MIN_SCREEN_SPACING / majorScreenSpacing);
+			if (targetMultiple <= 2) {
+				majorLevel = 2;
+			} else if (targetMultiple <= 5) {
+				majorLevel = 5;
+			} else if (targetMultiple <= 10) {
+				majorLevel = 10;
+			} else {
+				majorLevel = 20;
+			}
 		}
+
+		const effectiveMinorSpacing = baseSpacing * minorLevel;
+		const effectiveMajorSpacing = majorSpacing * majorLevel;
+
+		// Show minor lines only if they won't overlap with major lines
+		const showMinorLines =
+			minorLevel < majorLevel ||
+			(effectiveMinorSpacing !== effectiveMajorSpacing && screenSpacing * minorLevel >= 8);
+		const showMajorLines = true; // Always show major lines (but spaced appropriately)
 
 		return {
 			showMinorLines,
 			showMajorLines,
 			minorSpacing: effectiveMinorSpacing,
 			majorSpacing: effectiveMajorSpacing,
+			minorLevel,
+			majorLevel,
 			screenMinorSpacing: effectiveMinorSpacing * zoom,
 			screenMajorSpacing: effectiveMajorSpacing * zoom
 		};
@@ -96,8 +132,12 @@
 		const horizontal: number[] = [];
 		const vertical: number[] = [];
 
+		// Maximum line count to prevent performance issues
+		const MAX_LINES = 200;
+
 		// Generate vertical lines (exclude major lines)
 		for (let x = startX; x <= endX; x += spacing) {
+			if (vertical.length >= MAX_LINES) break;
 			// Skip if this is a major line position
 			if (Math.abs(x % majorSpacing) < 0.001) continue;
 			vertical.push(x);
@@ -105,6 +145,7 @@
 
 		// Generate horizontal lines (exclude major lines)
 		for (let y = startY; y <= endY; y += spacing) {
+			if (horizontal.length >= MAX_LINES) break;
 			// Skip if this is a major line position
 			if (Math.abs(y % majorSpacing) < 0.001) continue;
 			horizontal.push(y);

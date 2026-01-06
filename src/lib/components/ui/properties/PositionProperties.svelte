@@ -7,7 +7,8 @@
 	import {
 		project,
 		type HangingPositionObject,
-		type HangingPositionType
+		type HangingPositionType,
+		type LabelPosition
 	} from '$lib/stores/project.svelte';
 	import { selection } from '$lib/stores/selection.svelte';
 	import { FormField, NumberInput, TextInput, SelectDropdown, CollapsibleSection } from '../forms';
@@ -26,6 +27,14 @@
 		{ value: 'boom', label: 'Boom' },
 		{ value: 'box-boom', label: 'Box Boom' },
 		{ value: 'ground-row', label: 'Ground Row' }
+	];
+
+	// Build options for label position dropdown
+	const labelPositionOptions: Array<{ value: LabelPosition; label: string }> = [
+		{ value: 'left', label: 'Left' },
+		{ value: 'right', label: 'Right' },
+		{ value: 'above', label: 'Above' },
+		{ value: 'below', label: 'Below' }
 	];
 
 	// Local state for notes (not stored in position object)
@@ -71,6 +80,12 @@
 
 	function handleLabelOffsetYChange(value: number | null) {
 		updatePosition('labelOffsetY', value ?? undefined);
+	}
+
+	function handleLabelPositionChange(value: LabelPosition | null) {
+		if (value !== null) {
+			updatePosition('labelPosition', value);
+		}
 	}
 
 	/**
@@ -144,6 +159,15 @@
 	</CollapsibleSection>
 
 	<CollapsibleSection title="Label Position" defaultOpen={false}>
+		<FormField label="Position">
+			<SelectDropdown
+				value={position.labelPosition ?? null}
+				onchange={handleLabelPositionChange}
+				options={labelPositionOptions}
+				placeholder="Select position..."
+			/>
+		</FormField>
+
 		<FormField label="X Offset">
 			<NumberInput
 				value={position.labelOffsetX ?? null}

@@ -266,21 +266,127 @@
 	}
 
 	/**
-	 * Handle fit to content
+	 * Handle zoom preset selection (25%, 50%, 100%, 200%)
 	 */
-	function handleFitContent() {
+	function handleZoomPreset(zoomPercent: number) {
 		const container = document.querySelector('.canvas-area');
 		if (container) {
 			const rect = container.getBoundingClientRect();
-			viewport.fitToContent({ x: 0, y: 0, width: 200, height: 100 }, rect.width, rect.height);
+			viewport.setZoomPreset(zoomPercent / 100, rect.width, rect.height);
 		}
+	}
+
+	/**
+	 * Handle zoom reset to 100%
+	 */
+	function handleZoomReset() {
+		const container = document.querySelector('.canvas-area');
+		if (container) {
+			const rect = container.getBoundingClientRect();
+			viewport.setZoomPreset(1.0, rect.width, rect.height);
+		}
+	}
+
+	/**
+	 * Handle fit to content
+	 * Calculates the bounds of all content and fits the viewport to show it all
+	 */
+	function handleFitContent() {
+		const container = document.querySelector('.canvas-area');
+		if (!container) return;
+
+		// Calculate bounds of all objects
+		let minX = Infinity;
+		let minY = Infinity;
+		let maxX = -Infinity;
+		let maxY = -Infinity;
+		let hasContent = false;
+
+		// Include hanging positions
+		for (const hp of project.hangingPositions) {
+			hasContent = true;
+			minX = Math.min(minX, hp.x1, hp.x2);
+			minY = Math.min(minY, hp.y1, hp.y2);
+			maxX = Math.max(maxX, hp.x1, hp.x2);
+			maxY = Math.max(maxY, hp.y1, hp.y2);
+		}
+
+		// Include instruments
+		for (const inst of project.instruments) {
+			hasContent = true;
+			// Instruments are typically ~48px wide/tall
+			const size = 48; // Approximate size in world units
+			// Use inst.x and inst.y if defined (free-floating instruments)
+			if (inst.x !== undefined && inst.y !== undefined) {
+				minX = Math.min(minX, inst.x - size / 2);
+				minY = Math.min(minY, inst.y - size / 2);
+				maxX = Math.max(maxX, inst.x + size / 2);
+				maxY = Math.max(maxY, inst.y + size / 2);
+			}
+		}
+
+		// Include shapes
+		for (const shape of project.shapes) {
+			hasContent = true;
+			const geom = shape.geometry;
+			if (geom.type === 'line') {
+				minX = Math.min(minX, geom.x1, geom.x2);
+				minY = Math.min(minY, geom.y1, geom.y2);
+				maxX = Math.max(maxX, geom.x1, geom.x2);
+				maxY = Math.max(maxY, geom.y1, geom.y2);
+			} else if (geom.type === 'rect') {
+				minX = Math.min(minX, geom.x);
+				minY = Math.min(minY, geom.y);
+				maxX = Math.max(maxX, geom.x + geom.width);
+				maxY = Math.max(maxY, geom.y + geom.height);
+			} else if (geom.type === 'circle') {
+				minX = Math.min(minX, geom.cx - geom.radius);
+				minY = Math.min(minY, geom.cy - geom.radius);
+				maxX = Math.max(maxX, geom.cx + geom.radius);
+				maxY = Math.max(maxY, geom.cy + geom.radius);
+			}
+		}
+
+		// Include annotations
+		for (const ann of project.annotations) {
+			hasContent = true;
+			// Annotations are text, approximate size
+			const size = 100; // Approximate size in world units
+			minX = Math.min(minX, ann.x - size / 2);
+			minY = Math.min(minY, ann.y - size / 2);
+			maxX = Math.max(maxX, ann.x + size / 2);
+			maxY = Math.max(maxY, ann.y + size / 2);
+		}
+
+		// If no content, reset to origin view
+		if (!hasContent || !isFinite(minX) || !isFinite(maxX)) {
+			const rect = container.getBoundingClientRect();
+			viewport.resetView(rect.width, rect.height);
+			return;
+		}
+
+		// Calculate bounds
+		const rect = container.getBoundingClientRect();
+		const bounds = {
+			x: minX,
+			y: minY,
+			width: maxX - minX,
+			height: maxY - minY
+		};
+
+		// Fit with padding
+		viewport.fitToContent(bounds, rect.width, rect.height, 50);
 	}
 
 	/**
 	 * Handle reset view
 	 */
 	function handleResetView() {
-		viewport.resetView(containerWidth, containerHeight);
+		const container = document.querySelector('.canvas-area');
+		if (container) {
+			const rect = container.getBoundingClientRect();
+			viewport.resetView(rect.width, rect.height);
+		}
 	}
 
 	// Total object count for status bar
@@ -320,7 +426,7 @@
 		<div class="toolbar">
 			<!-- Project Name -->
 			<div class="toolbar-section">
-				<h2 class="project-name">{data.project?.name || 'Untitled Project'}</h2>
+				<h2 class="project-name">{project.projectName}</h2>
 			</div>
 
 			<div class="toolbar-divider"></div>
@@ -361,7 +467,27 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
 					</svg>
 				</button>
-				<span class="zoom-percent">{viewport.zoomPercent}%</span>
+
+				<!-- Zoom Preset Dropdown -->
+				<select
+					class="zoom-select"
+					value={Math.round(viewport.zoom * 100)}
+					onchange={(e) => handleZoomPreset(parseInt(e.currentTarget.value))}
+					aria-label="Zoom level"
+				>
+					<option value="25">25%</option>
+					<option value="50">50%</option>
+					<option value="100">100%</option>
+					<option value="200">200%</option>
+					<option
+						value={Math.round(viewport.zoom * 100)}
+						selected
+						disabled={[25, 50, 100, 200].includes(Math.round(viewport.zoom * 100))}
+					>
+						{viewport.zoomPercent}%
+					</option>
+				</select>
+
 				<button class="toolbar-btn" aria-label="Zoom in" onclick={handleZoomIn}>
 					<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -369,6 +495,23 @@
 							stroke-linejoin="round"
 							stroke-width="2"
 							d="M12 4v16m8-8H4"
+						/>
+					</svg>
+				</button>
+
+				<!-- Reset to 100% button -->
+				<button
+					class="toolbar-btn"
+					aria-label="Reset to 100%"
+					onclick={handleZoomReset}
+					title="Reset to 100%"
+				>
+					<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
 						/>
 					</svg>
 				</button>
@@ -503,6 +646,31 @@
 
 	.zoom-controls {
 		gap: 8px;
+	}
+
+	.zoom-select {
+		width: 72px;
+		height: 32px;
+		padding: 0 8px;
+		background-color: var(--color-surface0, #313244);
+		border: 1px solid var(--color-surface1, #45475a);
+		border-radius: 4px;
+		color: var(--color-text, #cdd6f4);
+		font-size: 12px;
+		cursor: pointer;
+		transition:
+			border-color 0.2s,
+			background-color 0.2s;
+	}
+
+	.zoom-select:hover {
+		background-color: var(--color-surface1, #45475a);
+		border-color: var(--color-surface2, #585b70);
+	}
+
+	.zoom-select:focus {
+		outline: none;
+		border-color: var(--color-blue, #89b4fa);
 	}
 
 	.zoom-percent {

@@ -94,6 +94,7 @@
 		width={geometry.width}
 		height={geometry.height}
 		{fill}
+		fill-opacity={fillOpacity}
 		{stroke}
 		stroke-width={scaledStrokeWidth}
 	/>

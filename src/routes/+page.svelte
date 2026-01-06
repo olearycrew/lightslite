@@ -79,9 +79,7 @@
 		<footer class="mt-12 border-t border-border pt-6">
 			<div class="flex flex-col items-center gap-6">
 				<!-- Made with Love -->
-				<p class="text-sm text-text-secondary">
-					Made with <span class="text-yellow-500">❤️</span><span class="text-black">🖤</span> in Maryland
-				</p>
+				<p class="text-sm text-text-secondary">Made with 🖤💛 in Maryland</p>
 
 				<!-- Links -->
 				<nav class="flex flex-wrap justify-center gap-4">

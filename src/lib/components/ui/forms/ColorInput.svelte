@@ -17,6 +17,12 @@
 		showPresets?: boolean;
 		presets?: string[];
 		class?: string;
+		/** Show opacity slider (0-1 range) */
+		showOpacity?: boolean;
+		/** Current opacity value (0-1) */
+		opacity?: number;
+		/** Callback when opacity changes */
+		onopacitychange?: (value: number) => void;
 		onchange?: (value: string | null) => void;
 	}
 
@@ -51,6 +57,9 @@
 		disabled = false,
 		showPresets = true,
 		presets = DEFAULT_PRESETS,
+		showOpacity = false,
+		opacity = $bindable(1),
+		onopacitychange,
 		class: className = '',
 		onchange
 	}: Props = $props();
@@ -154,6 +163,28 @@
 					title={getRoscoluxName(preset)}
 				></button>
 			{/each}
+		</div>
+	{/if}
+
+	{#if showOpacity}
+		<div class="flex gap-2 items-center mt-2">
+			<span class="text-xs text-muted-foreground">Opacity:</span>
+			<input
+				type="range"
+				min="0"
+				max="1"
+				step="0.01"
+				value={opacity}
+				oninput={(e) => {
+					const target = e.target as HTMLInputElement;
+					const value = parseFloat(target.value);
+					opacity = value;
+					if (onopacitychange) onopacitychange(value);
+				}}
+				class="flex-1 h-1 bg-gradient-to-r from-transparent to-current-color rounded appearance-none cursor-pointer"
+				style="--tw-color: {value || '#ffffff'}"
+			/>
+			<span class="text-xs w-10 text-right">{Math.round((opacity ?? 1) * 100)}%</span>
 		</div>
 	{/if}
 </div>
