@@ -8,7 +8,7 @@
 /**
  * Generic stage layout with basic shapes
  */
-export function createGenericStageLayout(_scale: { unit: string; pixelsPerUnit: number }) {
+export function createGenericStageLayout() {
 	return {
 		shapes: [
 			// Plaster line (reference line at y=0)

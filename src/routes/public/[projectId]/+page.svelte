@@ -223,7 +223,7 @@
 								<line x1="-500" y1="0" x2="1000" y2="0" stroke="#f5c2e7" stroke-width="2" />
 
 								<!-- Shapes -->
-								{#each layers.shapes || [] as shape}
+								{#each layers.shapes || [] as shape (shape.id)}
 									{@const geom = shape.geometry as Record<string, unknown>}
 									{#if isRectGeom(geom)}
 										<rect
@@ -260,7 +260,7 @@
 								{/each}
 
 								<!-- Hanging Positions -->
-								{#each layers.hangingPositions || [] as hp}
+								{#each layers.hangingPositions || [] as hp (hp.id)}
 									<line
 										x1={getNum(hp.x1)}
 										y1={getNum(hp.y1)}
@@ -273,7 +273,7 @@
 								{/each}
 
 								<!-- Instruments -->
-								{#each layers.instruments || [] as inst}
+								{#each layers.instruments || [] as inst (inst.id)}
 									{@const size = 24}
 									{@const hp = layers.hangingPositions?.find(
 										(h) => h.id === inst.hangingPositionId

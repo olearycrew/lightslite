@@ -197,7 +197,7 @@
 						{layoutTemplates.find((t) => t.id === layoutTemplate)?.name || 'Select a template'}
 					</Select.Trigger>
 					<Select.Content>
-						{#each layoutTemplates as template}
+						{#each layoutTemplates as template (template.id)}
 							<Select.Item value={template.id}>
 								<div class="flex flex-col">
 									<span class="font-medium">{template.name}</span>

@@ -5,11 +5,7 @@
 	 * Renders a hanging position (electric, truss, ladder, boom, etc.) on the canvas.
 	 * Shows position name label and can display instrument attachment points.
 	 */
-	import type {
-		HangingPositionObject,
-		HangingPositionType,
-		LabelPosition
-	} from '$lib/stores/project.svelte';
+	import type { HangingPositionObject, HangingPositionType } from '$lib/stores/project.svelte';
 	import { viewport } from '$lib/stores/viewport.svelte';
 	import { grid } from '$lib/stores/grid.svelte';
 
@@ -31,10 +27,6 @@
 	let isResizingEnd = $state(false);
 	let resizeStartX = $state(0);
 	let resizeStartY = $state(0);
-	let resizeOriginalX1 = $state(0);
-	let resizeOriginalY1 = $state(0);
-	let resizeOriginalX2 = $state(0);
-	let resizeOriginalY2 = $state(0);
 
 	// Scale factors based on zoom
 	const strokeWidth = $derived(4 / viewport.zoom);
@@ -83,21 +75,6 @@
 		(position.y1 + position.y2) / 2 + defaultLabelOffset.y + (position.labelOffsetY ?? 0)
 	);
 
-	// Determine text-anchor based on label position
-	const labelTextAnchor = $derived.by(() => {
-		const labelPos = position.labelPosition ?? 'left';
-		switch (labelPos) {
-			case 'left':
-			case 'above':
-			case 'below':
-				return 'middle';
-			case 'right':
-				return 'middle';
-			default:
-				return 'middle';
-		}
-	});
-
 	// Calculate length in display units (reserved for future dimension display)
 	// const lengthPixels = $derived(
 	// 	Math.sqrt(Math.pow(position.x2 - position.x1, 2) + Math.pow(position.y2 - position.y1, 2))
@@ -125,8 +102,6 @@
 		if (!onresize || position.locked) return;
 		event.stopPropagation();
 		isResizingStart = true;
-		resizeOriginalX1 = position.x1;
-		resizeOriginalY1 = position.y1;
 		const worldCoords = viewport.screenToWorld(event.clientX, event.clientY);
 		resizeStartX = worldCoords.x;
 		resizeStartY = worldCoords.y;
@@ -152,8 +127,6 @@
 		if (!onresize || position.locked) return;
 		event.stopPropagation();
 		isResizingEnd = true;
-		resizeOriginalX2 = position.x2;
-		resizeOriginalY2 = position.y2;
 		const worldCoords = viewport.screenToWorld(event.clientX, event.clientY);
 		resizeStartX = worldCoords.x;
 		resizeStartY = worldCoords.y;

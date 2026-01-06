@@ -11,7 +11,6 @@
  */
 
 // Using standard Map - these are plain data objects, not reactive state
-/* eslint-disable svelte/prefer-svelte-reactivity */
 
 import type { Project } from './indexeddb';
 import type {
