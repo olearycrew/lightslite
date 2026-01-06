@@ -10,6 +10,9 @@
  * - merge: Attempt to merge changes (basic implementation)
  */
 
+// Using standard Map - these are plain data objects, not reactive state
+/* eslint-disable svelte/prefer-svelte-reactivity */
+
 import type { Project } from './indexeddb';
 import type {
 	ShapeObject,
@@ -38,7 +41,7 @@ export interface ConflictInfo {
 	/** Server project state */
 	serverState: Project;
 	/** When the conflict was detected */
-	detectedAt: Date;
+	detectedAt: number;
 }
 
 /**
@@ -428,7 +431,9 @@ class ConflictManagerImpl implements ConflictManager {
 		}
 	): T[] {
 		// Start with server items (server-authoritative for conflicts)
+		/* eslint-disable svelte/prefer-svelte-reactivity */
 		const merged = new Map(server.map((item) => [item.id, item]));
+		/* eslint-enable svelte/prefer-svelte-reactivity */
 
 		// Add items that were added locally (not in server)
 		for (const item of diff.added) {

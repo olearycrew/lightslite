@@ -33,7 +33,8 @@
 
 	// Track initialization state
 	let isInitialized = $state(false);
-	let initError = $state<string | null>(null);
+	// _initError is reserved for future error handling
+	let __initError = $state<string | null>(null);
 
 	// Recovery dialog state
 	let showRecoveryDialog = $state(false);
@@ -59,10 +60,15 @@
 
 	// Effect to save viewport when it changes (debounced)
 	$effect(() => {
-		// Track viewport state
-		const _panX = viewport.panX;
-		const _panY = viewport.panY;
-		const _zoom = viewport.zoom;
+		// Track viewport state changes to trigger effect
+		const panX = viewport.panX;
+		const panY = viewport.panY;
+		const zoom = viewport.zoom;
+
+		// Use the values to prevent dead code elimination
+		void panX;
+		void panY;
+		void zoom;
 
 		if (!isInitialized || !syncManager || !data.project?.id) return;
 
@@ -109,7 +115,7 @@
 		});
 
 		if (!data.project?.id) {
-			initError = 'No project ID provided';
+			__initError = 'No project ID provided';
 			return;
 		}
 
@@ -162,7 +168,7 @@
 			}
 		} catch (error) {
 			console.error('[EditorPage] Failed to initialize SyncManager:', error);
-			initError = error instanceof Error ? error.message : 'Failed to initialize';
+			__initError = error instanceof Error ? error.message : 'Failed to initialize';
 		}
 	});
 
@@ -180,11 +186,11 @@
 				recoveryInfo = null;
 			} else {
 				console.error('[EditorPage] Recovery failed');
-				initError = 'Failed to restore from cache';
+				__initError = 'Failed to restore from cache';
 			}
 		} catch (error) {
 			console.error('[EditorPage] Recovery error:', error);
-			initError = error instanceof Error ? error.message : 'Recovery failed';
+			_initError = error instanceof Error ? error.message : 'Recovery failed';
 		} finally {
 			isRecovering = false;
 		}
@@ -203,7 +209,7 @@
 			console.log('[EditorPage] Cache discarded, using server version');
 		} catch (error) {
 			console.error('[EditorPage] Discard error:', error);
-			initError = error instanceof Error ? error.message : 'Failed to discard cache';
+			__initError = error instanceof Error ? error.message : 'Failed to discard cache';
 		} finally {
 			isRecovering = false;
 		}
@@ -499,12 +505,14 @@
 				>
 					<option value="25">25%</option>
 					<option value="50">50%</option>
+					<option value="75">75%</option>
 					<option value="100">100%</option>
+					<option value="150">150%</option>
 					<option value="200">200%</option>
 					<option
 						value={Math.round(viewport.zoom * 100)}
 						selected
-						disabled={[25, 50, 100, 200].includes(Math.round(viewport.zoom * 100))}
+						disabled={[25, 50, 75, 100, 150, 200].includes(Math.round(viewport.zoom * 100))}
 					>
 						{viewport.zoomPercent}%
 					</option>

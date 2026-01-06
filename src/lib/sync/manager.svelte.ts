@@ -10,6 +10,9 @@
  * - Conflict detection and resolution with ConflictManager
  */
 
+// Using standard Date - these are plain data objects, not reactive state
+/* eslint-disable svelte/prefer-svelte-reactivity */
+
 import {
 	saveProject,
 	loadProject,
@@ -40,6 +43,8 @@ import type {
 	SetPieceObject,
 	AnnotationObject
 } from '$lib/stores/project.svelte';
+
+// eslint-enable svelte/no-atomic-date
 
 // ============================================================================
 // Types
@@ -298,6 +303,9 @@ export class SyncManager {
 					metadata: {
 						...projectState.metadata,
 						localVersion: this._localVersion,
+						// Using plain Date here as svelte-date is not installed
+						// Using Date for sync timestamp - no SvelteDate needed for plain timestamps
+						// Using standard Date for timestamps - these are plain data, not reactive state
 						lastSyncedAt: new Date().toISOString()
 					}
 				})
