@@ -9,6 +9,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/db';
 import { projects } from '$lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { createLayoutFromTemplate } from '$lib/utils/layouts';
 
 /**
  * GET - List all projects for the current user
@@ -65,6 +66,31 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const venue = body.venue ?? null;
 		const scale = body.scale ?? { unit: 'feet', pixelsPerUnit: 10 };
 
+		// Create layers from template or empty
+		let layers = {
+			instruments: [] as Array<Record<string, unknown>>,
+			hangingPositions: [] as Array<Record<string, unknown>>,
+			shapes: [] as Array<Record<string, unknown>>,
+			setPieces: [] as Array<Record<string, unknown>>,
+			annotations: [] as Array<Record<string, unknown>>
+		};
+
+		if (body.layoutTemplate && body.layoutTemplate !== 'empty') {
+			const templateType = body.layoutTemplate as 'generic' | 'theater-boom' | 'concert';
+			const templateLayers = createLayoutFromTemplate(templateType, scale);
+			layers = {
+				instruments: (templateLayers.instruments ?? []) as Array<Record<string, unknown>>,
+				hangingPositions: (templateLayers.hangingPositions ?? []) as Array<Record<string, unknown>>,
+				shapes: (templateLayers.shapes ?? []) as Array<Record<string, unknown>>,
+				setPieces: (templateLayers.setPieces ?? []) as Array<Record<string, unknown>>,
+				annotations: (templateLayers.annotations ?? []) as Array<Record<string, unknown>>
+			};
+		}
+
+		// Count instruments and positions for the response
+		const instrumentCount = layers.instruments.length;
+		const positionCount = layers.hangingPositions.length;
+
 		// Create the project
 		const [newProject] = await db
 			.insert(projects)
@@ -73,12 +99,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				name,
 				venue,
 				scale,
-				layers: {
-					instruments: [],
-					hangingPositions: [],
-					shapes: []
-				},
-				metadata: { createdWith: 'LightsLite' }
+				layers,
+				metadata: { createdWith: 'LightsLite', layoutTemplate: body.layoutTemplate || null }
 			})
 			.returning({
 				id: projects.id,
@@ -88,7 +110,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				version: projects.version
 			});
 
-		return json({ project: newProject }, { status: 201 });
+		// Return project with counts
+		return json(
+			{
+				project: {
+					...newProject,
+					instrumentCount,
+					positionCount
+				}
+			},
+			{ status: 201 }
+		);
 	} catch (error) {
 		console.error('[API] Failed to create project:', error);
 		return json({ error: 'Failed to create project' }, { status: 500 });

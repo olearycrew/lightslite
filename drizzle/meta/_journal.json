@@ -15,6 +15,20 @@
       "when": 1767570301144,
       "tag": "0001_elite_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767760000000,
+      "tag": "0002_wild_windjammer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1767669978682,
+      "tag": "0003_modern_screwball",
+      "breakpoints": true
     }
   ]
 }

@@ -60,3 +60,32 @@ export type NewUser = typeof users.$inferInsert;
 
 export type Project = typeof projects.$inferSelect;
 export type NewProject = typeof projects.$inferInsert;
+
+/**
+ * Layer Templates table - stores saved layer configurations for reuse
+ *
+ * Users can save stage/venue layers as templates and import them into new projects.
+ * Templates can be private (user-specific) or public (available to all users).
+ */
+export const layerTemplates = pgTable('layer_templates', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	name: varchar('name', { length: 255 }).notNull(),
+	description: varchar('description', { length: 500 }),
+	// Layer type: 'stage', 'venue', 'instruments', 'shapes', or 'all'
+	type: varchar('type', { length: 50 }).notNull().default('all'),
+	// The layer data to save
+	layerData: jsonb('layer_data').notNull(),
+	// Whether this is a global template (created by admin, visible to all)
+	isGlobal: varchar('is_global', { length: 1 }).default('n'),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	updatedAt: timestamp('updated_at', { withTimezone: true })
+		.notNull()
+		.defaultNow()
+		.$onUpdate(() => new Date())
+});
+
+export type LayerTemplate = typeof layerTemplates.$inferSelect;
+export type NewLayerTemplate = typeof layerTemplates.$inferInsert;

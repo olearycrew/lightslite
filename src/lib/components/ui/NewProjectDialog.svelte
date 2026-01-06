@@ -7,6 +7,7 @@
 	 * - Project name (required)
 	 * - Scale unit selection (feet/meters)
 	 * - Venue name (optional)
+	 * - Layout template selection
 	 */
 	import * as Dialog from './dialog';
 	import { Button } from './button';
@@ -14,6 +15,13 @@
 	import { Label } from './label';
 	import * as Select from './select';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
+	import Layout from '@lucide/svelte/icons/layout';
+
+	interface LayoutTemplate {
+		id: string;
+		name: string;
+		description: string;
+	}
 
 	interface Props {
 		/** Whether the dialog is open */
@@ -37,8 +45,15 @@
 	let projectName = $state('');
 	let scaleUnit = $state<'feet' | 'meters'>('feet');
 	let venueName = $state('');
+	let layoutTemplate = $state<string>('generic');
 	let isCreating = $state(false);
 	let error = $state<string | null>(null);
+	let layoutTemplates = $state<LayoutTemplate[]>([
+		{ id: 'empty', name: 'Empty Project', description: 'Start with a blank canvas' },
+		{ id: 'generic', name: 'Basic Stage', description: 'Simple stage layout with reference lines' },
+		{ id: 'theater-boom', name: 'Theater Box Booms', description: 'Box boom layout for theater' },
+		{ id: 'concert', name: 'Concert Rig', description: 'Concert-style electrics layout' }
+	]);
 
 	// Reset form when dialog opens
 	$effect(() => {
@@ -46,6 +61,7 @@
 			projectName = '';
 			scaleUnit = 'feet';
 			venueName = '';
+			layoutTemplate = 'generic';
 			error = null;
 		}
 	});
@@ -75,7 +91,8 @@
 				body: JSON.stringify({
 					name: projectName.trim(),
 					scale: { unit: scaleUnit, pixelsPerUnit: 10 },
-					venue: venueName.trim() ? { name: venueName.trim() } : null
+					venue: venueName.trim() ? { name: venueName.trim() } : null,
+					layoutTemplate: layoutTemplate !== 'empty' ? layoutTemplate : null
 				})
 			});
 
@@ -92,8 +109,8 @@
 				name: result.project.name,
 				updatedAt: result.project.updatedAt,
 				createdAt: result.project.createdAt,
-				instrumentCount: 0,
-				positionCount: 0
+				instrumentCount: result.project.instrumentCount || 0,
+				positionCount: result.project.positionCount || 0
 			});
 
 			open = false;
@@ -162,6 +179,37 @@
 					placeholder="e.g., Main Stage, Theater A"
 					disabled={isCreating}
 				/>
+			</div>
+
+			<!-- Layout Template -->
+			<div class="space-y-2">
+				<Label for="layoutTemplate" class="text-sm font-medium">
+					<Layout class="mr-1 h-4 w-4 inline" />
+					Layout Template
+				</Label>
+				<Select.Root type="single" bind:value={layoutTemplate}>
+					<Select.Trigger
+						id="layoutTemplate"
+						class="w-full"
+						aria-label="Select layout template"
+						disabled={isCreating}
+					>
+						{layoutTemplates.find((t) => t.id === layoutTemplate)?.name || 'Select a template'}
+					</Select.Trigger>
+					<Select.Content>
+						{#each layoutTemplates as template}
+							<Select.Item value={template.id}>
+								<div class="flex flex-col">
+									<span class="font-medium">{template.name}</span>
+									<span class="text-xs text-muted-foreground">{template.description}</span>
+								</div>
+							</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+				<p class="text-xs text-muted-foreground">
+					Start with a pre-configured layout or begin from scratch
+				</p>
 			</div>
 
 			<!-- Error Message -->
