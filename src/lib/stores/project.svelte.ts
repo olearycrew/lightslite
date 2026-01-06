@@ -950,6 +950,7 @@ function createProjectStore() {
 		addBoom,
 		updateHangingPosition,
 		deleteHangingPosition,
+		resizeHangingPosition,
 
 		// Instrument operations
 		addInstrument,

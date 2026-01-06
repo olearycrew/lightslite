@@ -33,7 +33,8 @@
 	let { data }: { data: PageData } = $props();
 
 	// Local state
-	// Initialize empty and populate from data in effect
+	// Use writable derived for reactive data sync with local mutations support
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let projects = $state<typeof data.projects>([]);
 
 	// Effect to sync projects from server data (runs once and when data changes)
@@ -87,17 +88,23 @@
 	}
 
 	// Handle project cloned
-	function handleProjectCloned(project: {
-		id: string;
-		name: string;
-		updatedAt: string;
-		createdAt: string;
-		instrumentCount: number;
-		positionCount: number;
-	}) {
+	async function handleProjectCloned(id: string, newName: string) {
+		// Call the duplicate API
+		const response = await fetch(`/api/projects/${id}/duplicate`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ name: newName })
+		});
+
+		if (!response.ok) {
+			const error = await response.json();
+			throw new Error(error.message || 'Failed to clone project');
+		}
+
+		const newProject = await response.json();
 		projects = [
 			{
-				...project,
+				...newProject,
 				scale: null,
 				venue: null
 			},

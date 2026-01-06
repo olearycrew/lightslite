@@ -41,7 +41,9 @@
 
 	/**
 	 * Handle resize for a hanging position
+	 * @unused Reserved for future interactive resize handles
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	function handleResize(id: string, end: 'start' | 'end', deltaX: number, deltaY: number) {
 		project.resizeHangingPosition(id, end, deltaX, deltaY);
 	}
