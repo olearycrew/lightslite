@@ -16,7 +16,8 @@ import type {
 	HangingPositionObject,
 	InstrumentObject,
 	SetPieceObject,
-	AnnotationObject
+	AnnotationObject,
+	Venue
 } from '$lib/stores/project.svelte';
 
 // ============================================================================
@@ -43,7 +44,9 @@ export interface Project {
 	setPieces: SetPieceObject[];
 	/** Annotations (text, dimensions, notes) */
 	annotations: AnnotationObject[];
-	/** Project metadata (venue, scale, etc.) */
+	/** Venue configuration (stage bounds, proscenium, etc.) */
+	venue: Venue | null;
+	/** Project metadata */
 	metadata?: ProjectMetadata;
 	/** Last modified timestamp */
 	updatedAt: number;
@@ -301,6 +304,7 @@ export function createEmptyProject(id: string, name: string): Project {
 		instruments: [],
 		setPieces: [],
 		annotations: [],
+		venue: null,
 		updatedAt: now,
 		createdAt: now
 	};
@@ -571,6 +575,7 @@ export function importProjectFromJSON(
 			instruments: data.project.instruments || [],
 			setPieces: data.project.setPieces || [],
 			annotations: data.project.annotations || [],
+			venue: data.project.venue || null,
 			metadata: data.project.metadata,
 			updatedAt: now,
 			createdAt: now

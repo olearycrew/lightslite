@@ -277,17 +277,6 @@
 	}
 
 	/**
-	 * Handle zoom reset to 100%
-	 */
-	function handleZoomReset() {
-		const container = document.querySelector('.canvas-area');
-		if (container) {
-			const rect = container.getBoundingClientRect();
-			viewport.setZoomPreset(1.0, rect.width, rect.height);
-		}
-	}
-
-	/**
 	 * Handle fit to content
 	 * Calculates the bounds of all content and fits the viewport to show it all
 	 */
@@ -311,13 +300,24 @@
 			maxY = Math.max(maxY, hp.y1, hp.y2);
 		}
 
-		// Include instruments
+		// Include instruments on hanging positions (get position from hanging position)
 		for (const inst of project.instruments) {
 			hasContent = true;
-			// Instruments are typically ~48px wide/tall
 			const size = 48; // Approximate size in world units
-			// Use inst.x and inst.y if defined (free-floating instruments)
-			if (inst.x !== undefined && inst.y !== undefined) {
+			if (inst.hangingPositionId !== null) {
+				// Find the hanging position to get coordinates
+				const hp = project.hangingPositions.find((h) => h.id === inst.hangingPositionId);
+				if (hp) {
+					// Calculate position along the hanging position
+					const instX = hp.x1 + (hp.x2 - hp.x1) * inst.positionOnBar;
+					const instY = hp.y1 + (hp.y2 - hp.y1) * inst.positionOnBar;
+					minX = Math.min(minX, instX - size / 2);
+					minY = Math.min(minY, instY - size / 2);
+					maxX = Math.max(maxX, instX + size / 2);
+					maxY = Math.max(maxY, instY + size / 2);
+				}
+			} else if (inst.x !== undefined && inst.y !== undefined) {
+				// Free-floating instrument
 				minX = Math.min(minX, inst.x - size / 2);
 				minY = Math.min(minY, inst.y - size / 2);
 				maxX = Math.max(maxX, inst.x + size / 2);
@@ -329,6 +329,28 @@
 		for (const shape of project.shapes) {
 			hasContent = true;
 			const geom = shape.geometry;
+			if (geom.type === 'line') {
+				minX = Math.min(minX, geom.x1, geom.x2);
+				minY = Math.min(minY, geom.y1, geom.y2);
+				maxX = Math.max(maxX, geom.x1, geom.x2);
+				maxY = Math.max(maxY, geom.y1, geom.y2);
+			} else if (geom.type === 'rect') {
+				minX = Math.min(minX, geom.x);
+				minY = Math.min(minY, geom.y);
+				maxX = Math.max(maxX, geom.x + geom.width);
+				maxY = Math.max(maxY, geom.y + geom.height);
+			} else if (geom.type === 'circle') {
+				minX = Math.min(minX, geom.cx - geom.radius);
+				minY = Math.min(minY, geom.cy - geom.radius);
+				maxX = Math.max(maxX, geom.cx + geom.radius);
+				maxY = Math.max(maxY, geom.cy + geom.radius);
+			}
+		}
+
+		// Include set pieces
+		for (const sp of project.setPieces) {
+			hasContent = true;
+			const geom = sp.geometry;
 			if (geom.type === 'line') {
 				minX = Math.min(minX, geom.x1, geom.x2);
 				minY = Math.min(minY, geom.y1, geom.y2);
@@ -495,23 +517,6 @@
 							stroke-linejoin="round"
 							stroke-width="2"
 							d="M12 4v16m8-8H4"
-						/>
-					</svg>
-				</button>
-
-				<!-- Reset to 100% button -->
-				<button
-					class="toolbar-btn"
-					aria-label="Reset to 100%"
-					onclick={handleZoomReset}
-					title="Reset to 100%"
-				>
-					<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
 						/>
 					</svg>
 				</button>

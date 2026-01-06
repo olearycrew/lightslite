@@ -287,6 +287,7 @@ export class SyncManager {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					name: projectState.name,
+					venue: projectState.venue,
 					layers: {
 						shapes: projectState.shapes,
 						hangingPositions: projectState.hangingPositions,
@@ -822,6 +823,7 @@ export class SyncManager {
 			instruments: project.instruments,
 			setPieces: project.setPieces,
 			annotations: project.annotations,
+			venue: project.venue,
 			metadata: undefined,
 			updatedAt: now,
 			createdAt: now
@@ -847,6 +849,7 @@ export class SyncManager {
 			instruments: layers?.instruments ?? [],
 			setPieces: layers?.setPieces ?? [],
 			annotations: layers?.annotations ?? [],
+			venue: (serverProject.venue as import('$lib/stores/project.svelte').Venue) ?? null,
 			metadata: serverProject.metadata as ProjectMetadata | undefined,
 			updatedAt: new Date(serverProject.updatedAt).getTime(),
 			createdAt: new Date(serverProject.createdAt).getTime()
@@ -860,6 +863,11 @@ export class SyncManager {
 
 		// Set project info
 		project.setProjectInfo(projectData.name, projectData.id);
+
+		// Load venue configuration
+		if (projectData.venue) {
+			project.updateVenue(projectData.venue);
+		}
 
 		// Load shapes
 		for (const shape of projectData.shapes) {
