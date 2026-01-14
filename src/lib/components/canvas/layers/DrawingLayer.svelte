@@ -139,7 +139,9 @@
 						height={bounds.height}
 						locked={setPiece.locked || isLayerLocked}
 						visible={setPiece.visible}
+						ondragstart={() => handleDragStart(setPiece.id)}
 						ondrag={(dx, dy) => handleDrag(setPiece.id, dx, dy)}
+						ondragend={() => handleDragEnd(setPiece.id)}
 					>
 						{#if setPiece.geometry.type === 'rect'}
 							<Rectangle
