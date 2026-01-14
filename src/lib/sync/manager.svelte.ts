@@ -822,20 +822,24 @@ export class SyncManager {
 	private getProjectState(): Project {
 		const now = Date.now();
 
-		return {
-			id: this._projectId!,
-			name: project.projectName,
-			version: this._localVersion,
-			shapes: project.shapes,
-			hangingPositions: project.hangingPositions,
-			instruments: project.instruments,
-			setPieces: project.setPieces,
-			annotations: project.annotations,
-			venue: project.venue,
-			metadata: undefined,
-			updatedAt: now,
-			createdAt: now
-		};
+		// Serialize to plain objects to ensure IndexedDB compatibility
+		// This strips any Svelte reactive properties that can't be cloned
+		return JSON.parse(
+			JSON.stringify({
+				id: this._projectId!,
+				name: project.projectName,
+				version: this._localVersion,
+				shapes: project.shapes,
+				hangingPositions: project.hangingPositions,
+				instruments: project.instruments,
+				setPieces: project.setPieces,
+				annotations: project.annotations,
+				venue: project.venue,
+				metadata: undefined,
+				updatedAt: now,
+				createdAt: now
+			})
+		);
 	}
 
 	/** Convert server project format to local Project format */
