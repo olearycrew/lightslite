@@ -107,6 +107,33 @@
 		};
 	});
 
+	// Watch for project store changes and mark dirty
+	$effect(() => {
+		// Track all project collections to trigger on any change
+		const shapesCount = project.shapes.length;
+		const hangingPositionsCount = project.hangingPositions.length;
+		const instrumentsCount = project.instruments.length;
+		const setPiecesCount = project.setPieces.length;
+		const annotationsCount = project.annotations.length;
+		const venueName = project.venue.name;
+		const projectName = project.projectName;
+
+		// Use the values to prevent dead code elimination
+		void shapesCount;
+		void hangingPositionsCount;
+		void instrumentsCount;
+		void setPiecesCount;
+		void annotationsCount;
+		void venueName;
+		void projectName;
+
+		// Only mark dirty if initialized and not during initial load
+		if (isInitialized && syncManager) {
+			console.log('[EditorPage] Project store changed, marking dirty');
+			syncManager.markDirty();
+		}
+	});
+
 	// Initialize SyncManager and check for recovery data on mount (client-side only)
 	onMount(async () => {
 		console.log('[EditorPage] onMount - initializing SyncManager', {
