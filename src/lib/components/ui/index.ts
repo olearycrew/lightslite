@@ -20,6 +20,7 @@ export { default as NewProjectDialog } from './NewProjectDialog.svelte';
 export { default as CloneProjectDialog } from './CloneProjectDialog.svelte';
 export { default as DeleteProjectDialog } from './DeleteProjectDialog.svelte';
 export { default as OfflineIndicator } from './OfflineIndicator.svelte';
+export { default as SaveStateIndicator } from './SaveStateIndicator.svelte';
 
 // Re-export form components (wrapper components with app-specific APIs)
 export * from './forms';

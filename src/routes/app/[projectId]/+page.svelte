@@ -17,7 +17,8 @@
 		ToolPalette,
 		PropertiesPanel,
 		RecoveryDialog,
-		OfflineIndicator
+		OfflineIndicator,
+		SaveStateIndicator
 	} from '$lib/components/ui';
 	import KeyboardShortcuts from '$lib/components/KeyboardShortcuts.svelte';
 	import { viewport, selection, project, tool } from '$lib/stores';
@@ -190,7 +191,7 @@
 			}
 		} catch (error) {
 			console.error('[EditorPage] Recovery error:', error);
-			_initError = error instanceof Error ? error.message : 'Recovery failed';
+			__initError = error instanceof Error ? error.message : 'Recovery failed';
 		} finally {
 			isRecovering = false;
 		}
@@ -455,6 +456,7 @@
 			<!-- Project Name -->
 			<div class="toolbar-section">
 				<h2 class="project-name">{project.projectName}</h2>
+				<SaveStateIndicator />
 			</div>
 
 			<div class="toolbar-divider"></div>
