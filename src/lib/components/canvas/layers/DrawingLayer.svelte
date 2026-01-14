@@ -9,15 +9,23 @@
 	import { project } from '$lib/stores/project.svelte';
 	import { selection } from '$lib/stores/selection.svelte';
 	import { layers } from '$lib/stores/derived/layers.svelte';
+	import { history } from '$lib/stores/history.svelte';
 	import { Line, Rectangle, Circle } from '../shapes';
 	import HangingPosition from '../HangingPosition.svelte';
 	import SelectableObject from '../SelectableObject.svelte';
 	import InstrumentsLayer from './InstrumentsLayer.svelte';
 	import type { LineGeometry, CircleGeometry } from '$lib/types';
 	import { getGeometryBounds } from '$lib/types';
+	import { createMoveHangingPositionCommand } from '$lib/stores/commands/hangingPosition';
+	import type { HangingPositionObject } from '$lib/stores/project.svelte';
 
 	// Local hover tracking for shapes
 	let hoveredId = $state<string | null>(null);
+
+	// Track drag state for creating commands
+	let dragStartPositions = $state<Map<string, { x1: number; y1: number; x2: number; y2: number }>>(
+		new Map()
+	);
 
 	// Get layer states for quick access
 	const setPiecesLayer = $derived(layers.getById('layer-set-pieces'));
@@ -25,6 +33,22 @@
 	const stageLayer = $derived(layers.getById('layer-stage'));
 	const annotationsLayer = $derived(layers.getById('layer-annotations'));
 	const instrumentsLayer = $derived(layers.getById('layer-instruments'));
+
+	/**
+	 * Handle drag start for an object
+	 */
+	function handleDragStart(id: string) {
+		const obj = project.getObject(id);
+		if (obj && obj.objectType === 'hanging-position') {
+			const position = obj as HangingPositionObject;
+			dragStartPositions.set(id, {
+				x1: position.x1,
+				y1: position.y1,
+				x2: position.x2,
+				y2: position.y2
+			});
+		}
+	}
 
 	/**
 	 * Handle drag for an object
@@ -36,6 +60,28 @@
 		} else {
 			// Otherwise just move this object
 			project.moveObject(id, deltaX, deltaY);
+		}
+	}
+
+	/**
+	 * Handle drag end for an object
+	 */
+	function handleDragEnd(id: string) {
+		const obj = project.getObject(id);
+		if (obj && obj.objectType === 'hanging-position') {
+			const position = obj as HangingPositionObject;
+			const startPos = dragStartPositions.get(id);
+			if (startPos) {
+				// Create and execute command for the move
+				const command = createMoveHangingPositionCommand(id, startPos, {
+					x1: position.x1,
+					y1: position.y1,
+					x2: position.x2,
+					y2: position.y2
+				});
+				history.executeCommand(command);
+				dragStartPositions.delete(id);
+			}
 		}
 	}
 
