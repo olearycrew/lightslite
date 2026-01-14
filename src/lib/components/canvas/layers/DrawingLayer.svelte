@@ -15,9 +15,14 @@
 	import SelectableObject from '../SelectableObject.svelte';
 	import InstrumentsLayer from './InstrumentsLayer.svelte';
 	import type { LineGeometry, CircleGeometry } from '$lib/types';
-	import { getGeometryBounds } from '$lib/types';
+	import { getGeometryBounds, translateGeometry } from '$lib/types';
 	import { createMoveHangingPositionCommand } from '$lib/stores/commands/hangingPosition';
-	import type { HangingPositionObject } from '$lib/stores/project.svelte';
+	import type {
+		HangingPositionObject,
+		ShapeObject,
+		SetPieceObject,
+		AnnotationObject
+	} from '$lib/stores/project.svelte';
 
 	// Local hover tracking for shapes
 	let hoveredId = $state<string | null>(null);
@@ -26,6 +31,10 @@
 	let dragStartPositions = $state<Map<string, { x1: number; y1: number; x2: number; y2: number }>>(
 		new Map()
 	);
+	let dragStartGeometries = $state<Map<string, any>>(new Map());
+	let dragStartAnnotations = $state<
+		Map<string, { x: number; y: number; endX?: number; endY?: number }>
+	>(new Map());
 
 	// Get layer states for quick access
 	const setPiecesLayer = $derived(layers.getById('layer-set-pieces'));
@@ -39,13 +48,27 @@
 	 */
 	function handleDragStart(id: string) {
 		const obj = project.getObject(id);
-		if (obj && obj.objectType === 'hanging-position') {
+		if (!obj) return;
+
+		if (obj.objectType === 'hanging-position') {
 			const position = obj as HangingPositionObject;
 			dragStartPositions.set(id, {
 				x1: position.x1,
 				y1: position.y1,
 				x2: position.x2,
 				y2: position.y2
+			});
+		} else if (obj.objectType === 'shape' || obj.objectType === 'set-piece') {
+			const shapeObj = obj as ShapeObject | SetPieceObject;
+			dragStartGeometries.set(id, { ...shapeObj.geometry });
+		} else if (obj.objectType === 'annotation') {
+			const annotation = obj as AnnotationObject;
+			dragStartAnnotations.set(id, {
+				x: annotation.x,
+				y: annotation.y,
+				...(annotation.endX !== undefined && annotation.endY !== undefined
+					? { endX: annotation.endX, endY: annotation.endY }
+					: {})
 			});
 		}
 	}
