@@ -456,10 +456,9 @@
 			<!-- Project Name -->
 			<div class="toolbar-section">
 				<h2 class="project-name">{project.projectName}</h2>
+				<div class="toolbar-divider"></div>
 				<SaveStateIndicator />
 			</div>
-
-			<div class="toolbar-divider"></div>
 
 			<!-- Spacer -->
 			<div class="flex-1"></div>
