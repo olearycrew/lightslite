@@ -23,6 +23,34 @@
 		SetPieceObject,
 		AnnotationObject
 	} from '$lib/stores/project.svelte';
+	import type { SyncManager } from '$lib/sync';
+	import { onMount } from 'svelte';
+
+	// SyncManager reference - initialized asynchronously
+	let _syncManager: SyncManager | null = null;
+
+	// Initialize SyncManager on mount (client-side only)
+	onMount(async () => {
+		try {
+			const { getSyncManager } = await import('$lib/sync');
+			_syncManager = getSyncManager();
+			console.log('[DrawingLayer] SyncManager initialized');
+		} catch (error) {
+			console.error('[DrawingLayer] Failed to initialize SyncManager:', error);
+		}
+	});
+
+	/**
+	 * Mark the project as dirty to trigger sync
+	 */
+	function markProjectDirty(): void {
+		if (_syncManager) {
+			_syncManager.markDirty();
+			console.log('[DrawingLayer] Marked project dirty after drag');
+		} else {
+			console.warn('[DrawingLayer] SyncManager not yet initialized, skipping markDirty');
+		}
+	}
 
 	// Local hover tracking for shapes
 	let hoveredId = $state<string | null>(null);
@@ -91,19 +119,106 @@
 	 */
 	function handleDragEnd(id: string) {
 		const obj = project.getObject(id);
-		if (obj && obj.objectType === 'hanging-position') {
+		if (!obj) return;
+
+		console.log('[DrawingLayer] handleDragEnd called', { id, objectType: obj.objectType });
+
+		if (obj.objectType === 'hanging-position') {
 			const position = obj as HangingPositionObject;
 			const startPos = dragStartPositions.get(id);
 			if (startPos) {
-				// Create and execute command for the move
 				const command = createMoveHangingPositionCommand(id, startPos, {
 					x1: position.x1,
 					y1: position.y1,
 					x2: position.x2,
 					y2: position.y2
 				});
+				console.log('[DrawingLayer] Executing hanging position move command', command);
 				history.executeCommand(command);
 				dragStartPositions.delete(id);
+			}
+		} else if (obj.objectType === 'shape' || obj.objectType === 'set-piece') {
+			const shapeObj = obj as ShapeObject | SetPieceObject;
+			const startGeometry = dragStartGeometries.get(id);
+			if (startGeometry) {
+				// Calculate delta from geometry change
+				const startBounds = getGeometryBounds(startGeometry);
+				const endBounds = getGeometryBounds(shapeObj.geometry);
+				const deltaX = endBounds.x - startBounds.x;
+				const deltaY = endBounds.y - startBounds.y;
+
+				console.log('[DrawingLayer] Shape/SetPiece drag end', {
+					id,
+					objectType: obj.objectType,
+					deltaX,
+					deltaY,
+					startGeometry,
+					endGeometry: shapeObj.geometry
+				});
+
+				if (deltaX !== 0 || deltaY !== 0) {
+					// Create a generic move command
+					const command: import('$lib/stores/commands/types').UndoableCommand = {
+						type: 'move',
+						description: `Move ${obj.objectType}`,
+						affectedObjectIds: [id],
+						execute() {
+							if (obj.objectType === 'shape') {
+								project.updateShape(id, { geometry: shapeObj.geometry });
+							} else {
+								project.updateSetPiece(id, { geometry: shapeObj.geometry });
+							}
+						},
+						undo() {
+							if (obj.objectType === 'shape') {
+								project.updateShape(id, { geometry: startGeometry });
+							} else {
+								project.updateSetPiece(id, { geometry: startGeometry });
+							}
+						}
+					};
+					console.log('[DrawingLayer] Executing shape/setpiece move command', command);
+					history.executeCommand(command);
+				}
+				dragStartGeometries.delete(id);
+			}
+		} else if (obj.objectType === 'annotation') {
+			const annotation = obj as AnnotationObject;
+			const startPos = dragStartAnnotations.get(id);
+			if (startPos) {
+				const deltaX = annotation.x - startPos.x;
+				const deltaY = annotation.y - startPos.y;
+
+				console.log('[DrawingLayer] Annotation drag end', {
+					id,
+					deltaX,
+					deltaY,
+					startPos,
+					endPos: { x: annotation.x, y: annotation.y }
+				});
+
+				if (deltaX !== 0 || deltaY !== 0) {
+					const command: import('$lib/stores/commands/types').UndoableCommand = {
+						type: 'move',
+						description: `Move annotation`,
+						affectedObjectIds: [id],
+						execute() {
+							project.updateAnnotation(id, {
+								x: annotation.x,
+								y: annotation.y,
+								...(annotation.endX !== undefined && annotation.endY !== undefined
+									? { endX: annotation.endX, endY: annotation.endY }
+									: {})
+							});
+						},
+						undo() {
+							project.updateAnnotation(id, startPos);
+						}
+					};
+					console.log('[DrawingLayer] Executing annotation move command', command);
+					history.executeCommand(command);
+				}
+				dragStartAnnotations.delete(id);
 			}
 		}
 	}
