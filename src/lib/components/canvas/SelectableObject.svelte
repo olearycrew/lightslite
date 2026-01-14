@@ -11,6 +11,7 @@
 	import type { Snippet } from 'svelte';
 	import { selection, type SelectionType } from '$lib/stores';
 	import { viewport } from '$lib/stores/viewport.svelte';
+	import { tool } from '$lib/stores/tool.svelte';
 
 	interface Props {
 		/** Unique ID of this object */
@@ -106,17 +107,20 @@
 			}
 		}
 
-		// Start drag tracking
-		const worldCoords = viewport.screenToWorld(event.clientX, event.clientY);
-		dragStartX = worldCoords.x;
-		dragStartY = worldCoords.y;
-		isDragging = true;
+		// Only allow dragging if not in pan mode
+		if (!tool.isPanTool) {
+			// Start drag tracking
+			const worldCoords = viewport.screenToWorld(event.clientX, event.clientY);
+			dragStartX = worldCoords.x;
+			dragStartY = worldCoords.y;
+			isDragging = true;
 
-		ondragstart?.();
+			ondragstart?.();
 
-		// Add global listeners for drag
-		window.addEventListener('mousemove', handleGlobalMouseMove);
-		window.addEventListener('mouseup', handleGlobalMouseUp);
+			// Add global listeners for drag
+			window.addEventListener('mousemove', handleGlobalMouseMove);
+			window.addEventListener('mouseup', handleGlobalMouseUp);
+		}
 	}
 
 	/**

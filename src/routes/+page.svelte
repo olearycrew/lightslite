@@ -211,7 +211,7 @@
 						Lights<span class="text-accent">Lite</span>
 					</h3>
 					<p class="mb-4 text-sm text-text-muted max-w-md">
-						Open source lighting design tool built with 💛💛 in Maryland. Making lighting design
+						Open source lighting design tool built with 💛🖤 in Maryland. Making lighting design
 						accessible to everyone.
 					</p>
 					<p class="text-xs text-text-muted/60">
